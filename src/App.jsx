@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import LoginForm from './assets/LoginForm/LoginForm'
 
 function App() {
   return (
@@ -13,6 +14,9 @@ function App() {
         }
       </main>
     </div>
+  )
+  return(
+    Form={LoginForm}
   )
 }
 
