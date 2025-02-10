@@ -18,6 +18,8 @@ const handleChange = (e) => {
   }));
 };
 
+console.log(formData);  
+
 const handleSubmit = (e) => {
   e.preventDefault();
   // no se le olvide la logica psss
@@ -27,7 +29,7 @@ const handleSubmit = (e) => {
 
 return (
     <div className="auth-form">
-      <h1>{type === "login" ? "Iniciar Sesión" : "Registrarse"}</h1>
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="email">Email</label>

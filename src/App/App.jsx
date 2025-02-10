@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import AuthForm from './assets/AuthForm/AuthForm'
+import AuthForm from '../assets/AuthForm/AuthForm'
 
 function App() {
   const [authType, setAuthType] = useState('login');
@@ -14,7 +14,7 @@ function App() {
             onClick={() => setAuthType('login')}
             className={authType === 'login' ? 'active' : ''}
           >
-            Iniciar Sesión
+           Iniciar Sesión
           </button>
           <button 
             onClick={() => setAuthType('register')}
