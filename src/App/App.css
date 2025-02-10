@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+.auth-toggle {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-toggle.active {
+  background-color: #007bff;
+  color: white;
+}
