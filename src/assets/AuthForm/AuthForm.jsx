@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ".//AuthForm.css";
 
-const AuthForm = ({ type, onTypeChange }) => {  
+const AuthForm = ({ type, onTypeChange}) => {  
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -64,13 +64,13 @@ return (
         {type === "login" ? "Iniciar Sesión" : "Registrarse"}
       </button>
     </form> 
-    <button
+    <a
       type="button"
       onClick={onTypeChange}  
       className="toggle-button"
     >
       {type === "login" ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-    </button>
+    </a>
   </div>
   );
 };

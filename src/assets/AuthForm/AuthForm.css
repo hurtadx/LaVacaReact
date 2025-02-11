@@ -2,6 +2,7 @@
     max-width: 400px;
     margin: 0 auto;
     padding: 20px;
+    
   }
   
   .form-group {
@@ -33,3 +34,4 @@
   button:hover {
     background-color: #0056b3;
   }
+
