@@ -3,6 +3,25 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: #f8f9fa;
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
+    
+    
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+
+.title h1 {
+    color: white;
+    margin: 0;
+    order: 1; 
+}
+
+.title img{
+    width: 50px;
+    height: auto;
+    order: -1; 
+    margin-bottom: 2.9%;
 }
