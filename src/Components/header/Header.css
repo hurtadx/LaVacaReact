@@ -3,8 +3,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    
-    
 }
 
 .title {
@@ -14,13 +12,14 @@
 }
 
 .title h1 {
-    color: white;
+    color: #FFFFFC;
     margin: 0;
     order: 1; 
+    font-size: 80px;
 }
 
 .title img{
-    width: 50px;
+    width: 80px;
     height: auto;
     order: -1; 
     margin-bottom: 2.9%;

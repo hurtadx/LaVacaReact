@@ -21,3 +21,13 @@ body{
     max-height: 10%;
     width: 100%;
 }
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
