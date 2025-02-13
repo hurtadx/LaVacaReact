@@ -10,10 +10,10 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 20px;
     background-color: #f8f9fa;
     box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
     position: absolute;
     bottom: 0;
+    max-height: 10%;
     width: 100%;
 }
