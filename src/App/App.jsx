@@ -3,7 +3,7 @@ import './App.css';
 import AuthForm from '../assets/AuthForm/AuthForm';
 import Header from '../Components/header/Header';
 import Footer from '../Components/Footer/Footer';
-import SavingsIcon from '../assets/svg/LoginIcon';
+
 
 function App() {
   const [authType, setAuthType] = useState('login');
@@ -17,7 +17,7 @@ function App() {
       <Header />
 
       <div className="main-content">
-        <SavingsIcon/>
+        
         <div className="auth-container">
           <div className="auth-buttons">
             <AuthForm 
