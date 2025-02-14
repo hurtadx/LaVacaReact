@@ -5,7 +5,7 @@ const AuthForm = ({ type, onTypeChange}) => {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
-        ...(type === "register" && { confirmPassword: "" }),
+        ...(type === "register" && { confirmPassword: "", Username: "" }),
     });
 
 const handleChange = (e) => {
@@ -26,6 +26,19 @@ return (
   <div className="auth-container">
     <div className="auth-form">
       <form onSubmit={handleSubmit}>
+        {type === "register" && (
+          <div className="form-group">
+            <label htmlFor="Username">Nombre de Usuario</label>
+            <input
+              type="Username"
+              id="Username"
+              name="Username"
+              value={formData.Username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
