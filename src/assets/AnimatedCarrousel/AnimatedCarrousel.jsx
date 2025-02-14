@@ -30,7 +30,7 @@ const AnimatedCarrousel = () => {
             setCurrentIndex((prevIndex) => 
                 prevIndex === items.length - 1 ? 0 : prevIndex + 1
             );
-        }, 10000000);
+        }, 10000);
 
         return () => clearInterval(timer);
     }, []);
