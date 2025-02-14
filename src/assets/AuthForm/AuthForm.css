@@ -1,43 +1,93 @@
-.auth-form {
-    width: 28%;
-    height: 30%;
-    position: absolute;
-    top: 50%;
-    left: 70%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    background-color: white;
-  }
+.auth-container {
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
+  min-height: 50vh; 
+  padding: 20px 180px 20px 20px;
+}
 
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-   
-  button:hover {
-    background-color: #0056b3;
-  }
+.auth-form {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2.5rem 3rem; 
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  backdrop-filter: blur(4px);
+  width: 100%;
+  max-width: 500px; 
+}
+
+.form-group {
+  margin-bottom: 2rem; 
+  text-align: center; 
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 90%; 
+  margin: 0 auto; 
+  padding: 1rem; 
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 1.1rem; 
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #3F60E5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(63, 96, 229, 0.1);
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 1rem;
+  background: #3F60E5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+button[type="submit"]:hover {
+  background: #2D4BC4;
+  transform: translateY(-1px);
+}
+
+.toggle-button {
+  display: block;
+  text-align: center;
+  color: #3F60E5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.toggle-button:hover {
+  color: #2D4BC4;
+  text-decoration: underline;
+}
+
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.form-group input:invalid:focus {
+  animation: shake 0.3s;
+  border-color: #ff4444;
+}
 
