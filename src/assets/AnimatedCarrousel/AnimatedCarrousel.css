@@ -48,3 +48,28 @@
         transform: translateX(0);
     }
 }
+
+@media screen and (max-width: 630px) {
+    .animated-carrousel {
+        padding-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .carrousel-item {
+        padding-bottom: 20%;
+    }
+
+    .carrousel-item img {
+        width: 500px; 
+    }
+
+    .carrousel-item h3 {
+        font-size: 1.2rem;
+    }
+
+    .carrousel-item p {
+        font-size: 0.9rem;
+        max-width: 200px;
+    }
+}
