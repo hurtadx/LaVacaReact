@@ -1,9 +1,9 @@
 .auth-container {
   display: flex;
-  justify-content: center; /* Changed from flex-end to center */
+  justify-content: flex-end; 
   align-items: center;
   min-height: 50vh; 
-  padding: 20px 20px 150px 20px; /* Adjusted padding */
+  padding: 20px 210px 150px 10px; 
 }
 
 @media (max-width: 768px) {
@@ -14,7 +14,7 @@
 
 @media screen and (max-width: 600px) {
   .auth-container {
-    padding: 20px 10px 120px 10px; /* Aumentado aún más para pantallas pequeñas */
+    padding: 20px 10px 120px 10px; 
   }
 }
 
@@ -61,7 +61,7 @@ button[type="submit"] {
   width: 100%;
   padding: 1rem;
   background: #3F60E5;
-  color: white;
+  color: #fffffc;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -105,15 +105,19 @@ button[type="submit"]:focus {
 
 .form-group input:invalid:focus {
   animation: shake 0.3s;
-  border-color: #ff4444;
+  border-color: #3F60E5;
 }
 
 
 @media screen and (max-width: 1460px) {
-  .auth-form {
-    justify-content: center;
+  .auth-container {
+    justify-content: center; 
+    padding: 20px 20px 150px 20px;
   }
-  
+
+  .auth-form {
+    margin: 0 auto;
+  }
 }
 
 @media screen and (max-height: 780px) and (max-width: 400px) {
@@ -133,7 +137,7 @@ button[type="submit"]:focus {
 
 @media screen and (max-height: 780px) {
   .auth-container {
-    min-height: auto;
+    min-height: 70vh;
     padding: 20px 20px 400px 20px; 
     margin-bottom: 120px;
   }
@@ -161,14 +165,14 @@ button[type="submit"]:focus {
 
 @media screen and (max-height: 600px) {
   .auth-container {
-    padding: 20px 20px 450px 20px;
+    padding: 20px 20px 400px 20px;
     margin-bottom: 150px;
   }
 }
 
 @media screen and (max-width: 400px) {
   .auth-form {
-    padding: 2rem 1.5rem; 
+    padding: 20px 10px; 
     }
   }
 }
