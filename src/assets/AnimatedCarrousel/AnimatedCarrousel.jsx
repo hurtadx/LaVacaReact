@@ -30,7 +30,7 @@ const AnimatedCarrousel = () => {
             setCurrentIndex((prevIndex) => 
                 prevIndex === items.length - 1 ? 0 : prevIndex + 1
             );
-        }, 10000);
+        }, 5000);
 
         return () => clearInterval(timer);
     }, []);
@@ -38,7 +38,7 @@ const AnimatedCarrousel = () => {
     return (
         <div className="animated-carrousel">
             <div className="carrousel-item">
-                <img src={items[currentIndex].image} alt={items[currentIndex].title} />
+                <img src={items[currentIndex].image} alt={`Image of ${items[currentIndex].title}`} />
                 <h3>{items[currentIndex].title}</h3>
                 <p>{items[currentIndex].description}</p>
             </div>

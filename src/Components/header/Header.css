@@ -15,12 +15,12 @@
     color: #FFFFFC;
     margin: 0;
     order: 1; 
-    font-size: 80px;
+    font-size: 5rem;
 }
 
 .title img{
     width: 80px;
     height: auto;
     order: -1; 
-    margin-bottom: 2.9%;
+    margin-bottom: 10px;
 }
