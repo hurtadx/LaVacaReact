@@ -4,7 +4,7 @@ import AuthForm from '../assets/AuthForm/AuthForm';
 import Header from '../Components/header/Header';
 import Footer from '../Components/Footer/Footer';
 import AnimatedCarrousel from '../assets/AnimatedCarrousel/AnimatedCarrousel';
-
+import { NotificationProvider } from '../assets/Notification/NotificationContext';
 
 function App() {
   const [authType, setAuthType] = useState('login');
@@ -14,25 +14,27 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <Header />
+    <NotificationProvider>
+      <div className="App">
+        <Header />
 
-      <div className="main-content">
-        <AnimatedCarrousel/>
-        <div className="auth-container">
-          <div className="auth-buttons">
-            <AuthForm 
-              type={authType} 
-              onTypeChange={handleTypeChange}
-            />
+        <div className="main-content">
+          <AnimatedCarrousel/>
+          <div className="auth-container">
+            <div className="auth-buttons">
+              <AuthForm 
+                type={authType} 
+                onTypeChange={handleTypeChange}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className='footer-container'>
-        <Footer />
+        <div className='footer-container'>
+          <Footer />
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 }
 

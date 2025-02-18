@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import ".//AuthForm.css";
+import { useNotification } from "../Notification/NotificationContext";
+import "./AuthForm.css";
 
 const AuthForm = ({ type, onTypeChange}) => {  
+    const { showNotification } = useNotification();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -18,7 +20,38 @@ const handleChange = (e) => {
 
 const handleSubmit = (e) => {
   e.preventDefault();
-  // no se le olvide la logica psss
+
+  if(type === "register"){
+    if(formData.password !== formData.confirmPassword){
+        showNotification("Las contraseñas no coinciden", "error");
+        return;
+    }
+    
+    if (formData.password.length < 6) {
+        showNotification("La contraseña debe tener al menos 6 caracteres", "error");
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+        showNotification("Por favor, ingresa un email válido", "error");
+        return;
+    }
+
+    if (formData.Username.length < 3) {
+        showNotification("El nombre de usuario debe tener al menos 3 caracteres", "error");
+        return;
+    }
+
+    showNotification("Registro exitoso", "success");
+  } else {
+    if(!formData.email || !formData.password) {
+        showNotification("Por favor, completa todos los campos", "error");
+        return;
+    }
+    showNotification("Inicio de sesión exitoso", "success");
+  }
+
   console.log('Form submitted:', formData);
 };
 
