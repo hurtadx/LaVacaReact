@@ -1,3 +1,16 @@
+
+:root {
+  --primary-color: #3F60E5;
+  --primary-dark: #2D4BC4;
+  --border-color: #e1e1e1;
+  --form-background: rgba(255, 255, 255, 0.9);
+  --text-color: #000;
+  --shadow-color: rgba(31, 38, 135, 0.15);
+  --input-padding: 1rem;
+  --border-radius: 8px;
+}
+
+
 .auth-container {
   display: flex;
   justify-content: flex-end; 
@@ -6,27 +19,16 @@
   padding: 20px 210px 150px 10px; 
 }
 
-@media (max-width: 768px) {
-  .auth-container {
-    padding: 20px 10px;
-  }
-}
-
-@media screen and (max-width: 600px) {
-  .auth-container {
-    padding: 20px 10px 120px 10px; 
-  }
-}
-
 .auth-form {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--form-background);
   padding: 2.5rem 3rem; 
   border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  box-shadow: 0 8px 32px var(--shadow-color);
   backdrop-filter: blur(4px);
   width: 100%;
   max-width: 500px; 
 }
+
 
 .form-group {
   margin-bottom: 2rem; 
@@ -44,26 +46,32 @@
 .form-group input {
   width: 90%; 
   margin: 0 auto; 
-  padding: 1rem; 
-  border: 2px solid #e1e1e1;
-  border-radius: 8px;
+  padding: var(--input-padding); 
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
   font-size: 1.1rem; 
   transition: all 0.3s ease;
 }
 
 .form-group input:focus {
-  border-color: #3F60E5;
+  border-color: var(--primary-color);
   outline: none;
   box-shadow: 0 0 0 3px rgba(63, 96, 229, 0.1);
 }
 
+.form-group input:invalid:focus {
+  animation: shake 0.3s;
+  border-color: var(--primary-color);
+}
+
+
 button[type="submit"] {
   width: 100%;
   padding: 1rem;
-  background: #3F60E5;
+  background: var(--primary-color);
   color: #fffffc;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -72,7 +80,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background: #2D4BC4;
+  background: var(--primary-dark);
   transform: translateY(-1px);
 }
 
@@ -84,7 +92,7 @@ button[type="submit"]:focus {
 .toggle-button {
   display: block;
   text-align: center;
-  color: #3F60E5;
+  color: var(--primary-color);
   text-decoration: none;
   font-size: 0.9rem;
   cursor: pointer;
@@ -92,7 +100,7 @@ button[type="submit"]:focus {
 }
 
 .toggle-button:hover {
-  color: #2D4BC4;
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
@@ -101,11 +109,6 @@ button[type="submit"]:focus {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
   75% { transform: translateX(5px); }
-}
-
-.form-group input:invalid:focus {
-  animation: shake 0.3s;
-  border-color: #3F60E5;
 }
 
 
@@ -120,20 +123,24 @@ button[type="submit"]:focus {
   }
 }
 
-@media screen and (max-height: 780px) and (max-width: 400px) {
+@media screen and (max-width: 768px) {
   .auth-container {
-    min-height: 70vh; 
-    padding: 20px 10px 200px 10px; 
-    margin-bottom: 50px; 
+    padding: 20px 10px;
   }
-
-  .auth-form {
-    margin-bottom: 2rem; 
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem; 
 }
+
+@media screen and (max-width: 600px) {
+  .auth-container {
+    padding: 20px 10px 120px 10px; 
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .auth-form {
+    padding: 20px 10px; 
+  }
+}
+
 
 @media screen and (max-height: 780px) {
   .auth-container {
@@ -150,7 +157,6 @@ button[type="submit"]:focus {
   .form-group {
     margin-bottom: 1.2rem;
   }
-  
 
   .form-group label {
     font-size: 0.85rem;
@@ -162,17 +168,9 @@ button[type="submit"]:focus {
   }
 }
 
-
 @media screen and (max-height: 600px) {
   .auth-container {
     padding: 20px 20px 400px 20px;
     margin-bottom: 150px;
-  }
-}
-
-@media screen and (max-width: 400px) {
-  .auth-form {
-    padding: 20px 10px; 
-    }
   }
 }

@@ -2,7 +2,17 @@ import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import "./AuthForm.css";
 
-const AuthForm = ({ type, onTypeChange}) => {  
+// Constantes
+const MIN_PASSWORD_LENGTH = 6;
+const MIN_USERNAME_LENGTH = 3;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Funciones de validación
+const validatePassword = (password) => password.length >= MIN_PASSWORD_LENGTH;
+const validateEmail = (email) => EMAIL_REGEX.test(email);
+const validateUsername = (username) => username.length >= MIN_USERNAME_LENGTH;
+
+const AuthForm = ({ type, onTypeChange }) => {  
     const { showNotification } = useNotification();
     const [formData, setFormData] = useState({
         email: "",
@@ -22,37 +32,44 @@ const handleSubmit = (e) => {
   e.preventDefault();
 
   if(type === "register"){
-    if(formData.password !== formData.confirmPassword){
-        showNotification("Las contraseñas no coinciden", "error");
-        return;
-    }
-    
-    if (formData.password.length < 6) {
-        showNotification("La contraseña debe tener al menos 6 caracteres", "error");
-        return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-        showNotification("Por favor, ingresa un email válido", "error");
-        return;
-    }
-
-    if (formData.Username.length < 3) {
-        showNotification("El nombre de usuario debe tener al menos 3 caracteres", "error");
-        return;
-    }
-
+    if (!validateRegisterForm()) return;
     showNotification("Registro exitoso", "success");
   } else {
-    if(!formData.email || !formData.password) {
-        showNotification("Por favor, completa todos los campos", "error");
-        return;
-    }
+    if (!validateLoginForm()) return;
     showNotification("Inicio de sesión exitoso", "success");
   }
+};
 
-  console.log('Form submitted:', formData);
+const validateRegisterForm = () => {
+  if (formData.password !== formData.confirmPassword) {
+    showNotification("Las contraseñas no coinciden", "error");
+    return false;
+  }
+  
+  if (!validatePassword(formData.password)) {
+    showNotification(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`, "error");
+    return false;
+  }
+
+  if (!validateEmail(formData.email)) {
+    showNotification("Por favor, ingresa un email válido", "error");
+    return false;
+  }
+
+  if (!validateUsername(formData.Username)) {
+    showNotification(`El nombre de usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres`, "error");
+    return false;
+  }
+
+  return true;
+};
+
+const validateLoginForm = () => {
+  if (!formData.email || !formData.password) {
+    showNotification("Por favor, completa todos los campos", "error");
+    return false;
+  }
+  return true;
 };
 
 return (
