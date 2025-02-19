@@ -1,58 +1,80 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import './Footer.css';
 import logo from '../../assets/Img/LogoLaVaca.png';
 
+// Constants
+const SERVICES_LINKS = [
+  { href: "/cuentas", text: "Cuentas" },
+  { href: "/tarjetas", text: "Tarjetas" },
+  { href: "/prestamos", text: "Préstamos" },
+  { href: "/inversiones", text: "Inversiones" }
+];
+
+const CUSTOMER_SERVICE_LINKS = [
+  { href: "/contacto", text: "Contacto" },
+  { href: "/sucursales", text: "Sucursales" },
+  { href: "/ayuda", text: "Centro de Ayuda" }
+];
+
+const LEGAL_LINKS = [
+  { href: "/privacidad", text: "Política de Privacidad" },
+  { href: "/terminos", text: "Términos y Condiciones" },
+  { href: "/seguridad", text: "Seguridad" }
+];
+
+const FooterSection = ({ title, links }) => (
+  <div className="links-section">
+    <h4>{title}</h4>
+    <ul>
+      {links.map(({ href, text }) => (
+        <li key={href}>
+          <a href={href}>{text}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+FooterSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  links: PropTypes.arrayOf(
+    PropTypes.shape({
+      href: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired
+    })
+  ).isRequired
+};
+
 const Footer = () => {
-    return (
-        <footer>
-            <div className="footer-content">
-                <div className="footer-brand">
-                    <img src={logo} alt="LaVaca Banking Logo" />
-                    <p>LaVaca</p>
-                </div>
+  const currentYear = new Date().getFullYear();
 
-                <div className="footer-links">
-                    <div className="links-section">
-                        <h4>Servicios</h4>
-                        <ul>
-                            <li><a href="/cuentas">Cuentas</a></li>
-                            <li><a href="/tarjetas">Tarjetas</a></li>
-                            <li><a href="/prestamos">Préstamos</a></li>
-                            <li><a href="/inversiones">Inversiones</a></li>
-                        </ul>
-                    </div>
+  return (
+    <footer>
+      <div className="footer-content">
+        <div className="footer-brand">
+          <img src={logo} alt="LaVaca Banking Logo" />
+          <p>LaVaca</p>
+        </div>
 
-                    <div className="links-section">
-                        <h4>Atención al Cliente</h4>
-                        <ul>
-                            <li><a href="/contacto">Contacto</a></li>
-                            <li><a href="/sucursales">Sucursales</a></li>
-                            <li><a href="/ayuda">Centro de Ayuda</a></li>
-                        </ul>
-                    </div>
+        <div className="footer-links">
+          <FooterSection title="Servicios" links={SERVICES_LINKS} />
+          <FooterSection title="Atención al Cliente" links={CUSTOMER_SERVICE_LINKS} />
+          <FooterSection title="Legal" links={LEGAL_LINKS} />
+        </div>
+      </div>
 
-                    <div className="links-section">
-                        <h4>Legal</h4>
-                        <ul>
-                            <li><a href="/privacidad">Política de Privacidad</a></li>
-                            <li><a href="/terminos">Términos y Condiciones</a></li>
-                            <li><a href="/seguridad">Seguridad</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+      <div className="security-info" role="contentinfo">
+        <p><i className="fas fa-shield-alt" aria-hidden="true"></i> Sitio protegido y certificado</p>
+        <p><i className="fas fa-lock" aria-hidden="true"></i> SSL 256-bit encryption</p>
+      </div>
 
-            <div className="security-info">
-                <p><i className="fas fa-shield-alt"></i> Sitio protegido y certificado</p>
-                <p><i className="fas fa-lock"></i> SSL 256-bit encryption</p>
-            </div>
+      <div className="footer-bottom">
+        <p>&copy; {currentYear} LaVaca. Todos los derechos reservados.</p>
+        <p>Entidad regulada por el Banco Central</p>
+      </div>
+    </footer>
+  );
+};
 
-            <div className="footer-bottom">
-                <p>&copy; 2024 LaVaca. Todos los derechos reservados.</p>
-                <p>Entidad regulada por el Banco Central</p>
-            </div>
-        </footer>
-    );
-}
-
-export default Footer;
+export default React.memo(Footer);
