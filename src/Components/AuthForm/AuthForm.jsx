@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import "./AuthForm.css";
 
-// Constantes
+
 const MIN_PASSWORD_LENGTH = 6;
 const MIN_USERNAME_LENGTH = 3;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Funciones de validación
+
 const validatePassword = (password) => password.length >= MIN_PASSWORD_LENGTH;
 const validateEmail = (email) => EMAIL_REGEX.test(email);
 const validateUsername = (username) => username.length >= MIN_USERNAME_LENGTH;

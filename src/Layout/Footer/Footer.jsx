@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import './Footer.css';
-import logo from '../../assets/Img/LogoLaVaca.png';
+import logo from '../../Components/Img/LogoLaVaca.png';
 
 // Constants
 const SERVICES_LINKS = [
