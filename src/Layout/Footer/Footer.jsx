@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import './Footer.css';
 import logo from '../../Components/Img/LogoLaVaca.png';
 
-// Constants
+
 const SERVICES_LINKS = [
   { href: "/cuentas", text: "Cuentas" },
   { href: "/tarjetas", text: "Tarjetas" },
