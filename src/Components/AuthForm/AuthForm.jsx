@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import "./AuthForm.css";
 import { useNavigate } from "react-router-dom";
+import { registerUser, loginUser } from "../../Firebase/Services/Auth";
 
 const MIN_PASSWORD_LENGTH = 6;
 const MIN_USERNAME_LENGTH = 3;
@@ -19,6 +20,7 @@ const AuthForm = ({ type, onTypeChange }) => {
         password: "",
         ...(type === "register" && { confirmPassword: "", Username: "" }),
     });
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
       const { name, value } = e.target;
@@ -28,17 +30,53 @@ const AuthForm = ({ type, onTypeChange }) => {
       }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+      setLoading(true);
 
-      if(type === "register"){
-        if (!validateRegisterForm()) return;
-        showNotification("Registro exitoso", "success");
-      } else {
-        if (!validateLoginForm()) return;
-        showNotification("Inicio de sesión exitoso", "success");
+      try {
+        if(type === "register"){
+          if (!validateRegisterForm()) {
+            setLoading(false);
+            return;
+          }
+          
+          const { user, error } = await registerUser(
+            formData.email, 
+            formData.password,
+            formData.Username
+          );
+          
+          if (error) {
+            showNotification(error, "error");
+            setLoading(false);
+            return;
+          }
+          
+          showNotification("Registro exitoso", "success");
+        } else {
+          if (!validateLoginForm()) {
+            setLoading(false);
+            return;
+          }
+          
+          const { user, error } = await loginUser(formData.email, formData.password);
+          
+          if (error) {
+            showNotification(error, "error");
+            setLoading(false);
+            return;
+          }
+          
+          showNotification("Inicio de sesión exitoso", "success");
+        }
+        
+        // Si llegamos aquí, la autenticación fue exitosa
+        navigate("/dashboard");
+      } catch (error) {
+        showNotification("Error inesperado: " + error.message, "error");
+        setLoading(false);
       }
-      navigate("/dashboard");
     };
 
     const validateRegisterForm = () => {
@@ -81,7 +119,7 @@ const AuthForm = ({ type, onTypeChange }) => {
               <div className="form-group">
                 <label htmlFor="Username">Nombre de Usuario</label>
                 <input
-                  type="Username"
+                  type="text"
                   id="Username"
                   name="Username"
                   value={formData.Username}
@@ -125,17 +163,23 @@ const AuthForm = ({ type, onTypeChange }) => {
                 />
               </div>
             )}
-            <button type="submit">
-              {type === "login" ? "Iniciar Sesión" : "Registrarse"}
+            <button type="submit" disabled={loading}>
+              {loading 
+                ? "Procesando..." 
+                : type === "login" 
+                  ? "Iniciar Sesión" 
+                  : "Registrarse"
+              }
             </button>
           </form> 
-          <a
+          <button
             type="button"
             onClick={onTypeChange}  
             className="toggle-button"
+            disabled={loading}
           >
             {type === "login" ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-          </a>
+          </button>
         </div>
       </div>
     );
