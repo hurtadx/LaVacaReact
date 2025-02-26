@@ -48,7 +48,16 @@ const AuthForm = ({ type, onTypeChange }) => {
           );
           
           if (error) {
-            showNotification(error, "error");
+        
+            if (error.includes("email-already-in-use")) {
+              showNotification("Ya hay una cuenta registrada con este correo. Inicia sesión.", "error");
+            } else if (error.includes("weak-password")) {
+              showNotification("La contraseña es demasiado débil. Usa una combinación de letras, números y símbolos.", "error");
+            } else if (error.includes("invalid-email")) {
+              showNotification("El formato del correo electrónico no es válido.", "error");
+            } else {
+              showNotification(error, "error");
+            }
             setLoading(false);
             return;
           }
@@ -63,7 +72,18 @@ const AuthForm = ({ type, onTypeChange }) => {
           const { user, error } = await loginUser(formData.email, formData.password);
           
           if (error) {
-            showNotification(error, "error");
+        
+            if (error.includes("user-not-found")) {
+              showNotification("No existe una cuenta con este correo. Por favor regístrate.", "error");
+            } else if (error.includes("wrong-password")) {
+              showNotification("Contraseña incorrecta. Verifica tus credenciales.", "error");
+            } else if (error.includes("too-many-requests")) {
+              showNotification("Demasiados intentos fallidos. Por favor intenta más tarde o restablece tu contraseña.", "error");
+            } else if (error.includes("user-disabled")) {
+              showNotification("Esta cuenta ha sido deshabilitada. Contacta a soporte.", "error");
+            } else {
+              showNotification(error, "error");
+            }
             setLoading(false);
             return;
           }
@@ -74,7 +94,8 @@ const AuthForm = ({ type, onTypeChange }) => {
         
         navigate("/dashboard");
       } catch (error) {
-        showNotification("Error inesperado: " + error.message, "error");
+        showNotification("Error inesperado. Por favor intenta nuevamente más tarde.", "error");
+        console.error(error); 
         setLoading(false);
       }
     };
