@@ -71,7 +71,7 @@ const AuthForm = ({ type, onTypeChange }) => {
           showNotification("Inicio de sesión exitoso", "success");
         }
         
-        // Si llegamos aquí, la autenticación fue exitosa
+        
         navigate("/dashboard");
       } catch (error) {
         showNotification("Error inesperado: " + error.message, "error");
