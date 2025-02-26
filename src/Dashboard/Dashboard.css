@@ -1,0 +1,15 @@
+.Dash-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #3F60E5;
+    border-bottom: 1px solid #e9ecef;
+    height: 15%;
+}
+
+.header-Dash-container{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}

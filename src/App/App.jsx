@@ -5,7 +5,7 @@ import AuthForm from '../Components/AuthForm/AuthForm';
 import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
 import AnimatedCarrousel from '../Components/AnimatedCarrousel/AnimatedCarrousel';
-import Dashboard from '../Dashboard/assets/components/Dashboard';
+import Dashboard from '../Dashboard/Dashboard';
 import { NotificationProvider } from '../Components/Notification/NotificationContext';
 
 const AppContent = () => {

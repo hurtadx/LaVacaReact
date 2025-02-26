@@ -56,14 +56,11 @@ button {
   transition: all 0.25s ease;
 }
 
+
 button:hover {
-  background-color: var(--dark-blue);
+  background-color: var(--link-hover);
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 
 
