@@ -11,14 +11,35 @@ export const registerUser = async (email, password, username) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
-    // Actualizar el perfil con el nombre de usuario
+    
     await updateProfile(userCredential.user, {
       displayName: username
     });
     
     return { user: userCredential.user, error: null };
   } catch (error) {
-    return { user: null, error: error.message };
+    
+    const errorCode = error.code;
+    let errorMessage;
+    
+    switch (errorCode) {
+      case 'auth/email-already-in-use':
+        errorMessage = 'email-already-in-use';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'invalid-email';
+        break;
+      case 'auth/weak-password':
+        errorMessage = 'weak-password';
+        break;
+      case 'auth/operation-not-allowed':
+        errorMessage = 'operation-not-allowed';
+        break;
+      default:
+        errorMessage = error.message;
+    }
+    
+    return { user: null, error: errorMessage };
   }
 };
 
@@ -28,7 +49,31 @@ export const loginUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error) {
-    return { user: null, error: error.message };
+    
+    const errorCode = error.code;
+    let errorMessage;
+    
+    switch (errorCode) {
+      case 'auth/user-not-found':
+        errorMessage = 'user-not-found';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'wrong-password';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'invalid-email';
+        break;
+      case 'auth/user-disabled':
+        errorMessage = 'user-disabled';
+        break;
+      case 'auth/too-many-requests':
+        errorMessage = 'too-many-requests';
+        break;
+      default:
+        errorMessage = error.message;
+    }
+    
+    return { user: null, error: errorMessage };
   }
 };
 
