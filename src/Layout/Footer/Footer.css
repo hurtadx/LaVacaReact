@@ -27,7 +27,7 @@ footer {
   gap: 4rem;
 }
 
-/* Brand Section */
+
 .footer-brand {
   display: flex;
   flex-direction: row;
@@ -50,7 +50,7 @@ footer {
   order: 2;
 }
 
-/* Links Section */
+
 .footer-links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -85,7 +85,6 @@ footer {
   color: var(--footer-link);
 }
 
-/* Security Info */
 .security-info {
   max-width: var(--footer-max-width);
   margin: 2rem auto;
