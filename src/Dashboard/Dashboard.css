@@ -1,10 +1,11 @@
 @import '../styles/variables.css';
 
-html, body {
+
+.dashboard-container {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: hidden; 
   font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
   color: var(--dark-color);
   background-color: var(--light-color);
@@ -244,19 +245,31 @@ html, body {
 
 
 .transactions {
-  background-color: var(--light-color);
-  border-radius: 10px;
-  padding: 25px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-top: 24px;
+  transition: all 0.3s ease;
 }
 
 .transactions h2 {
-  margin-top: 0;
-  border-bottom: 1px solid var(--gray-border);
-  padding-bottom: 15px;
   color: var(--dark-color);
-  font-size: 18px;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transactions h2::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 24px;
+  background-color: var(--primary-color);
+  border-radius: 3px;
 }
 
 .transactions ul {
@@ -266,12 +279,12 @@ html, body {
 }
 
 .transactions li {
-  padding: 15px 0;
-  border-bottom: 1px solid var(--gray-border);
+  padding: 16px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .transactions li:last-child {
@@ -279,13 +292,99 @@ html, body {
 }
 
 .transactions li:hover {
-  background-color: var(--secondary-color);
-  border-radius: 4px;
-  padding-left: 10px;
+  background-color: rgba(175, 218, 253, 0.1);
+  transform: translateX(4px);
+}
+
+/* Nuevos estilos para mejorar las transacciones */
+.transaction-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(63, 96, 229, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.transaction-icon.deposit {
+  background-color: rgba(0, 184, 148, 0.1);
+  color: var(--success-color);
+}
+
+.transaction-icon.withdrawal {
+  background-color: rgba(255, 118, 117, 0.1);
+  color: var(--danger-color);
+}
+
+.transaction-icon.transfer {
+  background-color: rgba(253, 203, 110, 0.1);
+  color: var(--warning-color);
+}
+
+.transaction-details {
+  flex-grow: 1;
+}
+
+.transaction-title {
+  font-weight: 500;
+  margin: 0;
+  font-size: 1rem;
   color: var(--dark-color);
 }
 
+.transaction-date {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0;
+}
 
+.transaction-amount {
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.transaction-amount.deposit {
+  color: var (--success-color);
+}
+
+.transaction-amount.withdrawal {
+  color: var(--danger-color);
+}
+
+.transaction-amount.transfer {
+  color: var(--warning-color);
+}
+
+/* Botón para ver más transacciones */
+.view-all-transactions {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  padding: 10px;
+  background-color: rgba(63, 96, 229, 0.07);
+  border-radius: 8px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.view-all-transactions:hover {
+  background-color: rgba(63, 96, 229, 0.15);
+}
+
+/* Adaptaciones para pantallas más pequeñas */
 @media (max-width: 768px) {
   .dash-layout {
     flex-direction: column;
@@ -331,7 +430,27 @@ html, body {
     grid-template-columns: 1fr;
   }
   
+  .transactions {
+    padding: 16px;
+  }
   
+  .transactions li {
+    padding: 12px 8px;
+  }
+  
+  .transaction-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+  
+  .transaction-title {
+    font-size: 0.9rem;
+  }
+  
+  .transaction-amount {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
