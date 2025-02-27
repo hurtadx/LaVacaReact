@@ -1,15 +1,4 @@
-:root {
-  --primary-color: #3F60E5;
-  --secondary-color: #AFDAFD;
-  --dark-color: #001524;
-  --light-color: #FFFFFC;
-  --accent-color: #2a4ad0;
-  --danger-color: #ff7675;
-  --success-color: #00b894;
-  --warning-color: #fdcb6e;
-  --gray-light: #f5f7fa;
-  --gray-border: #eee;
-}
+@import '../styles/variables.css';
 
 html, body {
   height: 100%;
@@ -50,18 +39,19 @@ html, body {
   width: 100%;
 }
 
-.title {
+
+.dash-title {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.title img {
+.dash-title img {
   height: 40px;
   width: auto;
 }
 
-.title h1 {
+.dash-title h1 {
   color: var(--light-color);
   margin: 0;
   font-size: 22px;
@@ -78,7 +68,7 @@ html, body {
   font-size: 14px;
 }
 
-/* Estilos del sidebar */
+
 .sidebar {
   width: 240px;  
   height: 100%;
@@ -120,13 +110,13 @@ html, body {
 }
 
 .sidebar li:hover {
-  background-color: rgba(175, 218, 253, 0.15); /* AFDAFD con transparencia */
+  background-color: rgba(175, 218, 253, 0.15); 
   border-left: 4px solid var(--secondary-color);
   transform: translateX(5px);
 }
 
 .sidebar li.active {
-  background-color: rgba(63, 96, 229, 0.2); /* 3F60E5 con transparencia */
+  background-color: rgba(63, 96, 229, 0.2); 
   border-left: 4px solid var(--primary-color);
   font-weight: 600;
 }
@@ -161,26 +151,21 @@ html, body {
   transform: translateX(2px);
 }
 
-.main-content {
+.dashboard-main-content {
   flex: 1;
   overflow-y: auto;
- 
   justify-content: center;
-  
-
   background-color: var(--light-color);
   
-
   background-image: 
     linear-gradient(to right, rgba(175, 218, 253, 0.07) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(175, 218, 253, 0.07) 1px, transparent 1px);
   background-size: 20px 20px;
   
-  
   position: relative;
 }
 
-.main-content::before {
+.dashboard-main-content::before {
   content: "";
   position: absolute;
   top: 0;
@@ -196,7 +181,7 @@ html, body {
   max-width: 1600px;
   width: 100%;
   margin: 2%;
-  margin-top: 50px;
+  margin-top: 90px;
 }
 
 .account-summary {
@@ -257,7 +242,7 @@ html, body {
   color: var(--warning-color);
 }
 
-/* Estilos para las transacciones */
+
 .transactions {
   background-color: var(--light-color);
   border-radius: 10px;
@@ -300,7 +285,7 @@ html, body {
   color: var(--dark-color);
 }
 
-/* Media queries para responsive */
+
 @media (max-width: 768px) {
   .dash-layout {
     flex-direction: column;
@@ -345,6 +330,8 @@ html, body {
   .account-summary {
     grid-template-columns: 1fr;
   }
+  
+  
 }
 
 @media (max-width: 480px) {
