@@ -1,0 +1,27 @@
+:root {
+
+  --primary-color: #3F60E5;
+  --secondary-color: #AFDAFD;
+  --dark-color: #001524;
+  --light-color: #FFFFFC;
+  --accent-color: #2a4ad0;
+  --danger-color: #ff7675;
+  --success-color: #00b894;
+  --warning-color: #fdcb6e;
+  --gray-light: #f5f7fa;
+  --gray-border: #eee;
+  
+
+  --header-text-color: #FFFFFC;
+  --header-padding: 10px 20px;
+  --header-logo-width: 80px;
+  --header-title-gap: 10px;
+  --header-title-font-size: 5rem;
+  
+
+  --auth-border-color: #e1e1e1;
+  --auth-form-background: rgba(255, 255, 255, 0.9);
+  --auth-shadow-color: rgba(31, 38, 135, 0.15);
+  --auth-input-padding: 1rem;
+  --auth-border-radius: 8px;
+}

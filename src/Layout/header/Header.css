@@ -1,11 +1,4 @@
-:root {
-  --header-text-color: #FFFFFC;
-  --header-padding: 10px 20px;
-  --logo-width: 80px;
-  --title-gap: 10px;
-  --title-font-size: 5rem;
-}
-
+@import '../../styles/variables.css';
 
 .site-header {
   width: 100%;
@@ -16,26 +9,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  }
-
-
-.title {
-  display: flex;
-  align-items: center;
-  gap: var(--title-gap);
+  padding: var(--header-padding);
 }
 
-.title h1 {
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--header-title-gap);
+}
+
+.header-title h1 {
   color: var(--header-text-color);
   margin: 0;
   order: 1;
-  font-size: var(--title-font-size);
+  font-size: var(--header-title-font-size);
   font-weight: 700;
 }
 
-.title img {
-  width: var(--logo-width);
+.header-title img {
+  width: var(--header-logo-width);
   height: auto;
   order: -1;
   margin-bottom: 10px;
@@ -43,23 +36,29 @@
 }
 
 @media (max-width: 768px) {
-  :root {
-    --title-font-size: 3rem;
-    --logo-width: 60px;
+  .header-title h1 {
+    font-size: 3rem;
   }
-
+  
+  .header-title img {
+    width: 60px;
+  }
+  
   .header-container {
     padding: 8px 16px;
   }
 }
 
 @media (max-width: 480px) {
-  :root {
-    --title-font-size: 2rem;
-    --logo-width: 40px;
+  .header-title h1 {
+    font-size: 2rem;
   }
-
-  .title {
+  
+  .header-title img {
+    width: 40px;
+  }
+  
+  .header-title {
     gap: 8px;
   }
 }

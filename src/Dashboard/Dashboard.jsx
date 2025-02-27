@@ -36,7 +36,7 @@ const Dashboard = () => {
     <>
       <header className="dash-header" role="banner">
         <div className="dash-header-container">
-          <div className="title">
+          <div className="dash-title">
             <img src={logo} alt="LaVaca Banking Logo" />
             <h1>LaVaca</h1>
           </div>
@@ -75,7 +75,7 @@ const Dashboard = () => {
           </nav>
         </aside>
         
-        <main className="main-content">
+        <main className="dashboard-main-content">
           <div className="dashboard-module">
             <section className="account-summary">
               <div className="card">
