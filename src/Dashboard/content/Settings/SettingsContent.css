@@ -1,0 +1,79 @@
+.settings-section {
+  width: 100%;
+}
+
+.settings-section h1 {
+  color: var(--dark-color);
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 30px 0;
+}
+
+.settings-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.settings-card h3 {
+  margin-top: 0;
+  color: var(--dark-color);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-form .form-group {
+  margin-bottom: 20px;
+}
+
+.settings-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--dark-color);
+}
+
+.settings-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.settings-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(63, 96, 229, 0.1);
+}
+
+.settings-form input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.settings-form button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.settings-form button:hover {
+  background-color: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+  .settings-form {
+    padding: 0;
+  }
+}

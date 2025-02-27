@@ -141,7 +141,7 @@
 }
 
 .sidebar li.active .sidebar-icon {
-  color: var (--primary-color);
+  color: var(--primary-color);
 }
 
 .sidebar li.logout .sidebar-icon {

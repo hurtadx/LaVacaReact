@@ -1,0 +1,60 @@
+@import '../../../styles/variables.css';
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background-color: var(--primary-color);
+  height: 60px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.dash-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dash-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-title img {
+  height: 40px;
+  width: auto;
+}
+
+.dash-title h1 {
+  color: var(--light-color);
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.user-info {
+  color: var(--light-color);
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .dash-header-container {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .user-info {
+    margin-top: 10px;
+  }
+}
