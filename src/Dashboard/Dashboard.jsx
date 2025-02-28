@@ -7,9 +7,53 @@ import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
 
+// Vaca de prueba para poder trabajar con los detalles
+const vacaDemo = {
+  id: 'vaca-demo-1',
+  name: 'Viaje a la Playa',
+  description: 'Ahorro grupal para nuestro viaje a Cartagena en las próximas vacaciones. ¡El objetivo es pasarla bien sin preocuparnos por el dinero!',
+  goal: 1500000,
+  current: 750000,
+  color: '#3F60E5',
+  createdAt: new Date().toISOString(),
+  deadline: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString(),
+  owner: 'user123',
+  participants: [
+    { id: 'part1', name: 'María López', email: 'maria@example.com' },
+    { id: 'part2', name: 'Juan González', email: 'juan@example.com' },
+    { id: 'part3', name: 'Carlos Rodríguez', email: 'carlos@example.com' },
+    { id: 'part4', name: 'Ana Martínez', email: 'ana@example.com' }
+  ],
+  transactions: [
+    { 
+      id: 'trans1', 
+      amount: 200000, 
+      description: 'Depósito inicial', 
+      date: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString(),
+      participant: 'part1'
+    },
+    { 
+      id: 'trans2', 
+      amount: 150000, 
+      description: 'Pago mensual', 
+      date: new Date(new Date().setDate(new Date().getDate() - 20)).toISOString(),
+      participant: 'part2'
+    },
+    { 
+      id: 'trans3', 
+      amount: 400000, 
+      description: 'Aporte extra', 
+      date: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(),
+      participant: 'part3'
+    }
+  ]
+};
+
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [activeItem, setActiveItem] = useState('Inicio');
+  // Inicializar con la vaca de demo para pruebas
+  const [vacas, setVacas] = useState([vacaDemo]);
   
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(currentUser => {
@@ -27,18 +71,26 @@ const Dashboard = () => {
       console.error("Error al cerrar sesión", error);
     }
   };
-
   
   const renderContent = () => {
     switch(activeItem) {
       case 'Inicio':
-        return <HomeContent onVacasButtonClick={() => setActiveItem('Vacas')} />;
+        return <HomeContent 
+                onVacasButtonClick={() => setActiveItem('Vacas')} 
+                totalVacas={vacas.length}
+               />;
       case 'Vacas':
-        return <VacasContent />;
+        return <VacasContent 
+                vacas={vacas} 
+                setVacas={setVacas} 
+               />;
       case 'Ajustes':
         return <SettingsContent />;
       default:
-        return <HomeContent onVacasButtonClick={() => setActiveItem('Vacas')} />;
+        return <HomeContent 
+                onVacasButtonClick={() => setActiveItem('Vacas')} 
+                totalVacas={vacas.length}
+               />;
     }
   };
 

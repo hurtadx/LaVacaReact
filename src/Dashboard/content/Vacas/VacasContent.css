@@ -49,8 +49,10 @@
 .empty-icon {
   width: 80px;
   height: 80px;
-  opacity: 0.5;
-  margin-bottom: 20px;
+  opacity: 0.8;
+  margin-bottom: 15px;
+  font-size: 64px;
+  color: var(--primary-color);
 }
 
 .empty-state h3 {
@@ -77,6 +79,25 @@
 .create-first-btn:hover {
   background-color: var(--accent-color);
   transform: translateY(-2px);
+}
+
+.vaca-card-header {
+  padding: 20px;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vaca-card-icon {
+  font-size: 20px;
+}
+
+.vaca-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
