@@ -1,7 +1,15 @@
 import React from "react";
 import './HomeContent.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCow } from '@fortawesome/free-solid-svg-icons';
 
-const HomeContent = ({ onVacasButtonClick }) => {
+const HomeContent = ({ onVacasButtonClick, totalVacas = 0 }) => {
+ 
+  const vacasToShow = Math.min(totalVacas, 5);
+  
+
+  const vacasIcons = Array.from({ length: vacasToShow }, (_, index) => index);
+  
   return (
     <>
       <section className="account-summary">
@@ -12,7 +20,24 @@ const HomeContent = ({ onVacasButtonClick }) => {
         
         <button className="card interactive" onClick={onVacasButtonClick}>
           <h3>Tus Vacas</h3>
-          <p className="count">0</p>
+          <div className="vacas-count">
+            <p className="count">{totalVacas}</p>
+            <div className="vacas-icons">
+              {vacasIcons.map((_, index) => (
+                <FontAwesomeIcon 
+                  key={index} 
+                  icon={faCow} 
+                  className={`vaca-icon vaca-delay-${index}`} 
+                />
+              ))}
+              {totalVacas === 0 && (
+                <FontAwesomeIcon 
+                  icon={faCow} 
+                  className="vaca-icon empty-vaca" 
+                />
+              )}
+            </div>
+          </div>
         </button>
         
         <div className="card">
