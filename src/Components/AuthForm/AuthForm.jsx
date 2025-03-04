@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import "./AuthForm.css";
 import { useNavigate } from "react-router-dom";
-import { registerUser, loginUser } from "../../Firebase/Services/Auth";
+import { registerUser, loginUser } from "../../Supabase/services/Auth"; // Cambiado de Firebase a Supabase
 
 const MIN_PASSWORD_LENGTH = 6;
 const MIN_USERNAME_LENGTH = 3;

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import './Dashboard.css';
-import { auth } from "../Firebase/config";
+import { onAuthStateChange, logoutUser } from "../Supabase/services/Auth"; // Cambiado de Firebase a Supabase
 import DashboardHeader from "./content/Header/DashboardHeader";
 import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
 
-// Vaca de prueba para poder trabajar con los detalles
+// Vaca de prueba
 const vacaDemo = {
   id: 'vaca-demo-1',
   name: 'Viaje a la Playa',
@@ -52,21 +52,25 @@ const vacaDemo = {
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [activeItem, setActiveItem] = useState('Inicio');
-  // Inicializar con la vaca de demo para pruebas
   const [vacas, setVacas] = useState([vacaDemo]);
   
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(currentUser => {
+    // Usar el nuevo método de Supabase para escuchar cambios de autenticación
+    const unsubscribe = onAuthStateChange(currentUser => {
       setUser(currentUser);
     });
     
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
-      window.location.href = '/';
+      const { success, error } = await logoutUser();
+      if (success) {
+        window.location.href = '/';
+      } else {
+        console.error("Error al cerrar sesión", error);
+      }
     } catch (error) {
       console.error("Error al cerrar sesión", error);
     }
