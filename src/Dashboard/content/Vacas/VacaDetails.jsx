@@ -28,7 +28,7 @@ const VacaDetails = ({ vaca, onBackClick }) => {
       }) 
     : 'Sin fecha límite';
     
-  // Calcular días restantes hasta la fecha límite
+
   const calculateDaysLeft = () => {
     if (!vaca.deadline) return null;
     
@@ -43,9 +43,9 @@ const VacaDetails = ({ vaca, onBackClick }) => {
   const daysLeft = calculateDaysLeft();
 
   const handleAddPayment = () => {
-    // Aquí va ir la lógica para añadir un pago a la vaca
+
     console.log("Añadir pago de:", paymentAmount, paymentDescription);
-    // Cerrar el formulario de pago
+
     setShowAddPayment(false);
     setPaymentAmount('');
     setPaymentDescription('');
@@ -209,7 +209,7 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             {vaca.transactions && vaca.transactions.length > 0 ? (
               <ul className="transactions-list">
                 {vaca.transactions.map(transaction => {
-                  // Buscar el participante que realizó la transacción
+    
                   const participant = vaca.participants?.find(p => p.id === transaction.participant);
                   
                   return (
