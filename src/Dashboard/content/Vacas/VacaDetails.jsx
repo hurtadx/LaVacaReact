@@ -15,6 +15,7 @@ const VacaDetails = ({ vaca, onBackClick }) => {
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDescription, setPaymentDescription] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const progressPercent = vaca.current 
     ? Math.min((vaca.current / vaca.goal) * 100, 100) 
@@ -42,13 +43,84 @@ const VacaDetails = ({ vaca, onBackClick }) => {
   
   const daysLeft = calculateDaysLeft();
 
-  const handleAddPayment = () => {
-
-    console.log("Añadir pago de:", paymentAmount, paymentDescription);
-
-    setShowAddPayment(false);
-    setPaymentAmount('');
-    setPaymentDescription('');
+  const handleAddPayment = async () => {
+    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+      showNotification("Por favor ingresa un monto válido", "error");
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        showNotification("Debes iniciar sesión para realizar un pago", "error");
+        setLoading(false);
+        return;
+      }
+      
+      
+      const isParticipant = vaca.participants?.some(p => p.user_id === user.id);
+      
+      if (!isParticipant && vaca.user_id !== user.id) {
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, email')
+          .eq('id', user.id)
+          .single();
+          
+        const { error: addParticipantError } = await supabase
+          .from('participants')
+          .insert({
+            vaca_id: vaca.id,
+            name: profile?.username || user.email?.split('@')[0] || 'Usuario',
+            email: profile?.email || user.email,
+            user_id: user.id
+          });
+          
+        if (addParticipantError) {
+          console.error("Error añadiendo participante:", addParticipantError);
+          showNotification("Error al registrarte como participante", "error");
+          setLoading(false);
+          return;
+        }
+      }
+      
+      
+      const { data, error, newTotal } = await addVacaTransaction({
+        vacaId: vaca.id,
+        amount: parseFloat(paymentAmount),
+        description: paymentDescription || "Pago",
+        participant: user.id
+      });
+      
+      if (error) {
+        showNotification(`Error: ${error}`, "error");
+        setLoading(false);
+        return;
+      }
+      
+      showNotification("Pago registrado exitosamente", "success");
+      
+      
+      setVaca(prev => ({
+        ...prev,
+        current: newTotal,
+        transactions: [data, ...(prev.transactions || [])]
+      }));
+      
+      setShowAddPayment(false);
+      setPaymentAmount('');
+      setPaymentDescription('');
+    } catch (error) {
+      console.error("Error en pago:", error);
+      showNotification("Error al procesar el pago", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
