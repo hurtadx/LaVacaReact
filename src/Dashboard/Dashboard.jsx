@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import './Dashboard.css';
-import { onAuthStateChange, logoutUser } from "../Supabase/services/Auth"; // Cambiado de Firebase a Supabase
+import { onAuthStateChange, logoutUser } from "../Supabase/Services/Auth"; 
 import DashboardHeader from "./content/Header/DashboardHeader";
 import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
 
-// Vaca de prueba
+
 const vacaDemo = {
   id: 'vaca-demo-1',
   name: 'Viaje a la Playa',
@@ -55,8 +55,9 @@ const Dashboard = () => {
   const [vacas, setVacas] = useState([vacaDemo]);
   
   useEffect(() => {
-    // Usar el nuevo método de Supabase para escuchar cambios de autenticación
+    
     const unsubscribe = onAuthStateChange(currentUser => {
+      console.log("Received user in Dashboard:", currentUser);
       setUser(currentUser);
     });
     

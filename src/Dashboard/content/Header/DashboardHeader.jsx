@@ -3,6 +3,13 @@ import './DashboardHeader.css';
 import logo from '../../../Components/Img/LogoLaVaca.png';
 
 const DashboardHeader = ({ user }) => {
+  
+  const displayName = user?.displayName || 
+                    user?.user_metadata?.username || 
+                    (user?.email ? user.email.split('@')[0] : "Usuario");
+  
+  console.log("User data in header:", { user, displayName });
+  
   return (
     <header className="dash-header" role="banner">
       <div className="dash-header-container">
@@ -11,7 +18,7 @@ const DashboardHeader = ({ user }) => {
           <h1>LaVaca</h1>
         </div>
         <div className="user-info">
-          <span>{user?.displayName || user?.email || "Usuario"}</span>
+          <span>{displayName}</span>
         </div>
       </div>
     </header>
