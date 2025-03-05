@@ -2,6 +2,27 @@ import { supabase } from "../supabaseConfig";
 
 export const registerUser = async (email, password, username) => {
   try {
+    console.log("Intentando registrar:", { email, username });
+    
+    
+    if (!supabase) {
+      console.error("Error: Cliente Supabase no inicializado");
+      return { 
+        user: null, 
+        error: true,
+        message: "Error de configuración del cliente Supabase" 
+      };
+    }
+    
+    
+    if (!email || !password || !username) {
+      return {
+        user: null,
+        error: true,
+        message: "Todos los campos son obligatorios"
+      };
+    }
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -12,61 +33,119 @@ export const registerUser = async (email, password, username) => {
       }
     });
 
-    if (error) throw error;
+    console.log("Resultado registro:", { data, error });
 
-    return { user: data.user, error: null };
-  } catch (error) {
-    let errorMessage;
-    
-    switch (error.message) {
-      case 'User already registered':
-        errorMessage = 'email-already-in-use';
-        break;
-      case 'Invalid email':
-        errorMessage = 'invalid-email';
-        break;
-      case 'Password should be at least 6 characters':
-        errorMessage = 'weak-password';
-        break;
-      default:
-        errorMessage = error.message;
+    if (error) {
+      return { 
+        user: null, 
+        error: true,
+        message: `Error al registrar: ${error.message}` 
+      };
     }
+
     
-    return { user: null, error: errorMessage };
+    if (!data) {
+      return {
+        user: null,
+        error: true,
+        message: "No se recibieron datos del servidor"
+      };
+    }
+
+    
+    const needsEmailConfirmation = !data.session;
+
+    return { 
+      user: data.user || null, 
+      error: null,
+      needsEmailConfirmation,
+      message: needsEmailConfirmation 
+        ? "Por favor verifica tu correo electrónico para completar el registro"
+        : "Registro exitoso"
+    };
+  } catch (error) {
+    console.error("Error en registro:", error);
+    
+    return { 
+      user: null, 
+      error: true,
+      message: `Error inesperado: ${error.message}`,
+      needsEmailConfirmation: false
+    };
   }
 };
 
 export const loginUser = async (email, password) => {
   try {
+    
+    if (!email || !password) {
+      return { 
+        user: null, 
+        error: true, 
+        message: "Email y contraseña son requeridos" 
+      };
+    }
+
+    console.log("Intentando iniciar sesión con:", { email });
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
-    if (error) throw error;
+    console.log("Respuesta completa de autenticación:", { data, error });
 
-    return { user: data.user, error: null };
-  } catch (error) {
-    let errorMessage;
-    
-    switch (error.message) {
-      case 'Invalid login credentials':
-        errorMessage = 'wrong-password';
-        break;
-      case 'Invalid email':
-        errorMessage = 'invalid-email';
-        break;
-      case 'Email not confirmed':
-        errorMessage = 'user-not-found';
-        break;
-      case 'Too many requests':
-        errorMessage = 'too-many-requests';
-        break;
-      default:
-        errorMessage = error.message;
+    if (error) {
+      console.error("Error de autenticación:", error);
+      
+      
+      if (error.message.includes("Email not confirmed")) {
+        return { 
+          user: null, 
+          error: true, 
+          message: "Por favor verifica tu correo electrónico antes de iniciar sesión." 
+        };
+      } else if (error.message.includes("Invalid login credentials")) {
+        return { 
+          user: null, 
+          error: true, 
+          message: "Email o contraseña incorrectos." 
+        };
+      } else {
+        return { 
+          user: null, 
+          error: true, 
+          message: `Error al iniciar sesión: ${error.message}` 
+        };
+      }
     }
+
+    if (!data || !data.user) {
+      return { 
+        user: null, 
+        error: true, 
+        message: "No se pudo obtener la información del usuario" 
+      };
+    }
+
     
-    return { user: null, error: errorMessage };
+    const enrichedUser = {
+      ...data.user,
+      displayName: data.user.user_metadata?.username || 
+                  data.user.email.split('@')[0]
+    };
+
+    return { 
+      user: enrichedUser, 
+      error: null 
+    };
+  } catch (error) {
+    console.error("Error inesperado en login:", error);
+    return { 
+      user: null, 
+      error: true, 
+      message: `Error inesperado: ${error.message}` 
+    };
   }
 };
 
@@ -82,7 +161,7 @@ export const logoutUser = async () => {
   }
 };
 
-// Función adicional para obtener el usuario actual
+
 export const getCurrentUser = async () => {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -95,7 +174,7 @@ export const getCurrentUser = async () => {
   }
 };
 
-// Función para actualizar el perfil del usuario
+
 export const updateUserProfile = async (userData) => {
   try {
     const { data, error } = await supabase.auth.updateUser({
@@ -110,11 +189,25 @@ export const updateUserProfile = async (userData) => {
   }
 };
 
-// Función para escuchar cambios de autenticación
+
 export const onAuthStateChange = (callback) => {
-  const subscription = supabase.auth.onAuthStateChange((event, session) => {
-    callback(session?.user || null);
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log("Auth state changed:", event, session);
+    
+    if (session?.user) {
+      
+      const enrichedUser = {
+        ...session.user,
+        displayName: session.user.user_metadata?.username || 
+                    session.user.email.split('@')[0]
+      };
+      callback(enrichedUser);
+    } else {
+      callback(null);
+    }
   });
   
-  return () => subscription.data.subscription.unsubscribe();
+  return () => {
+    subscription.unsubscribe();
+  };
 };
