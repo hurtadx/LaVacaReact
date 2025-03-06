@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faPlus, faTrash, faCow, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { createVaca } from "../../../Supabase/Services/vacaService";
@@ -18,18 +18,14 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
     participants: []
   });
   
-  
-  const predefinedColors = [
-    '#3F60E5', 
-    '#FF5733', 
-    '#4CAF50', 
-    '#9C27B0', 
-    '#FF9800', 
-    '#E91E63', 
-    '#607D8B', 
-    '#009688', 
-  ];
-  
+  const colorInputRef = useRef(null);
+
+  const handleColorIconClick = () => {
+    if (colorInputRef.current) {
+      colorInputRef.current.click();
+    }
+  };
+
   const [newParticipant, setNewParticipant] = useState({
     name: '',
     email: ''
@@ -37,17 +33,24 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-  
-  const handleColorSelect = (color) => {
-    setFormData(prevState => ({
-      ...prevState,
-      color
-    }));
+    
+    
+    if (name === 'goal') {
+      
+      const numericValue = value.replace(/[^\d.]/g, '');
+      
+      let newValue = numericValue === '' ? '' : numericValue;
+      
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: newValue
+      }));
+    } else {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
   };
 
   const handleParticipantChange = (e) => {
@@ -156,88 +159,86 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
       </div>
       
       <form className="create-vaca-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Nombre de la Vaca *</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Ej: Viaje a la playa"
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="description">Descripción</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Describe el propósito de esta vaca"
-            rows={3}
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="goal">Meta (€) *</label>
-          <div className="input-with-icon">
-            <span className="currency-symbol">€</span>
+        <div className="form-section centered">
+          <div className="form-group">
+            <label htmlFor="name">Nombre de la Vaca *</label>
             <input
-              type="number"
-              id="goal"
-              name="goal"
-              value={formData.goal}
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
-              placeholder="Ej: 1000"
-              min="1"
-              step="0.01"
+              placeholder="Ej: Viaje a la playa"
               required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="description">Descripción</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe el propósito de esta vaca"
+              rows={3}
             />
           </div>
         </div>
         
-        <div className="form-group">
-          <label htmlFor="deadline">Fecha límite</label>
-          <input
-            type="date"
-            id="deadline"
-            name="deadline"
-            value={formData.deadline}
-            onChange={handleChange}
-          />
+        {/* Meta y fecha límite en una sola fila */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="goal">Meta ($) *</label>
+            <div className="input-with-icon">
+              <span className="currency-symbol">$</span>
+              <input
+                type="number"
+                id="goal"
+                name="goal"
+                value={formData.goal}
+                onChange={handleChange}
+                placeholder="Ej: 1000"
+                min="1"
+                step="0.01"
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="deadline">Fecha límite</label>
+            <input
+              type="date"
+              id="deadline"
+              name="deadline"
+              value={formData.deadline}
+              onChange={handleChange}
+            />
+          </div>
         </div>
         
+        {/* Color de la vaca con selector en el icono */}
         <div className="form-group">
           <label>Color de la Vaca</label>
-          <div className="color-selector">
-            {predefinedColors.map(color => (
-              <div 
-                key={color} 
-                className={`color-option ${formData.color === color ? 'selected' : ''}`}
-                style={{ backgroundColor: color }}
-                onClick={() => handleColorSelect(color)}
-              >
-                {formData.color === color && (
-                  <FontAwesomeIcon icon={faCow} className="color-icon" />
-                )}
-              </div>
-            ))}
-            <div className="custom-color-picker">
-              <input
-                type="color"
-                id="color"
-                name="color"
-                value={formData.color}
-                onChange={handleChange}
-                className="color-input"
+          <div className="color-picker-container">
+            <div className="color-picker-icon-wrapper" onClick={handleColorIconClick}>
+              <FontAwesomeIcon 
+                icon={faCow} 
+                style={{color: formData.color}} 
+                className="color-picker-icon" 
               />
-              <label htmlFor="color" className="custom-color-label">
-                Personalizado
-              </label>
+              <span className="color-picker-text">Haz clic para cambiar el color</span>
             </div>
+            <input
+              ref={colorInputRef}
+              type="color"
+              id="color"
+              name="color"
+              value={formData.color}
+              onChange={handleChange}
+              className="color-input-hidden"
+            />
           </div>
         </div>
         
@@ -287,15 +288,21 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
                 {formData.participants.map(participant => (
                   <li key={participant.tempId}>
                     <div className="participant-info">
-                      <span className="participant-name">{participant.name}</span>
-                      {participant.email && (
-                        <span className="participant-email">{participant.email}</span>
-                      )}
+                      <div className="participant-avatar">
+                        {participant.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="participant-details">
+                        <span className="participant-name">{participant.name}</span>
+                        {participant.email && (
+                          <span className="participant-email">{participant.email}</span>
+                        )}
+                      </div>
                     </div>
                     <button 
                       type="button"
                       className="remove-participant-btn"
                       onClick={() => removeParticipant(participant.tempId)}
+                      title="Eliminar participante"
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
@@ -316,8 +323,10 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
               <h3>{formData.name || 'Nombre de la Vaca'}</h3>
             </div>
             <div className="vaca-card-content">
-              <p className="vaca-goal">Meta: {formData.goal ? `${parseFloat(formData.goal).toLocaleString()}€` : '0€'}</p>
-              <p className="vaca-current">Actual: 0€</p>
+              <p className="vaca-goal">
+                Meta: {formData.goal ? `$${parseFloat(formData.goal).toLocaleString('es')}` : '$0'}
+              </p>
+              <p className="vaca-current">Actual: $0</p>
               <div className="vaca-progress">
                 <div 
                   className="vaca-progress-bar" 
