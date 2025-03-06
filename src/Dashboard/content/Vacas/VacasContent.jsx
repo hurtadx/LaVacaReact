@@ -8,31 +8,39 @@ import CreateVacaForm from './CreateVacaForm';
 import VacaDetails from './VacaDetails';
 import './VacasContent.css';
 
-const VacasContent = () => {
-  const [vacas, setVacas] = useState([]);
+const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: setExternalLoading, selectedVacaId, setSelectedVacaId }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedVaca, setSelectedVaca] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [tablesVerified, setTablesVerified] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const { showNotification } = useNotification();
+  
+  
+  const setLoading = setExternalLoading || setInternalLoading;
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
 
   useEffect(() => {
     const verifyTablesAndLoadVacas = async () => {
       try {
         
-        const tables = await checkTablesExist();
-        console.log("Estado de las tablas:", tables);
-        
-        if (!tables.vacas || !tables.participants || !tables.transactions) {
-          showNotification("La base de datos no está correctamente configurada", "error");
+        if ((!vacas || vacas.length === 0) && !selectedVacaId) {
+          setLoading(true);
+          const tables = await checkTablesExist();
+          console.log("Estado de las tablas:", tables);
+          
+          if (!tables.vacas || !tables.participants || !tables.transactions) {
+            showNotification("La base de datos no está correctamente configurada", "error");
+            setLoading(false);
+            return;
+          }
+          
+          setTablesVerified(true);
+          await loadUserVacas();
+        } else {
+          
+          setTablesVerified(true);
           setLoading(false);
-          return;
         }
-        
-        setTablesVerified(true);
-        
-        
-        await loadUserVacas();
       } catch (error) {
         console.error("Error en la inicialización:", error);
         showNotification("Error al inicializar la aplicación", "error");
@@ -43,11 +51,22 @@ const VacasContent = () => {
     verifyTablesAndLoadVacas();
   }, []);
 
+  
+  useEffect(() => {
+    if (selectedVacaId && vacas && vacas.length > 0) {
+      const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
+      if (selectedVaca) {
+        console.log("Vaca seleccionada desde sidebar:", selectedVaca);
+        setSelectedVaca(selectedVaca);
+        setSelectedVacaId(null); 
+      }
+    }
+  }, [selectedVacaId, vacas]);
+
   const loadUserVacas = async () => {
     setLoading(true);
     
     try {
-      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -57,7 +76,6 @@ const VacasContent = () => {
       }
       
       console.log("Cargando vacas para el usuario:", user.id);
-      
       
       const { data, error } = await getUserVacas(user.id);
       
@@ -77,13 +95,11 @@ const VacasContent = () => {
     }
   };
 
+  
   const handleCreateVaca = (newVaca) => {
     console.log("Nueva vaca creada:", newVaca);
-    
     setVacas(currentVacas => [...(Array.isArray(currentVacas) ? currentVacas : []), newVaca]);
     setShowCreateForm(false);
-    
-    
     showNotification("¡Vaca creada con éxito!", "success");
   };
 
@@ -101,11 +117,9 @@ const VacasContent = () => {
     return <VacaDetails vaca={selectedVaca} onBackClick={handleBackClick} />;
   }
   
-  
   if (showCreateForm) {
     return <CreateVacaForm onSave={handleCreateVaca} onCancel={() => setShowCreateForm(false)} />;
   }
-  
   
   return (
     <div className="vacas-container">

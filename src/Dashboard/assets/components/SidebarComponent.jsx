@@ -14,12 +14,12 @@ const Sidebar = ({ activeItem, onItemClick, onLogout, vacas = [] }) => {
   const [isVacasOpen, setIsVacasOpen] = useState(false);
 
   const toggleVacasMenu = (e) => {
-    e.stopPropagation(); // Evitar que el clic propague al elemento padre
+    e.stopPropagation(); 
     setIsVacasOpen(!isVacasOpen);
   };
 
   const handleVacaClick = (vacaId) => {
-    onItemClick('Vacas', vacaId); // Pasamos el ID de la vaca para cargarla directamente
+    onItemClick('Vacas', vacaId); 
   };
 
   return (
@@ -66,10 +66,11 @@ const Sidebar = ({ activeItem, onItemClick, onLogout, vacas = [] }) => {
                         handleVacaClick(vaca.id);
                       }}
                     >
-                      <div 
-                        className="vaca-color-dot" 
-                        style={{backgroundColor: vaca.color || '#3F60E5'}}
-                      ></div>
+                      <FontAwesomeIcon 
+                        icon={faCow} 
+                        className="vaca-color-icon" 
+                        style={{color: vaca.color || '#3F60E5'}}
+                      />
                       <span className="vaca-name">{vaca.name}</span>
                     </li>
                   ))

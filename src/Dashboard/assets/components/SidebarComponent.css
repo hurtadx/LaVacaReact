@@ -168,6 +168,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+
 .dropdown-menu {
   width: 100%;
   padding: 0;
@@ -175,18 +176,20 @@
   list-style-type: none;
   max-height: 200px;
   overflow-y: auto;
-  background-color: rgba(0, 0, 0, 0.15);
+  overflow-x: hidden;   background-color: rgba(0, 0, 0, 0.15);
   border-radius: 0 0 4px 4px;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 10px 20px 10px 44px; /* Indentamos para alinear con el ícono del padre */
-  font-size: 14px;
+  padding: 8px 20px 8px 44px;   font-size: 14px;
   cursor: pointer;
   border-left: 4px solid transparent;
   transition: background-color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-item:hover {
@@ -201,10 +204,8 @@
   font-style: italic;
 }
 
-.vaca-color-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.vaca-color-icon {
+  font-size: 12px;
   margin-right: 8px;
 }
 
@@ -215,7 +216,6 @@
   max-width: 150px;
 }
 
-/* Estilos para la barra de desplazamiento en el menú desplegable */
 .dropdown-menu::-webkit-scrollbar {
   width: 4px;
 }

@@ -12,6 +12,17 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const VacaDetails = ({ vaca, onBackClick }) => {
+  
+  if (!vaca || !vaca.id) {
+    console.error("Error: VacaDetails recibió un objeto vaca inválido", vaca);
+    return (
+      <div className="error-state">
+        <h2>Error al cargar los detalles</h2>
+        <button className="back-button" onClick={onBackClick}>Volver</button>
+      </div>
+    );
+  }
+  
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDescription, setPaymentDescription] = useState('');
@@ -199,8 +210,10 @@ const VacaDetails = ({ vaca, onBackClick }) => {
         </div>
         
         <div className="vaca-details-sections">
-          <div className="vaca-section participants-section">
-            <h2>Participantes</h2>
+          <div className="participants-section">
+            <h2>
+              <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
+            </h2>
             {vaca.participants && vaca.participants.length > 0 ? (
               <ul className="participants-list">
                 {vaca.participants.map(participant => (
@@ -220,8 +233,10 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             )}
           </div>
           
-          <div className="vaca-section transactions-section">
-            <h2>Transacciones</h2>
+          <div className="vaca-section">
+            <h2>
+              <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+            </h2>
             <div className="add-transaction">
               <button 
                 className="add-transaction-btn"
