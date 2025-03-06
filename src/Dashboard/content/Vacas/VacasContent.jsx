@@ -135,8 +135,8 @@ const VacasContent = () => {
                   <h3>{vaca.name}</h3>
                 </div>
                 <div className="vaca-card-content">
-                  <p className="vaca-goal">Meta: {vaca.goal.toLocaleString()}€</p>
-                  <p className="vaca-current">Actual: {vaca.current ? vaca.current.toLocaleString() : '0'}€</p>
+                  <p className="vaca-goal">Meta: ${vaca.goal.toLocaleString()}</p>
+                  <p className="vaca-current">Actual: ${vaca.current ? vaca.current.toLocaleString() : '0'}</p>
                   <div className="vaca-progress">
                     <div 
                       className="vaca-progress-bar" 
