@@ -13,8 +13,9 @@ const Dashboard = () => {
   const [activeItem, setActiveItem] = useState('Inicio');
   const [vacas, setVacas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedVacaId, setSelectedVacaId] = useState(null);
   
-  // Efecto para cargar el usuario autenticado
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChange(currentUser => {
       console.log("Received user in Dashboard:", currentUser);
@@ -24,7 +25,7 @@ const Dashboard = () => {
     return unsubscribe;
   }, []);
   
-  // Efecto para cargar las vacas del usuario cuando el usuario cambia
+  
   useEffect(() => {
     const fetchVacas = async () => {
       if (user && user.id) {
@@ -70,6 +71,8 @@ const Dashboard = () => {
                 vacas={vacas} 
                 setVacas={setVacas}
                 loading={loading} 
+                selectedVacaId={selectedVacaId}
+                setSelectedVacaId={setSelectedVacaId}
                />;
       case 'Ajustes':
         return <SettingsContent />;
@@ -92,7 +95,10 @@ const Dashboard = () => {
           onItemClick={(item, vacaId = null) => {
             setActiveItem(item);
             if (item === 'Vacas' && vacaId) {
-              setSelectedVacaId(vacaId);
+              
+              if (selectedVacaId !== vacaId) {
+                setSelectedVacaId(vacaId);
+              }
             }
           }}
           onLogout={handleLogout} 
