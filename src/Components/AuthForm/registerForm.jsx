@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../Supabase/Services/Auth";
+import { registerUser } from "../../Supabase/services/Auth";
 import { 
   validateEmail, 
   validatePassword, 
@@ -64,6 +64,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     setLoading(true);
     
     try {
+      console.log("📝 Enviando datos de registro:", {
+        email: formData.email,
+        username: formData.Username
+      });
       
       const result = await registerUser(
         formData.email, 
@@ -71,28 +75,49 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         formData.Username
       );
       
-      console.log("Resultado del registro:", result); 
-      
+      console.log("📊 Resultado completo del registro:", result);
       
       if (!result) {
         showNotification("Error en el servidor de autenticación", "error");
         setLoading(false);
         return;
       }
-      
-      
-      const { user, error, message, needsEmailConfirmation } = result;
-      
-      if (error) {
-        showNotification(message || "Error en el registro", "error");
-        setLoading(false);
-        return;
+
+      // IMPORTANTE: Verificar primero si el email ya existe
+      // Esta debe ser la primera condición que verificamos
+      if (result.emailAlreadyExists === true) {
+        console.log("🚫 Email ya registrado detectado");
+        showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
+        // Cambiar automáticamente al form de login después de un retraso breve
+        setTimeout(() => onSwitchToLogin(), 1500);
+        return; // Importante: detener el flujo aquí
       }
       
+      // Verificación adicional para email existente basada en información de debug
+      if (result.debug?.checkData?.user?.identities?.length === 0) {
+        console.log("⚠️ Detección secundaria: Email ya registrado (identities vacío)");
+        showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
+        setTimeout(() => onSwitchToLogin(), 1500);
+        return; // Importante: detener el flujo aquí
+      }
+      
+      // Extraer los valores después de haber verificado el email existente
+      const { user, error, message, needsEmailConfirmation } = result;
+      
+      // Manejar otros errores
+      if (error) {
+        showNotification(message || "Error en el registro", "error", 8000);
+        return; // Detener el flujo aquí
+      }
+      
+      // Solo mostrar mensaje de verificación de email si realmente se necesita
+      // y si llegamos a este punto (significa que el email no existe)
       if (needsEmailConfirmation) {
+        // Mostrar una notificación persistente que requiera cerrarla manualmente
         showNotification(
-          "Te hemos enviado un correo de confirmación. Por favor, verifica tu bandeja de entrada.",
-          "info"
+          "Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.",
+          "info",
+          0 // Duración 0 = persistente
         );
         onSwitchToLogin(); 
       } else {
@@ -101,7 +126,18 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       }
     } catch (error) {
       console.error("Error en registro:", error);
-      showNotification("Error inesperado. Por favor intenta nuevamente más tarde.", "error");
+      
+      // Verificar si el error es por email ya existente
+      if (error.message && (
+        error.message.includes('already registered') || 
+        error.message.includes('already in use') ||
+        error.message.includes('User already registered')
+      )) {
+        showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
+        setTimeout(() => onSwitchToLogin(), 1500);
+      } else {
+        showNotification("Error inesperado. Por favor intenta nuevamente más tarde.", "error", 8000);
+      }
     } finally {
       setLoading(false);
     }
@@ -177,3 +213,6 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 };
 
 export default RegisterForm;
+
+
+
