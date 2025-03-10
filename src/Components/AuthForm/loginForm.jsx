@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../Supabase/Services/Auth";
+import { loginUser } from "../../Supabase/services/Auth";
 import { validateEmail } from "../common/FormValidator";
 import "./AuthForm.css";
 
