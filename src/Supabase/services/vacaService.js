@@ -1,5 +1,7 @@
 import { supabase } from '../supabaseConfig';
 
+
+
 export const checkTablesExist = async () => {
   try {
     console.log("Verificando existencia de tablas...");
