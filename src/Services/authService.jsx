@@ -1,5 +1,4 @@
-
-import { supabase } from "../../supabaseConfig";
+import { supabase } from "../Supabase/supabaseConfig";
 import { handleAuthError } from './errorHandler';
 
 export const loginUser = async (email, password) => {

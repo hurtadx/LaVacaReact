@@ -1,5 +1,4 @@
-
-import { supabase } from "../../supabaseConfig";
+import { supabase } from "../Supabase/supabaseConfig";
 import { handleAuthError } from './errorHandler';
 import { enrichUserData } from './authService';
 
