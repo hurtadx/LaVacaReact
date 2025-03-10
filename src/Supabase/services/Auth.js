@@ -1,3 +1,4 @@
+import { supabase } from "../supabaseConfig";
 
 export const registerUser = async (email, password, username) => {
   try {
