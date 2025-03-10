@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import './Dashboard.css';
-import { onAuthStateChange, logoutUser } from "../Supabase/Services/Auth"; 
-import { getUserVacas } from "../Supabase/Services/vacaService";
+import { onAuthStateChange, logoutUser } from "../Supabase/services/Auth"; 
+import { getUserVacas } from "../Supabase/services/vacaService";
 import DashboardHeader from "./content/Header/DashboardHeader";
 import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
