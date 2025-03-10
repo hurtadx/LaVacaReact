@@ -4,73 +4,107 @@ export const registerUser = async (email, password, username) => {
   try {
     console.log("Intentando registrar:", { email, username });
     
-    
-    if (!supabase) {
-      console.error("Error: Cliente Supabase no inicializado");
-      return { 
-        user: null, 
-        error: true,
-        message: "Error de configuración del cliente Supabase" 
-      };
+    // PASO 1: Verificación previa de email existente (método simplificado)
+    try {
+      // Usamos un método más simple y directo para verificar si el email existe
+      const { data: checkData, error: checkError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      // Si tenemos datos de usuario y no hay error, el email ya existe
+      if (checkData && !checkError) {
+        console.log("✅ Email ya registrado (verificación directa):", email);
+        return {
+          user: null,
+          error: true,
+          message: "Este email ya está registrado. Por favor inicia sesión.",
+          emailAlreadyExists: true,
+          debug: { checkData, checkError }
+        };
+      }
+    } catch (checkException) {
+      console.error("❌ Error en verificación inicial:", checkException);
     }
     
-    
-    if (!email || !password || !username) {
-      return {
-        user: null,
-        error: true,
-        message: "Todos los campos son obligatorios"
-      };
-    }
-    
+    // PASO 2: Intento real de registro
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           username,
-        }
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
-
+    
     console.log("Resultado registro:", { data, error });
-
+    
+    // PASO 3: Verificar errores específicos después del registro
     if (error) {
+      // Si el error es sobre email ya existente
+      if (error.message.includes('already registered') || 
+          error.message.includes('already in use') ||
+          error.message.includes('User already registered')) {
+        return { 
+          user: null, 
+          error: true, 
+          message: "Este email ya está registrado. Por favor inicia sesión.",
+          emailAlreadyExists: true,  // Esta bandera es crucial
+          debug: { error }
+        };
+      }
+      
+      // Otros tipos de errores
       return { 
         user: null, 
         error: true,
         message: `Error al registrar: ${error.message}` 
       };
     }
-
     
-    if (!data) {
-      return {
-        user: null,
-        error: true,
-        message: "No se recibieron datos del servidor"
+    // PASO 4: Verificar si las identidades existen en la respuesta
+    if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+      return { 
+        user: null, 
+        error: true, 
+        message: "Este email ya está registrado. Por favor inicia sesión.",
+        emailAlreadyExists: true,  // Esta bandera es crucial
+        debug: { data }
       };
     }
-
     
-    const needsEmailConfirmation = !data.session;
-
+    // PASO 5: Respuesta exitosa con verificación de email si es necesario
+    const needsEmailConfirmation = data && !data.session;
+    
     return { 
-      user: data.user || null, 
+      user: data?.user || null, 
       error: null,
       needsEmailConfirmation,
       message: needsEmailConfirmation 
         ? "Por favor verifica tu correo electrónico para completar el registro"
         : "Registro exitoso"
     };
-  } catch (error) {
-    console.error("Error en registro:", error);
+    
+  } catch (exception) {
+    console.error("Error general en registro:", exception);
+    
+    // Verificación final para email ya existente
+    if (exception.message && (
+       exception.message.includes('already registered') || 
+       exception.message.includes('already in use') ||
+       exception.message.includes('User already registered')
+    )) {
+      return { 
+        user: null, 
+        error: true, 
+        message: "Este email ya está registrado. Por favor inicia sesión.",
+        emailAlreadyExists: true
+      };
+    }
     
     return { 
       user: null, 
       error: true,
-      message: `Error inesperado: ${error.message}`,
-      needsEmailConfirmation: false
+      message: exception.message || "Error desconocido durante el registro"
     };
   }
 };

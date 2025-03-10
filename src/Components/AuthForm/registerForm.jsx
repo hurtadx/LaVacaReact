@@ -83,41 +83,41 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         return;
       }
 
-      // IMPORTANTE: Verificar primero si el email ya existe
-      // Esta debe ser la primera condición que verificamos
+      
+      
       if (result.emailAlreadyExists === true) {
         console.log("🚫 Email ya registrado detectado");
         showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
-        // Cambiar automáticamente al form de login después de un retraso breve
+        
         setTimeout(() => onSwitchToLogin(), 1500);
-        return; // Importante: detener el flujo aquí
+        return; 
       }
       
-      // Verificación adicional para email existente basada en información de debug
+      
       if (result.debug?.checkData?.user?.identities?.length === 0) {
         console.log("⚠️ Detección secundaria: Email ya registrado (identities vacío)");
         showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
         setTimeout(() => onSwitchToLogin(), 1500);
-        return; // Importante: detener el flujo aquí
+        return; 
       }
       
-      // Extraer los valores después de haber verificado el email existente
+      
       const { user, error, message, needsEmailConfirmation } = result;
       
-      // Manejar otros errores
+      
       if (error) {
         showNotification(message || "Error en el registro", "error", 8000);
-        return; // Detener el flujo aquí
+        return; 
       }
       
-      // Solo mostrar mensaje de verificación de email si realmente se necesita
-      // y si llegamos a este punto (significa que el email no existe)
+      
+      
       if (needsEmailConfirmation) {
-        // Mostrar una notificación persistente que requiera cerrarla manualmente
+        
         showNotification(
           "Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.",
           "info",
-          0 // Duración 0 = persistente
+          0 
         );
         onSwitchToLogin(); 
       } else {
@@ -127,7 +127,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     } catch (error) {
       console.error("Error en registro:", error);
       
-      // Verificar si el error es por email ya existente
+      
       if (error.message && (
         error.message.includes('already registered') || 
         error.message.includes('already in use') ||

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { getUserVacas, checkTablesExist } from "../../../Supabase/Services/vacaService";
@@ -15,9 +15,30 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
   const [internalLoading, setInternalLoading] = useState(false);
   const { showNotification } = useNotification();
   
+  const mounted = useRef(true);
   
-  const setLoading = setExternalLoading || setInternalLoading;
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  
   const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+  const setLoading = (state) => {
+    if (mounted.current) {
+      if (setExternalLoading) {
+        setExternalLoading(state);
+      } else {
+        setInternalLoading(state);
+      }
+    }
+  };
+  
+  const safeSetState = (setter, value) => {
+    if (mounted.current) {
+      setter(value);
+    }
+  };
 
   useEffect(() => {
     const verifyTablesAndLoadVacas = async () => {
@@ -26,39 +47,52 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
         if ((!vacas || vacas.length === 0) && !selectedVacaId) {
           setLoading(true);
           const tables = await checkTablesExist();
+          
+          if (!mounted.current) return;
+          
           console.log("Estado de las tablas:", tables);
           
           if (!tables.vacas || !tables.participants || !tables.transactions) {
-            showNotification("La base de datos no está correctamente configurada", "error");
-            setLoading(false);
+            if (mounted.current) {
+              showNotification("La base de datos no está correctamente configurada", "error");
+              setLoading(false);
+            }
             return;
           }
           
-          setTablesVerified(true);
+          safeSetState(setTablesVerified, true);
           await loadUserVacas();
         } else {
           
-          setTablesVerified(true);
+          safeSetState(setTablesVerified, true);
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error en la inicialización:", error);
-        showNotification("Error al inicializar la aplicación", "error");
-        setLoading(false);
+        if (mounted.current) {
+          console.error("Error en la inicialización:", error);
+          showNotification("Error al inicializar la aplicación", "error");
+          setLoading(false);
+        }
       }
     };
     
     verifyTablesAndLoadVacas();
+    
+    return () => {
+      mounted.current = false;
+    };
   }, []);
 
   
   useEffect(() => {
-    if (selectedVacaId && vacas && vacas.length > 0) {
+    if (selectedVacaId && vacas && vacas.length > 0 && mounted.current) {
       const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
       if (selectedVaca) {
         console.log("Vaca seleccionada desde sidebar:", selectedVaca);
-        setSelectedVaca(selectedVaca);
-        setSelectedVacaId(null); 
+        safeSetState(setSelectedVaca, selectedVaca);
+        if (setSelectedVacaId && mounted.current) {
+          setSelectedVacaId(null); 
+        }
       }
     }
   }, [selectedVacaId, vacas]);

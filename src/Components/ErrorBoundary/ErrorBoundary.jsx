@@ -17,7 +17,7 @@ class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     console.error("Error en renderizado:", error, errorInfo);
     
-    // Usar el contexto para mostrar la notificación
+    
     if (this.context && this.context.captureError) {
       this.context.captureError(error);
     }
@@ -25,7 +25,7 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      // Render de fallback
+      
       return (
         <div className="error-container">
           <h2>Algo salió mal</h2>
