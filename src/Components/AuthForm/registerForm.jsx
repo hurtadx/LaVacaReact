@@ -84,36 +84,25 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       }
 
       
-      
       if (result.emailAlreadyExists === true) {
         console.log("🚫 Email ya registrado detectado");
         showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
-        
         setTimeout(() => onSwitchToLogin(), 1500);
-        return; 
-      }
-      
-      
-      if (result.debug?.checkData?.user?.identities?.length === 0) {
-        console.log("⚠️ Detección secundaria: Email ya registrado (identities vacío)");
-        showNotification("Este email ya está registrado. Por favor inicia sesión.", "info", 8000);
-        setTimeout(() => onSwitchToLogin(), 1500);
+        setLoading(false); 
         return; 
       }
       
       
       const { user, error, message, needsEmailConfirmation } = result;
       
-      
       if (error) {
         showNotification(message || "Error en el registro", "error", 8000);
-        return; 
+        setLoading(false);
+        return;
       }
       
       
-      
       if (needsEmailConfirmation) {
-        
         showNotification(
           "Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.",
           "info",
@@ -126,7 +115,6 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       }
     } catch (error) {
       console.error("Error en registro:", error);
-      
       
       if (error.message && (
         error.message.includes('already registered') || 

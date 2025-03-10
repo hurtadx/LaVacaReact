@@ -4,24 +4,36 @@ export const registerUser = async (email, password, username) => {
   try {
     console.log("Intentando registrar:", { email, username });
     
+    if (!email || !password || !username) {
+      return {
+        user: null,
+        error: true,
+        message: "Todos los campos son obligatorios"
+      };
+    }
+    
+    
     
     try {
+      const { data: otpData, error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false 
+        }
+      });
       
-      const { data: checkData, error: checkError } = await supabase.auth.admin.getUserByEmail(email);
       
-      
-      if (checkData && !checkError) {
-        console.log("✅ Email ya registrado (verificación directa):", email);
+      if (!otpError) {
         return {
           user: null,
           error: true,
           message: "Este email ya está registrado. Por favor inicia sesión.",
-          emailAlreadyExists: true,
-          debug: { checkData, checkError }
+          emailAlreadyExists: true
         };
       }
-    } catch (checkException) {
-      console.error("❌ Error en verificación inicial:", checkException);
+    } catch (e) {
+      
+      console.log("Error en verificación OTP:", e);
     }
     
     
@@ -40,19 +52,18 @@ export const registerUser = async (email, password, username) => {
     
     
     if (error) {
-      
-      if (error.message.includes('already registered') || 
+      if (error.message && (
+          error.message.includes('already registered') || 
           error.message.includes('already in use') ||
-          error.message.includes('User already registered')) {
+          error.message.includes('User already registered')
+      )) {
         return { 
           user: null, 
           error: true, 
           message: "Este email ya está registrado. Por favor inicia sesión.",
-          emailAlreadyExists: true,  
-          debug: { error }
+          emailAlreadyExists: true
         };
       }
-      
       
       return { 
         user: null, 
@@ -62,13 +73,14 @@ export const registerUser = async (email, password, username) => {
     }
     
     
+    
     if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+      console.log("⚠️ Email ya existente detectado por identities vacío");
       return { 
         user: null, 
         error: true, 
         message: "Este email ya está registrado. Por favor inicia sesión.",
-        emailAlreadyExists: true,  
-        debug: { data }
+        emailAlreadyExists: true
       };
     }
     
@@ -86,7 +98,6 @@ export const registerUser = async (email, password, username) => {
     
   } catch (exception) {
     console.error("Error general en registro:", exception);
-    
     
     if (exception.message && (
        exception.message.includes('already registered') || 
