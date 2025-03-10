@@ -4,12 +4,12 @@ export const registerUser = async (email, password, username) => {
   try {
     console.log("Intentando registrar:", { email, username });
     
-    // PASO 1: Verificación previa de email existente (método simplificado)
+    
     try {
-      // Usamos un método más simple y directo para verificar si el email existe
+      
       const { data: checkData, error: checkError } = await supabase.auth.admin.getUserByEmail(email);
       
-      // Si tenemos datos de usuario y no hay error, el email ya existe
+      
       if (checkData && !checkError) {
         console.log("✅ Email ya registrado (verificación directa):", email);
         return {
@@ -24,7 +24,7 @@ export const registerUser = async (email, password, username) => {
       console.error("❌ Error en verificación inicial:", checkException);
     }
     
-    // PASO 2: Intento real de registro
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -38,9 +38,9 @@ export const registerUser = async (email, password, username) => {
     
     console.log("Resultado registro:", { data, error });
     
-    // PASO 3: Verificar errores específicos después del registro
+    
     if (error) {
-      // Si el error es sobre email ya existente
+      
       if (error.message.includes('already registered') || 
           error.message.includes('already in use') ||
           error.message.includes('User already registered')) {
@@ -48,12 +48,12 @@ export const registerUser = async (email, password, username) => {
           user: null, 
           error: true, 
           message: "Este email ya está registrado. Por favor inicia sesión.",
-          emailAlreadyExists: true,  // Esta bandera es crucial
+          emailAlreadyExists: true,  
           debug: { error }
         };
       }
       
-      // Otros tipos de errores
+      
       return { 
         user: null, 
         error: true,
@@ -61,18 +61,18 @@ export const registerUser = async (email, password, username) => {
       };
     }
     
-    // PASO 4: Verificar si las identidades existen en la respuesta
+    
     if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
       return { 
         user: null, 
         error: true, 
         message: "Este email ya está registrado. Por favor inicia sesión.",
-        emailAlreadyExists: true,  // Esta bandera es crucial
+        emailAlreadyExists: true,  
         debug: { data }
       };
     }
     
-    // PASO 5: Respuesta exitosa con verificación de email si es necesario
+    
     const needsEmailConfirmation = data && !data.session;
     
     return { 
@@ -87,7 +87,7 @@ export const registerUser = async (email, password, username) => {
   } catch (exception) {
     console.error("Error general en registro:", exception);
     
-    // Verificación final para email ya existente
+    
     if (exception.message && (
        exception.message.includes('already registered') || 
        exception.message.includes('already in use') ||
