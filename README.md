@@ -8,31 +8,37 @@ LaVaca es una plataforma que facilita el ahorro colaborativo entre grupos de per
 - Visualizar el progreso hacia el objetivo
 - Gestionar fechas límite de pago
 - Mantener a todos los participantes motivados y comprometidos
+- Invitar amigos a unirse a tus "vacas" de ahorro
 
 ## 🚀 Estado del Proyecto
 En desarrollo activo. Características implementadas:
-- Sistema de autenticación (Login/Registro)
-- Interfaz visual del dashboard
+- Sistema de autenticación completo (Login/Registro/Verificación)
+- Dashboard interactivo con visualización de vacas
+- Creación y gestión de vacas (metas de ahorro grupales)
 
 ## 🔄 En Progreso
-- Funcionalidad completa del dashboard
-- Creación de grupos de ahorro
-- Seguimiento de aportes individuales
+- Registro de transacciones y aportes
+- Sistema de participantes por vaca
+- Sistema de invitaciones a nuevos participantes
+- Búsqueda de usuarios para invitar
+- Gestión de invitaciones (aceptar/rechazar)
+- Sistema de notificaciones para invitaciones pendientes
 
 ## 🛠 Tecnologías
-- React
-- Vite
-- Firebase (Autenticación)
+- React + Vite
+- Supabase (Base de datos y Autenticación)
+- CSS para estilos personalizados
 - Context API para manejo de estado
-- Tailwind CSS para estilos
-- [Otras tecnologías por definir]
+- React Router para navegación
+- FontAwesome para iconografía
 
 ## 📋 Próximas Características
-- Sistema de notificaciones para pagos
-- Integración con métodos de pago
-- Estadísticas y reportes personalizados
-- Exportación de datos
-- Aplicación móvil
+- Recordatorios automáticos de pago
+- Exportación de reportes de aportes
+- Visualización avanzada de estadísticas
+- Modo oscuro/claro
+- Integración con métodos de pago populares
+- Aplicación móvil (React Native)
 
 ## 🔧 Instalación
 ```bash
@@ -40,8 +46,11 @@ En desarrollo activo. Características implementadas:
 git clone [URL del repositorio]
 
 # Instalar dependencias
-cd lavaca
+cd LaVacaReact
 npm install
+
+# Configurar variables de entorno
+# Crear archivo .env.local con credenciales de Supabase
 
 # Iniciar el servidor de desarrollo
 npm run dev
@@ -50,9 +59,18 @@ npm run dev
 ## 📱 Interfaz de Usuario
 La aplicación cuenta con:
 - Página de inicio con registro/login
-- Dashboard principal con visualización de metas
-- Panel de control para administrar grupos de ahorro
-- Visualización gráfica del progreso
+- Dashboard principal con visualización de vacas activas
+- Página detallada para cada vaca
+- Formularios para crear vacas y registrar aportes
+- Sistema de navegación intuitivo
+
+## 📚 Estructura de Base de Datos
+El proyecto utiliza Supabase con las siguientes tablas principales:
+- **profiles**: Datos de los usuarios registrados
+- **vacas**: Proyectos de ahorro creados por los usuarios
+- **participants**: Relación entre usuarios y vacas
+- **transactions**: Registro de aportes económicos
+- **invitations**: Sistema de invitaciones pendientes
 
 ## 💡 ¿Por qué LaVaca?
 LaVaca surge de la necesidad de facilitar el ahorro grupal de manera organizada y transparente. Muchas veces, coordinar ahorros entre amigos puede ser complicado y poco estructurado. Esta aplicación proporciona una solución centralizada para:
