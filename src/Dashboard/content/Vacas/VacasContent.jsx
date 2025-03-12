@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { getUserVacas, checkTablesExist } from "../../../Supabase/services/vacaService";
+import { getUserVacas, checkTablesExist } from "../../../Services";
 import { supabase } from "../../../Supabase/supabaseConfig";
 import { useNotification } from "../../../Components/Notification/NotificationContext";
 import CreateVacaForm from './CreateVacaForm';

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../../Supabase/supabaseConfig';
 import './VacaDetails.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -8,25 +10,70 @@ import {
   faMoneyBillWave,
   faPlus,
   faPiggyBank,
-  faCow 
+  faCow,
+  faUserPlus
 } from '@fortawesome/free-solid-svg-icons';
+import InviteUsers from './Invitations/InviteUsers';
+import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import { 
+  getVacaDetails, 
+  addVacaTransaction,
+  inviteParticipants
+} from '../../../Services/vacaService.jsx';
 
-const VacaDetails = ({ vaca, onBackClick }) => {
-  
-  if (!vaca || !vaca.id) {
-    console.error("Error: VacaDetails recibió un objeto vaca inválido", vaca);
-    return (
-      <div className="error-state">
-        <h2>Error al cargar los detalles</h2>
-        <button className="back-button" onClick={onBackClick}>Volver</button>
-      </div>
-    );
-  }
-  
+// Actualizar la definición del componente para aceptar user como prop
+const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
+  const [vaca, setVaca] = useState(initialVaca || {});
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDescription, setPaymentDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [user, setUser] = useState(passedUser || null);
+  const { showNotification } = useContext(NotificationContext);
+
+  // Si no tenemos usuario pasado como prop, cargarlo desde auth
+  useEffect(() => {
+    if (!passedUser) {
+      const loadUser = async () => {
+        try {
+          const { data } = await supabase.auth.getUser();
+          if (data?.user) {
+            setUser(data.user);
+          }
+        } catch (error) {
+          console.error("Error al cargar usuario:", error);
+        }
+      };
+      
+      loadUser();
+    }
+  }, [passedUser]);
+
+  // Si no tenemos vaca inicial, cargarla usando el ID de match.params
+  useEffect(() => {
+    if (!initialVaca && match?.params?.id) {
+      const loadVacaDetails = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await getVacaDetails(match.params.id);
+          if (error) {
+            throw new Error(error);
+          }
+          if (data) {
+            setVaca(data);
+          }
+        } catch (error) {
+          console.error("Error al cargar detalles:", error);
+          showNotification("Error al cargar los detalles de la vaca", "error");
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadVacaDetails();
+    }
+  }, [match?.params?.id, initialVaca, showNotification]);
 
   const progressPercent = vaca.current 
     ? Math.min((vaca.current / vaca.goal) * 100, 100) 
@@ -132,6 +179,18 @@ const VacaDetails = ({ vaca, onBackClick }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Manejador para cuando se completa una invitación
+  const handleInvitationComplete = (data) => {
+    const count = data?.sent || 0;
+    showNotification(
+      count === 1 
+        ? 'Invitación enviada con éxito' 
+        : `${count} invitaciones enviadas con éxito`,
+      'success'
+    );
+    setShowInviteForm(false);
   };
 
   return (
@@ -325,6 +384,38 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             )}
           </div>
         </div>
+
+        {/* Sección de acciones */}
+        <div className="vaca-actions">
+          <button 
+            className="primary-button add-payment-btn" 
+            onClick={() => setShowAddPayment(!showAddPayment)}
+          >
+            {showAddPayment ? 'Cancelar' : 'Añadir pago'}
+          </button>
+          
+          {/* Botón para invitar usuarios - solo visible para el creador */}
+          {vaca && user && vaca.user_id === user.id && (
+            <button 
+              className="secondary-button invite-btn"
+              onClick={() => setShowInviteForm(!showInviteForm)}
+            >
+              <FontAwesomeIcon icon={faUserPlus} />
+              {showInviteForm ? 'Cancelar' : 'Invitar usuarios'}
+            </button>
+          )}
+        </div>
+
+        {/* Formulario de invitación */}
+        {showInviteForm && vaca && user && (
+          <div className="invite-form-container">
+            <InviteUsers 
+              vacaId={vaca.id}
+              userId={user.id}
+              onInvitationComplete={handleInvitationComplete}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
