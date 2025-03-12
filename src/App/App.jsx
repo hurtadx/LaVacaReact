@@ -7,7 +7,7 @@ import Footer from '../Layout/Footer/Footer';
 import AnimatedCarrousel from '../Components/AnimatedCarrousel/AnimatedCarrousel';
 import Dashboard from '../Dashboard/Dashboard';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
-import { checkTablesExist } from "../Supabase/services/vacaService"
+import { checkTablesExist } from "../Services/vacaService.jsx";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
 
 const ErrorHandler = () => {
