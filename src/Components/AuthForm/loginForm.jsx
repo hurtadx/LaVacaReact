@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../Supabase/services/Auth";
+import { loginUser } from "../../Services/index";
 import { validateEmail } from "../common/FormValidator";
 import "./AuthForm.css";
 
