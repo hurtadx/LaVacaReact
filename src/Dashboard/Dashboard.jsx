@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, checkSupabaseConnection } from '../Supabase/supabaseConfig';
-import { getUserVacas, getInvitations } from '../Services';
+import { getUserVacas, getInvitations } from '../Services/vacaService.jsx';
 import { getCurrentUser } from '../Services/userService'; 
 import { logoutUser } from '../Services/authService';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../Components/Notification/NotificationContext';
+import { supabase, checkSupabaseConnection } from '../Supabase/supabaseConfig';
+// Añadir esta importación que falta
+import VacaDetails from './content/Vacas/VacaDetails';
 
 import './Dashboard.css';
 import Sidebar from "./assets/components/SidebarComponent";
@@ -164,20 +166,37 @@ const Dashboard = () => {
     switch(activeItem) {
       case 'Inicio':
         return <HomeContent 
-                onVacasButtonClick={() => setActiveItem('Vacas')} 
+                onVacasButtonClick={() => {
+                  setActiveItem('Vacas');
+                  setSelectedVacaId(null); // Clear any selected vaca to show the list
+                }} 
                 totalVacas={vacas.length}
                 loading={loading}
                />;
       case 'Vacas':
+        // Only show VacaDetails if a specific vaca ID is selected
         if (selectedVacaId) {
-          return <VacaDetails match={{ params: { id: selectedVacaId } }} user={user} />;
+          const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
+          return <VacaDetails 
+                  vaca={selectedVaca} 
+                  user={user} 
+                  onBackClick={() => setSelectedVacaId(null)} 
+                 />;
         }
-        return <VacasContent selectedVacaId={selectedVacaId} setSelectedVacaId={setSelectedVacaId} />;
+        // Otherwise show the vacas list
+        return <VacasContent 
+                vacas={vacas}
+                setVacas={setVacas}
+                onVacaSelect={(vaca) => setSelectedVacaId(vaca.id)}
+               />;
       case 'Ajustes':
-        return <SettingsContent />;
+        return <SettingsContent user={user} />;
       default:
         return <HomeContent 
-                onVacasButtonClick={() => setActiveItem('Vacas')} 
+                onVacasButtonClick={() => {
+                  setActiveItem('Vacas');
+                  setSelectedVacaId(null);
+                }} 
                 totalVacas={vacas.length}
                 loading={loading}
                />;
@@ -217,9 +236,14 @@ const Dashboard = () => {
           activeItem={activeItem} 
           onItemClick={(item, vacaId = null) => {
             setActiveItem(item);
-            if (item === 'Vacas' && vacaId) {
-              if (selectedVacaId !== vacaId) {
+            if (item === 'Vacas') {
+              // If a specific vaca is clicked from sidebar
+              if (vacaId) {
                 setSelectedVacaId(vacaId);
+              } 
+              // If just the main "Vacas" menu item is clicked
+              else {
+                setSelectedVacaId(null);
               }
             }
           }}
