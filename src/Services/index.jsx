@@ -1,17 +1,32 @@
 
-export { 
-  loginUser, 
-  registerUser, 
-  logoutUser,
-  resendVerificationEmail
-} from './authService';
+
+
+export {
+  inviteParticipants,
+  getInvitations,
+  respondToInvitation,
+  checkTablesExist,
+  createVaca,
+  getUserVacas,
+  getVacaDetails,
+  addVacaTransaction
+} from './vacaService.jsx';
+
 
 export {
   getCurrentUser,
+  searchUsers,
   updateUserProfile,
   onAuthStateChange
-} from './userService';
+} from './userService.jsx';
+
 
 export {
-  getFriendlyErrorMessage
-} from './errorHandler';
+  enrichUserData,
+  loginUser,
+  registerUser,
+  logoutUser,
+  resendVerificationEmail,
+  syncUserProfile
+} from './authService.jsx';
+
