@@ -193,6 +193,14 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     setShowInviteForm(false);
   };
 
+  if (loading) {
+    return <div className="loading-spinner">Cargando detalles...</div>;
+  }
+  
+  if (!vaca) {
+    return <div className="error-message">No se pudieron cargar los detalles</div>;
+  }
+
   return (
     <div className="vaca-details-container">
       <div className="vaca-details-header">
@@ -217,12 +225,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             <div className="vaca-details-stats">
               <div className="stat">
                 <FontAwesomeIcon icon={faMoneyBillWave} className="stat-icon" />
-                <span>Meta: ${vaca.goal.toLocaleString()}</span>
+                <span>Meta: ${vaca?.goal !== undefined ? vaca.goal.toLocaleString() : '0'}</span>
               </div>
               
               <div className="stat">
                 <FontAwesomeIcon icon={faCalendarAlt} className="stat-icon" />
-                <span>Fecha límite: {formattedDeadline}</span>
+                <span>Fecha límite: {vaca?.deadline ? new Date(vaca.deadline).toLocaleString() : 'Sin fecha límite'}</span>
               </div>
               
               {daysLeft !== null && (
@@ -262,8 +270,8 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             
             <div className="vaca-amount-info">
               <p>Ahorrado:</p>
-              <h3>${vaca.current ? vaca.current.toLocaleString() : '0'}</h3>
-              <p>de ${vaca.goal.toLocaleString()}</p>
+              <h3>${vaca?.current !== undefined ? vaca.current.toLocaleString() : '0'}</h3>
+              <p>de ${vaca?.goal?.toLocaleString() || '0'}</p>
             </div>
           </div>
         </div>
@@ -364,10 +372,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                         <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
                       </div>
                       <div className="transaction-info">
-                        <p className="transaction-amount">${transaction.amount.toLocaleString()}</p>
+                        <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
                         <p className="transaction-description">{transaction.description}</p>
                         <div className="transaction-details">
-                          <p className="transaction-date">{new Date(transaction.date).toLocaleDateString()}</p>
+                          <p className="transaction-date">
+                            {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
+                          </p>
                           {participant && (
                             <p className="transaction-participant">por {participant.name}</p>
                           )}

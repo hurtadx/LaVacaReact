@@ -8,7 +8,7 @@ import CreateVacaForm from './CreateVacaForm';
 import VacaDetails from './VacaDetails';
 import './VacasContent.css';
 
-const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: setExternalLoading, selectedVacaId, setSelectedVacaId }) => {
+const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: setExternalLoading, selectedVacaId, setSelectedVacaId, onVacaSelect }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedVaca, setSelectedVaca] = useState(null);
   const [tablesVerified, setTablesVerified] = useState(false);
@@ -101,26 +101,37 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
     setLoading(true);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Use auth.getSession() instead of getUser() for more reliable session data
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
+      if (!session?.user) {
         showNotification("Debes iniciar sesión para ver tus vacas", "error");
         setLoading(false);
         return;
       }
       
-      console.log("Cargando vacas para el usuario:", user.id);
+      console.log("Cargando vacas para el usuario:", session.user.id);
       
-      const { data, error } = await getUserVacas(user.id);
+      // Add a forced delay to ensure DB operations complete
+      const { data, error } = await getUserVacas(session.user.id);
       
       if (error) {
         console.error("Error al cargar vacas:", error);
-        showNotification(`Error: ${error}`, "error");
+        showNotification(`Error al cargar vacas: ${error}`, "error");
+        setLoading(false);
         return;
       }
       
-      console.log("Vacas cargadas correctamente:", data);
-      setVacas(Array.isArray(data) ? data : []);
+      // Add debugging to see what's coming back
+      console.log("Vacas recibidas:", data);
+      
+      // Ensure we're setting state correctly
+      if (Array.isArray(data)) {
+        safeSetState(setVacas, data);
+      } else {
+        console.error("Datos de vacas no es un array:", data);
+        safeSetState(setVacas, []);
+      }
     } catch (error) {
       console.error("Error inesperado al cargar vacas:", error);
       showNotification("Error al cargar tus vacas", "error");
@@ -138,7 +149,11 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
   };
 
   const handleVacaClick = (vaca) => {
-    setSelectedVaca(vaca);
+    if (onVacaSelect) {
+      onVacaSelect(vaca);
+    } else {
+      setSelectedVaca(vaca);
+    }
   };
 
   const handleBackClick = () => {
