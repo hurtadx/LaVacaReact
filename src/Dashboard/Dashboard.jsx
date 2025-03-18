@@ -6,7 +6,7 @@ import { logoutUser } from '../Services/authService';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../Components/Notification/NotificationContext';
 import { supabase, checkSupabaseConnection } from '../Supabase/supabaseConfig';
-// Añadir esta importación que falta
+
 import VacaDetails from './content/Vacas/VacaDetails';
 
 import './Dashboard.css';
@@ -44,7 +44,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setLoading(true);
       try {
         const { data: currentUser, error } = await getCurrentUser();
         
@@ -56,16 +55,13 @@ const Dashboard = () => {
         
         setUser(currentUser);
         
-        const { data: userVacas, error: vacasError } = await getUserVacas(currentUser.id);
         
-        if (vacasError) {
-          console.error('Error al obtener vacas:', vacasError);
-        } else {
+        const { data: userVacas, error: vacasError } = await getUserVacas(currentUser.id);
+        if (!vacasError) {
           setVacas(userVacas || []);
         }
         
         await loadPendingInvitations(currentUser.id);
-        
       } catch (error) {
         console.error('Error en Dashboard:', error);
         navigate('/login');
@@ -75,28 +71,34 @@ const Dashboard = () => {
     };
 
     fetchUserData();
+  }, [navigate]); 
+
+  
+  useEffect(() => {
+    if (!user?.id) return; 
+    
+    console.log("Setting up subscription for user:", user.id);
     
     const invitationsSubscription = supabase
-      .channel('invitations-channel')
+      .channel(`invitations-channel-${user.id}`)
       .on('postgres_changes', 
         { 
           event: '*', 
           schema: 'public', 
           table: 'invitations',
-          filter: `user_id=eq.${supabase.auth.getUser()?.data?.user?.id}`
+          filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          if (user?.id) {
-            loadPendingInvitations(user.id);
-          }
+        () => {
+          loadPendingInvitations(user.id);
         }
       )
       .subscribe();
     
     return () => {
+      console.log("Cleaning up subscription for user:", user.id);
       invitationsSubscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [user?.id]); 
 
   const loadPendingInvitations = async (userId) => {
     try {
@@ -120,7 +122,7 @@ const Dashboard = () => {
 
   const handleInvitationResponse = async (invitationId, response, vacaId) => {
     try {
-      // Actualizar UI optimistamente
+      
       setPendingInvitations(current => 
         current.filter(inv => inv.id !== invitationId)
       );
@@ -129,16 +131,16 @@ const Dashboard = () => {
         setHasUnreadNotifications(false);
       }
       
-      // Si la respuesta es "accept", necesitamos recargar las vacas del usuario
+      
       if (response === 'accept' && user) {
-        // Esperamos un momento para que Supabase procese la invitación
+        
         setTimeout(async () => {
           const { data: userVacas } = await getUserVacas(user.id);
           if (userVacas) {
             setVacas(userVacas);
           }
           
-          // Usar el sistema de notificaciones existente
+          
           showNotification('Te has unido a una nueva vaca', 'success');
         }, 1000);
       } else if (response === 'reject') {
@@ -168,13 +170,13 @@ const Dashboard = () => {
         return <HomeContent 
                 onVacasButtonClick={() => {
                   setActiveItem('Vacas');
-                  setSelectedVacaId(null); // Clear any selected vaca to show the list
+                  setSelectedVacaId(null); 
                 }} 
                 totalVacas={vacas.length}
                 loading={loading}
                />;
       case 'Vacas':
-        // Only show VacaDetails if a specific vaca ID is selected
+        
         if (selectedVacaId) {
           const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
           return <VacaDetails 
@@ -183,7 +185,7 @@ const Dashboard = () => {
                   onBackClick={() => setSelectedVacaId(null)} 
                  />;
         }
-        // Otherwise show the vacas list
+        
         return <VacasContent 
                 vacas={vacas}
                 setVacas={setVacas}
@@ -237,11 +239,11 @@ const Dashboard = () => {
           onItemClick={(item, vacaId = null) => {
             setActiveItem(item);
             if (item === 'Vacas') {
-              // If a specific vaca is clicked from sidebar
+              
               if (vacaId) {
                 setSelectedVacaId(vacaId);
               } 
-              // If just the main "Vacas" menu item is clicked
+              
               else {
                 setSelectedVacaId(null);
               }
