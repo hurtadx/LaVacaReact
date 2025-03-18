@@ -34,21 +34,21 @@ export const searchUsers = async (searchTerm) => {
       return { data: [], error: 'El término de búsqueda debe tener al menos 3 caracteres' };
     }
 
-   
+    
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, email, avatar_url')
+      .select('id, username, email') 
       .or(`username.ilike.%${searchTerm}%, email.ilike.%${searchTerm}%`)
       .limit(10);
     
     if (error) throw error;
     
-  
+    
     const safeUserData = data.map(user => ({
       id: user.id,
-      username: user.username,
+      username: user.username || user.email.split('@')[0],
       email: user.email,
-      avatarUrl: user.avatar_url
+      avatarUrl: user.avatar_url || null 
     }));
     
     return { data: safeUserData, error: null };
