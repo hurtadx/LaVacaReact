@@ -279,7 +279,6 @@ export const syncUserProfile = async (userData) => {
   try {
     const { id, email, username, avatar_url } = userData;
     
-    
     const { data, error } = await supabase
       .from('profiles')
       .upsert(
@@ -295,13 +294,7 @@ export const syncUserProfile = async (userData) => {
           returning: 'minimal' 
         }
       );
-    
-    if (error) {
-      console.error('Error al sincronizar perfil:', error);
-      return { success: false, error };
-    }
-    
-    return { success: true, data };
+    // ...
   } catch (error) {
     console.error('Error al sincronizar perfil:', error);
     return { success: false, error };
