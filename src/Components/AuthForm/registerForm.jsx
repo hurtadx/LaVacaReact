@@ -183,7 +183,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           />
         </div>
         
-        <button type="submit" disabled={loading}>
+        <button 
+          type="submit" 
+          className="auth-button"
+          disabled={loading}
+        >
           {loading ? "Procesando..." : "Registrarse"}
         </button>
       </form>
