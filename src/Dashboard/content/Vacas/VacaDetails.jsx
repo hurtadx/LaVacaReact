@@ -21,7 +21,7 @@ import {
   inviteParticipants
 } from '../../../Services/vacaService.jsx';
 
-// Actualizar la definición del componente para aceptar user como prop
+
 const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
   const [vaca, setVaca] = useState(initialVaca || {});
   const [showAddPayment, setShowAddPayment] = useState(false);
@@ -31,8 +31,9 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [user, setUser] = useState(passedUser || null);
   const { showNotification } = useContext(NotificationContext);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // Si no tenemos usuario pasado como prop, cargarlo desde auth
+  
   useEffect(() => {
     if (!passedUser) {
       const loadUser = async () => {
@@ -50,7 +51,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   }, [passedUser]);
 
-  // Si no tenemos vaca inicial, cargarla usando el ID de match.params
+  
   useEffect(() => {
     if (!initialVaca && match?.params?.id) {
       const loadVacaDetails = async () => {
@@ -181,7 +182,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
-  // Manejador para cuando se completa una invitación
+  
   const handleInvitationComplete = (data) => {
     const count = data?.sent || 0;
     showNotification(
@@ -396,35 +397,29 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         </div>
 
         {/* Sección de acciones */}
-        <div className="vaca-actions">
-          <button 
-            className="primary-button add-payment-btn" 
-            onClick={() => setShowAddPayment(!showAddPayment)}
-          >
-            {showAddPayment ? 'Cancelar' : 'Añadir pago'}
-          </button>
-          
+        <div className="vaca-actions">   
           {/* Botón para invitar usuarios - solo visible para el creador */}
           {vaca && user && vaca.user_id === user.id && (
             <button 
               className="secondary-button invite-btn"
-              onClick={() => setShowInviteForm(!showInviteForm)}
+              onClick={() => setShowInviteModal(true)} 
             >
-              <FontAwesomeIcon icon={faUserPlus} />
-              {showInviteForm ? 'Cancelar' : 'Invitar usuarios'}
+              <FontAwesomeIcon icon={faUserPlus} /> Invitar usuarios
             </button>
           )}
         </div>
 
-        {/* Formulario de invitación */}
-        {showInviteForm && vaca && user && (
-          <div className="invite-form-container">
-            <InviteUsers 
-              vacaId={vaca.id}
-              userId={user.id}
-              onInvitationComplete={handleInvitationComplete}
-            />
-          </div>
+        {/* Modal de invitaciones */}
+        {showInviteModal && (
+          <InviteUsers 
+            vacaId={vaca.id}
+            userId={user.id}
+            onInvitationComplete={(data) => {
+              handleInvitationComplete(data);
+              setShowInviteModal(false); 
+            }}
+            onClose={() => setShowInviteModal(false)}
+          />
         )}
       </div>
     </div>
