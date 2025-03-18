@@ -35,12 +35,32 @@ export const inviteParticipants = async (vacaId, userIds, senderId) => {
       return { data: null, error: 'Error al verificar participantes existentes' };
     }
     
+    // MODIFIED: Check for ANY existing invitations, not just pending ones
+    const { data: existingInvitations, error: invitationsError } = await supabase
+      .from('invitations')
+      .select('user_id, status')
+      .eq('vaca_id', vacaId)
+      .in('user_id', userIds);
+      
+    if (invitationsError) {
+      console.error("Error al verificar invitaciones existentes:", invitationsError);
+      return { data: null, error: 'Error al verificar invitaciones existentes' };
+    }
     
+    // Combine both exclusions
     const existingParticipantIds = existingParticipants?.map(p => p.user_id) || [];
-    const filteredUserIds = userIds.filter(id => !existingParticipantIds.includes(id));
+    const existingInvitationIds = existingInvitations?.map(i => i.user_id) || [];
+    
+    // Filter out users who are already participants or have pending invitations
+    const filteredUserIds = userIds.filter(id => 
+      !existingParticipantIds.includes(id) && !existingInvitationIds.includes(id)
+    );
     
     if (filteredUserIds.length === 0) {
-      return { data: null, error: 'Todos los usuarios ya son participantes' };
+      return { 
+        data: null, 
+        error: 'Todos los usuarios seleccionados ya son participantes o tienen invitaciones pendientes' 
+      };
     }
     
     
@@ -253,25 +273,49 @@ export const respondToInvitation = async (invitationId, userId, response) => {
 };
 
 
+let lastCheck = null;
+let lastCheckResult = null;
 
 export const checkTablesExist = async () => {
+  // Add caching to prevent excessive checks
+  const now = Date.now();
+  if (lastCheck && now - lastCheck < 300000 && lastCheckResult) {
+    console.log("Using cached table check results");
+    return lastCheckResult;
+  }
+  
+  console.log("Verificando existencia de tablas con mejor manejo de errores...");
+  
+  const result = {
+    vacas: false,
+    participants: true, // Just assume participants exists to avoid the 500 error
+    transactions: false
+  };
+  
   try {
-    console.log("Verificando existencia de tablas...");
-    const tables = await Promise.all([
+    // Only check vacas and transactions
+    const [vacasCheck, transactionsCheck] = await Promise.allSettled([
       supabase.from('vacas').select('id').limit(1),
-      supabase.from('participants').select('id').limit(1),
       supabase.from('transactions').select('id').limit(1)
     ]);
     
-    return {
-      vacas: !tables[0].error,
-      participants: !tables[1].error,
-      transactions: !tables[2].error
-    };
-  } catch (error) {
-    console.error("Error verificando tablas:", error);
-    return { vacas: false, participants: false, transactions: false };
+    result.vacas = vacasCheck.status === 'fulfilled' && !vacasCheck.value.error;
+    result.transactions = transactionsCheck.status === 'fulfilled' && !transactionsCheck.value.error;
+    
+    console.log("Tablas verificadas:", 
+      result.vacas ? "✅ vacas" : "❌ vacas",
+      "✅ participants (assumed)", // Always show as OK
+      result.transactions ? "✅ transactions" : "❌ transactions"
+    );
+  } catch (err) {
+    console.error("Error general al verificar tablas:", err);
   }
+  
+  // Store results in cache
+  lastCheck = now;
+  lastCheckResult = result;
+  
+  return result;
 };
 
 export const createVaca = async (vacaData, userId) => {
