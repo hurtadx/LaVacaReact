@@ -1,5 +1,5 @@
 # LaVaca 🐮
-Una aplicación de ahorro comunitario que permite a grupos de amigos alcanzar metas financieras juntos.
+Una aplicación de ahorro comunitario con UI mejorada que permite a grupos de amigos alcanzar metas financieras juntos.
 
 ## 🎯 Descripción
 LaVaca es una plataforma que facilita el ahorro colaborativo entre grupos de personas. Ya sea que estés planeando un viaje a la playa, una fiesta de cumpleaños o cualquier meta financiera compartida, LaVaca te ayuda a:
@@ -13,6 +13,9 @@ LaVaca es una plataforma que facilita el ahorro colaborativo entre grupos de per
 ## 🚀 Estado del Proyecto
 En desarrollo activo. Características implementadas:
 - Sistema de autenticación completo (Login/Registro/Verificación)
+- Interfaz de usuario mejorada con diseño responsivo
+- Página de autenticación con animaciones y carrusel informativo
+- Fondo SVG ondulado para mejor apariencia visual
 - Dashboard interactivo con visualización de vacas
 - Creación y gestión de vacas (metas de ahorro grupales)
 
@@ -27,7 +30,10 @@ En desarrollo activo. Características implementadas:
 ## 🛠 Tecnologías
 - React + Vite
 - Supabase (Base de datos y Autenticación)
-- CSS para estilos personalizados
+- CSS avanzado con efectos visuales y animaciones
+- Glassmorphism y efectos de diseño modernos
+- CSS Variables para gestión de temas
+- SVG para fondos e ilustraciones
 - Context API para manejo de estado
 - React Router para navegación
 - FontAwesome para iconografía
@@ -50,7 +56,7 @@ cd LaVacaReact
 npm install
 
 # Configurar variables de entorno
-# Crear archivo .env.local con credenciales de Supabase
+# Crear archivo [.env.local](http://_vscodecontentref_/0) con credenciales de Supabase
 
 # Iniciar el servidor de desarrollo
 npm run dev
@@ -58,11 +64,22 @@ npm run dev
 
 ## 📱 Interfaz de Usuario
 La aplicación cuenta con:
-- Página de inicio con registro/login
+- Página de inicio con registro/login mejorado visualmente
+- Carrusel de imágenes animadas informativas
+- Diseño completamente responsivo para móviles, tablets y escritorio
+- Transiciones y animaciones suaves para mejor experiencia de usuario
 - Dashboard principal con visualización de vacas activas
 - Página detallada para cada vaca
 - Formularios para crear vacas y registrar aportes
 - Sistema de navegación intuitivo
+
+## 🎨 Mejoras Visuales
+- Implementación de fondos SVG animados
+- Efectos de profundidad y sombras para mejor jerarquía visual
+- Paleta de colores consistente a través de variables CSS
+- Animaciones sutiles para mejorar la experiencia del usuario
+- Diseño optimizado para diferentes tamaños de pantalla
+- Transiciones suaves entre componentes
 
 ## 📚 Estructura de Base de Datos
 El proyecto utiliza Supabase con las siguientes tablas principales:
