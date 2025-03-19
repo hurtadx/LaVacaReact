@@ -10,38 +10,32 @@ const AnimatedCarrousel = () => {
     const items = [
         {
             image: goodTeam,
-            title: "Good Team",
-            description: "Our team of experts is here to help you"
+  
         },
         {
             image: savingsPiggy,
-            title: "Savings",
-            description: "Save money with our services"
+           
         },
         {
             image: savings,
-            title: "Investments",
-            description: "Invest your money with us"
+           
         }
     ];
 
+    
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentIndex((prevIndex) => 
                 prevIndex === items.length - 1 ? 0 : prevIndex + 1
             );
-        }, 5000);
+        }, 7000); 
 
         return () => clearInterval(timer);
     }, []);
 
     return (
         <div className="animated-carrousel">
-            <div className="carrousel-item">
                 <img src={items[currentIndex].image} alt={`Image of ${items[currentIndex].title}`} />
-                <h3>{items[currentIndex].title}</h3>
-                <p>{items[currentIndex].description}</p>
-            </div>
         </div>
     );
 }

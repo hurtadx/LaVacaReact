@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../../Supabase/supabaseConfig';
 import './VacaDetails.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -8,25 +10,71 @@ import {
   faMoneyBillWave,
   faPlus,
   faPiggyBank,
-  faCow 
+  faCow,
+  faUserPlus
 } from '@fortawesome/free-solid-svg-icons';
+import InviteUsers from './Invitations/InviteUsers';
+import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import { 
+  getVacaDetails, 
+  addVacaTransaction,
+  inviteParticipants
+} from '../../../Services/vacaService.jsx';
 
-const VacaDetails = ({ vaca, onBackClick }) => {
-  
-  if (!vaca || !vaca.id) {
-    console.error("Error: VacaDetails recibió un objeto vaca inválido", vaca);
-    return (
-      <div className="error-state">
-        <h2>Error al cargar los detalles</h2>
-        <button className="back-button" onClick={onBackClick}>Volver</button>
-      </div>
-    );
-  }
-  
+
+const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
+  const [vaca, setVaca] = useState(initialVaca || {});
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDescription, setPaymentDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [user, setUser] = useState(passedUser || null);
+  const { showNotification } = useContext(NotificationContext);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  
+  useEffect(() => {
+    if (!passedUser) {
+      const loadUser = async () => {
+        try {
+          const { data } = await supabase.auth.getUser();
+          if (data?.user) {
+            setUser(data.user);
+          }
+        } catch (error) {
+          console.error("Error al cargar usuario:", error);
+        }
+      };
+      
+      loadUser();
+    }
+  }, [passedUser]);
+
+  
+  useEffect(() => {
+    if (!initialVaca && match?.params?.id) {
+      const loadVacaDetails = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await getVacaDetails(match.params.id);
+          if (error) {
+            throw new Error(error);
+          }
+          if (data) {
+            setVaca(data);
+          }
+        } catch (error) {
+          console.error("Error al cargar detalles:", error);
+          showNotification("Error al cargar los detalles de la vaca", "error");
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadVacaDetails();
+    }
+  }, [match?.params?.id, initialVaca, showNotification]);
 
   const progressPercent = vaca.current 
     ? Math.min((vaca.current / vaca.goal) * 100, 100) 
@@ -134,6 +182,26 @@ const VacaDetails = ({ vaca, onBackClick }) => {
     }
   };
 
+  
+  const handleInvitationComplete = (data) => {
+    const count = data?.sent || 0;
+    showNotification(
+      count === 1 
+        ? 'Invitación enviada con éxito' 
+        : `${count} invitaciones enviadas con éxito`,
+      'success'
+    );
+    setShowInviteForm(false);
+  };
+
+  if (loading) {
+    return <div className="loading-spinner">Cargando detalles...</div>;
+  }
+  
+  if (!vaca) {
+    return <div className="error-message">No se pudieron cargar los detalles</div>;
+  }
+
   return (
     <div className="vaca-details-container">
       <div className="vaca-details-header">
@@ -158,12 +226,12 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             <div className="vaca-details-stats">
               <div className="stat">
                 <FontAwesomeIcon icon={faMoneyBillWave} className="stat-icon" />
-                <span>Meta: ${vaca.goal.toLocaleString()}</span>
+                <span>Meta: ${vaca?.goal !== undefined ? vaca.goal.toLocaleString() : '0'}</span>
               </div>
               
               <div className="stat">
                 <FontAwesomeIcon icon={faCalendarAlt} className="stat-icon" />
-                <span>Fecha límite: {formattedDeadline}</span>
+                <span>Fecha límite: {vaca?.deadline ? new Date(vaca.deadline).toLocaleString() : 'Sin fecha límite'}</span>
               </div>
               
               {daysLeft !== null && (
@@ -203,8 +271,8 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             
             <div className="vaca-amount-info">
               <p>Ahorrado:</p>
-              <h3>${vaca.current ? vaca.current.toLocaleString() : '0'}</h3>
-              <p>de ${vaca.goal.toLocaleString()}</p>
+              <h3>${vaca?.current !== undefined ? vaca.current.toLocaleString() : '0'}</h3>
+              <p>de ${vaca?.goal?.toLocaleString() || '0'}</p>
             </div>
           </div>
         </div>
@@ -305,10 +373,12 @@ const VacaDetails = ({ vaca, onBackClick }) => {
                         <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
                       </div>
                       <div className="transaction-info">
-                        <p className="transaction-amount">${transaction.amount.toLocaleString()}</p>
+                        <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
                         <p className="transaction-description">{transaction.description}</p>
                         <div className="transaction-details">
-                          <p className="transaction-date">{new Date(transaction.date).toLocaleDateString()}</p>
+                          <p className="transaction-date">
+                            {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
+                          </p>
                           {participant && (
                             <p className="transaction-participant">por {participant.name}</p>
                           )}
@@ -325,6 +395,32 @@ const VacaDetails = ({ vaca, onBackClick }) => {
             )}
           </div>
         </div>
+
+        {/* Sección de acciones */}
+        <div className="vaca-actions">   
+          {/* Botón para invitar usuarios - solo visible para el creador */}
+          {vaca && user && vaca.user_id === user.id && (
+            <button 
+              className="secondary-button invite-btn"
+              onClick={() => setShowInviteModal(true)} 
+            >
+              <FontAwesomeIcon icon={faUserPlus} /> Invitar usuarios
+            </button>
+          )}
+        </div>
+
+        {/* Modal de invitaciones */}
+        {showInviteModal && (
+          <InviteUsers 
+            vacaId={vaca.id}
+            userId={user.id}
+            onInvitationComplete={(data) => {
+              handleInvitationComplete(data);
+              setShowInviteModal(false); 
+            }}
+            onClose={() => setShowInviteModal(false)}
+          />
+        )}
       </div>
     </div>
   );

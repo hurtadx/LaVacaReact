@@ -70,6 +70,7 @@
 }
 
 
+
 .sidebar {
   width: 240px;  
   height: 100%;
@@ -504,6 +505,10 @@
   
   .transaction-amount {
     font-size: 1rem;
+  }
+
+  .notifications-panel {
+    width: 280px;
   }
 }
 

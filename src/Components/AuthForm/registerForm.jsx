@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNotification } from "../Notification/NotificationContext";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../Supabase/services/Auth";
+import { registerUser } from "../../Services/index";
 import { 
   validateEmail, 
   validatePassword, 
@@ -183,7 +183,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           />
         </div>
         
-        <button type="submit" disabled={loading}>
+        <button 
+          type="submit" 
+          className="auth-button"
+          disabled={loading}
+        >
           {loading ? "Procesando..." : "Registrarse"}
         </button>
       </form>

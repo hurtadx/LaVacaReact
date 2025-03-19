@@ -1,76 +1,52 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { getUserVacas, checkTablesExist } from "../../../Supabase/services/vacaService";
+import { getUserVacas, checkTablesExist } from "../../../Services";
 import { supabase } from "../../../Supabase/supabaseConfig";
-import { useNotification } from "../../../Components/Notification/NotificationContext";
+import { useNotification, NotificationContext } from "../../../Components/Notification/NotificationContext";
 import CreateVacaForm from './CreateVacaForm';
 import VacaDetails from './VacaDetails';
 import './VacasContent.css';
 
-const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: setExternalLoading, selectedVacaId, setSelectedVacaId }) => {
+const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading, setLoading: setExternalLoading }) => {
+  const [loading, setLoading] = useState(externalLoading || false);
+  const [tablesVerified, setTablesVerified] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const { showNotification } = useContext(NotificationContext);
+  const mounted = useRef(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedVaca, setSelectedVaca] = useState(null);
-  const [tablesVerified, setTablesVerified] = useState(false);
-  const [internalLoading, setInternalLoading] = useState(false);
-  const { showNotification } = useNotification();
-  
-  const mounted = useRef(true);
-  
-  useEffect(() => {
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-  
-  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
-  const setLoading = (state) => {
-    if (mounted.current) {
-      if (setExternalLoading) {
-        setExternalLoading(state);
-      } else {
-        setInternalLoading(state);
-      }
-    }
-  };
-  
-  const safeSetState = (setter, value) => {
-    if (mounted.current) {
-      setter(value);
-    }
-  };
+  const [selectedVacaId, setSelectedVacaId] = useState(null);
 
   useEffect(() => {
+    mounted.current = true;
+    let tablesChecked = false;
+    
     const verifyTablesAndLoadVacas = async () => {
+      if (tablesChecked || initialized) return;
+      tablesChecked = true;
+      
       try {
         
-        if ((!vacas || vacas.length === 0) && !selectedVacaId) {
-          setLoading(true);
-          const tables = await checkTablesExist();
-          
-          if (!mounted.current) return;
-          
-          console.log("Estado de las tablas:", tables);
-          
-          if (!tables.vacas || !tables.participants || !tables.transactions) {
-            if (mounted.current) {
-              showNotification("La base de datos no está correctamente configurada", "error");
-              setLoading(false);
-            }
-            return;
-          }
-          
-          safeSetState(setTablesVerified, true);
-          await loadUserVacas();
-        } else {
-          
-          safeSetState(setTablesVerified, true);
-          setLoading(false);
-        }
+        setInitialized(true);
+        await loadUserVacas();
       } catch (error) {
         if (mounted.current) {
-          console.error("Error en la inicialización:", error);
-          showNotification("Error al inicializar la aplicación", "error");
+          console.error("Error cargando vacas, verificando tablas:", error);
+          
+          try {
+            const tables = await checkTablesExist();
+            
+            if (!tables.vacas || !tables.participants || !tables.transactions) {
+              showNotification(
+                "La base de datos no está correctamente configurada. Algunas tablas pueden faltar.",
+                "error"
+              );
+            }
+          } catch (tableError) {
+            console.error("Error verificando tablas:", tableError);
+          }
+          
           setLoading(false);
         }
       }
@@ -81,9 +57,14 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, []); 
 
-  
+  const safeSetState = (setter, value) => {
+    if (mounted.current) {
+      setter(value);
+    }
+  };
+
   useEffect(() => {
     if (selectedVacaId && vacas && vacas.length > 0 && mounted.current) {
       const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
@@ -101,26 +82,37 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
     setLoading(true);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
         showNotification("Debes iniciar sesión para ver tus vacas", "error");
         setLoading(false);
         return;
       }
       
-      console.log("Cargando vacas para el usuario:", user.id);
+      console.log("Cargando vacas para el usuario:", session.user.id);
       
-      const { data, error } = await getUserVacas(user.id);
+      
+      const { data, error } = await getUserVacas(session.user.id);
       
       if (error) {
         console.error("Error al cargar vacas:", error);
-        showNotification(`Error: ${error}`, "error");
+        showNotification(`Error al cargar vacas: ${error}`, "error");
+        setLoading(false);
         return;
       }
       
-      console.log("Vacas cargadas correctamente:", data);
-      setVacas(Array.isArray(data) ? data : []);
+      
+      console.log("Vacas recibidas:", data);
+      
+      
+      if (Array.isArray(data)) {
+        safeSetState(setVacas, data);
+      } else {
+        console.error("Datos de vacas no es un array:", data);
+        safeSetState(setVacas, []);
+      }
     } catch (error) {
       console.error("Error inesperado al cargar vacas:", error);
       showNotification("Error al cargar tus vacas", "error");
@@ -138,7 +130,11 @@ const VacasContent = ({ vacas, setVacas, loading: externalLoading, setLoading: s
   };
 
   const handleVacaClick = (vaca) => {
-    setSelectedVaca(vaca);
+    if (onVacaSelect) {
+      onVacaSelect(vaca);
+    } else {
+      setSelectedVaca(vaca);
+    }
   };
 
   const handleBackClick = () => {

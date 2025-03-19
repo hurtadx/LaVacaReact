@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import AuthForm from '../Components/AuthForm/AuthForm';
@@ -7,7 +7,7 @@ import Footer from '../Layout/Footer/Footer';
 import AnimatedCarrousel from '../Components/AnimatedCarrousel/AnimatedCarrousel';
 import Dashboard from '../Dashboard/Dashboard';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
-import { checkTablesExist } from "../Supabase/services/vacaService"
+import { checkTablesExist } from "../Services/vacaService.jsx";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
 
 const ErrorHandler = () => {
@@ -24,18 +24,18 @@ const ErrorHandler = () => {
       captureError(event.reason);
     };
     
-    // Agregar listeners
+    
     window.addEventListener('error', handleGlobalError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     
-    // Limpiar al desmontar
+    
     return () => {
       window.removeEventListener('error', handleGlobalError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, [captureError]);
   
-  return null; // Este componente no renderiza nada
+  return null; 
 };
 
 const AppContent = () => {
@@ -43,44 +43,49 @@ const AppContent = () => {
   const [authType, setAuthType] = useState('login');
   const [dbChecked, setDbChecked] = useState(false);
   const { showNotification, captureError } = useNotification();
+  
+  
+  const isChecking = useRef(false);
 
   const handleTypeChange = () => setAuthType(prev => prev === 'login' ? 'register' : 'login');
 
   useEffect(() => {
-    async function verifyDatabaseSetup() {
+    const verifyDatabaseSetup = async () => {
+      
+      if (isChecking.current || dbChecked) return;
+      isChecking.current = true;
+      
       try {
-        const tablesExist = await checkTablesExist();
+        console.log("Verificando estructura de base de datos una sola vez...");
+        const tables = await checkTablesExist();
         
-        const allExist = tablesExist.vacas && 
-                        tablesExist.participants && 
-                        tablesExist.transactions;
+        const missingTables = [];
+        if (!tables.vacas) missingTables.push('vacas');
         
-        if (!allExist) {
-          showNotification(
-            "Algunas tablas no existen en la base de datos. Contacta al administrador.", 
-            "error"
-          );
-          console.error("Tablas faltantes:", 
-            Object.entries(tablesExist)
-              .filter(([_, exists]) => !exists)
-              .map(([table]) => table)
-          );
+        
+        if (!tables.transactions) missingTables.push('transactions');
+        
+        if (missingTables.length > 0) {
+          console.log("Tablas faltantes:", missingTables);
+          showNotification("La base de datos no está correctamente configurada. Contacta al administrador.", "error");
         }
-      } catch (error) {
-        captureError(error);
-      } finally {
+        
         setDbChecked(true);
+      } catch (error) {
+        console.error("Error al verificar base de datos:", error);
+        setDbChecked(true);
+      } finally {
+        isChecking.current = false;
       }
-    }
+    };
     
     verifyDatabaseSetup();
-  }, [showNotification, captureError]);
+  }, []); 
 
   return (
     <div className="App">
       {location.pathname !== '/dashboard' && <Header />}
       <main className="main-content">
-        {location.pathname !== '/dashboard' && <AnimatedCarrousel />}
         <Routes>
           <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
           <Route path="/dashboard" element={<Dashboard />} />

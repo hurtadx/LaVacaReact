@@ -1,0 +1,91 @@
+.invitations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.invitation-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.invitation-item:hover {
+  transform: translateY(-2px);
+}
+
+.invitation-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.invitation-sender {
+  font-weight: 600;
+  color: #333;
+}
+
+.invitation-date {
+  color: #777;
+  font-size: 0.8em;
+}
+
+.invitation-message {
+  margin: 5px 0;
+}
+
+.invitation-description {
+  margin: 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.invitation-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.accept-btn, .reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  flex: 1;
+  justify-content: center;
+}
+
+.accept-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.accept-btn:hover {
+  background-color: #218838;
+}
+
+.reject-btn {
+  background-color: #f1f1f1;
+  color: #666;
+}
+
+.reject-btn:hover {
+  background-color: #e1e1e1;
+}
+
+.no-invitations {
+  color: #666;
+  text-align: center;
+  padding: 10px 0;
+}
