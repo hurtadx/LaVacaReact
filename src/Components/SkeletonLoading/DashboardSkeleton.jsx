@@ -1,13 +1,14 @@
 import React from "react";
 import "./SkeletonLoading.css";
+import logo from '../../Components/Img/LogoLaVaca.png';
 
-const DashboardSkeleton = () => {
+const DashboardSkeleton = ({ message = "Cargando tu dashboard..." }) => {
   return (
     <div className="dashboard-container skeleton-dashboard">
-      {/* Header skeleton */}
+      {/* Header skeleton with logo */}
       <header className="skeleton-header">
         <div className="skeleton-header-left">
-          <div className="skeleton-logo"></div>
+          <img src={logo} alt="LaVaca Logo" className="skeleton-logo-img" style={{width: '40px', height: 'auto'}} />
           <div className="skeleton-title"></div>
         </div>
         <div className="skeleton-header-right">
@@ -61,9 +62,11 @@ const DashboardSkeleton = () => {
               <div className="skeleton-table-row"></div>
               <div className="skeleton-table-row"></div>
               <div className="skeleton-table-row"></div>
-              <div className="skeleton-table-row"></div>
             </div>
           </div>
+          
+          {/* Loading message */}
+          <div className="skeleton-message">{message}</div>
         </main>
       </div>
     </div>
