@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../Supabase/supabaseConfig';
 import './VacaDetails.css';
+import '../../../Dashboard/Resposive/vacadetails-responsive.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
@@ -32,6 +33,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const [user, setUser] = useState(passedUser || null);
   const { showNotification } = useContext(NotificationContext);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('transactions');
 
   
   useEffect(() => {
@@ -277,124 +279,262 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
           </div>
         </div>
         
-        <div className="vaca-details-sections">
-          <div className="participants-section">
-            <h2>
-              <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
-            </h2>
-            {vaca.participants && vaca.participants.length > 0 ? (
-              <ul className="participants-list">
-                {vaca.participants.map(participant => (
-                  <li key={participant.id} className="participant-item">
-                    <div className="participant-avatar" style={{backgroundColor: vaca.color || '#3F60E5'}}>
-                      {participant.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="participant-info">
-                      <h4>{participant.name}</h4>
-                      <p>{participant.email}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="no-data-message">No hay participantes aún</p>
-            )}
-          </div>
-          
-          <div className="vaca-section">
-            <h2>
-              <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
-            </h2>
-            <div className="add-transaction">
+        {window.innerWidth <= 768 ? (
+          <>
+            <div className="vaca-tabs">
               <button 
-                className="add-transaction-btn"
-                onClick={() => setShowAddPayment(!showAddPayment)}
+                className={`vaca-tab ${activeTab === 'transactions' ? 'active' : ''}`}
+                onClick={() => setActiveTab('transactions')}
               >
-                <FontAwesomeIcon icon={faPlus} /> Añadir pago
+                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+              </button>
+              <button 
+                className={`vaca-tab ${activeTab === 'participants' ? 'active' : ''}`}
+                onClick={() => setActiveTab('participants')}
+              >
+                <FontAwesomeIcon icon={faUsers} /> Participantes
               </button>
             </div>
             
-            {showAddPayment && (
-              <div className="payment-form">
-                <div className="form-group">
-                  <label htmlFor="paymentAmount">Monto</label>
-                  <div className="amount-input-group">
-                    <span>$</span>
-                    <input
-                      type="number"
-                      id="paymentAmount"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder="0"
-                      min="0"
-                      required
-                    />
+            {activeTab === 'transactions' ? (
+              <div className="vaca-section">
+                <h2>
+                  <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+                </h2>
+                <div className="add-transaction">
+                  <button 
+                    className="add-transaction-btn"
+                    onClick={() => setShowAddPayment(!showAddPayment)}
+                  >
+                    <FontAwesomeIcon icon={faPlus} /> Añadir pago
+                  </button>
+                </div>
+                
+                {showAddPayment && (
+                  <div className="payment-form">
+                    <div className="form-group">
+                      <label htmlFor="paymentAmount">Monto</label>
+                      <div className="amount-input-group">
+                        <span>$</span>
+                        <input
+                          type="number"
+                          id="paymentAmount"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="paymentDescription">Descripción</label>
+                      <input
+                        type="text"
+                        id="paymentDescription"
+                        value={paymentDescription}
+                        onChange={(e) => setPaymentDescription(e.target.value)}
+                        placeholder="Ej: Pago mensual"
+                      />
+                    </div>
+                    
+                    <div className="payment-form-actions">
+                      <button 
+                        className="cancel-payment-btn"
+                        onClick={() => setShowAddPayment(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        className="save-payment-btn"
+                        onClick={handleAddPayment}
+                        disabled={!paymentAmount}
+                      >
+                        Guardar
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div className="form-group">
-                  <label htmlFor="paymentDescription">Descripción</label>
-                  <input
-                    type="text"
-                    id="paymentDescription"
-                    value={paymentDescription}
-                    onChange={(e) => setPaymentDescription(e.target.value)}
-                    placeholder="Ej: Pago mensual"
-                  />
-                </div>
-                
-                <div className="payment-form-actions">
-                  <button 
-                    className="cancel-payment-btn"
-                    onClick={() => setShowAddPayment(false)}
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    className="save-payment-btn"
-                    onClick={handleAddPayment}
-                    disabled={!paymentAmount}
-                  >
-                    Guardar
-                  </button>
-                </div>
+                {vaca.transactions && vaca.transactions.length > 0 ? (
+                  <ul className="transactions-list">
+                    {vaca.transactions.map(transaction => {
+        
+                      const participant = vaca.participants?.find(p => p.id === transaction.participant);
+                      
+                      return (
+                        <li key={transaction.id} className="transaction-item">
+                          <div className="transaction-icon" style={{backgroundColor: `${vaca.color}20` || '#3F60E520'}}>
+                            <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
+                          </div>
+                          <div className="transaction-info">
+                            <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
+                            <p className="transaction-description">{transaction.description}</p>
+                            <div className="transaction-details">
+                              <p className="transaction-date">
+                                {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
+                              </p>
+                              {participant && (
+                                <p className="transaction-participant">por {participant.name}</p>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <div className="no-data-message">
+                    <p>No hay transacciones registradas</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="participants-section">
+                <h2>
+                  <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
+                </h2>
+                {vaca.participants && vaca.participants.length > 0 ? (
+                  <ul className="participants-list">
+                    {vaca.participants.map(participant => (
+                      <li key={participant.id} className="participant-item">
+                        <div className="participant-avatar" style={{backgroundColor: vaca.color || '#3F60E5'}}>
+                          {participant.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="participant-info">
+                          <h4>{participant.name}</h4>
+                          <p>{participant.email}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="no-data-message">No hay participantes aún</p>
+                )}
               </div>
             )}
-            
-            {vaca.transactions && vaca.transactions.length > 0 ? (
-              <ul className="transactions-list">
-                {vaca.transactions.map(transaction => {
-    
-                  const participant = vaca.participants?.find(p => p.id === transaction.participant);
-                  
-                  return (
-                    <li key={transaction.id} className="transaction-item">
-                      <div className="transaction-icon" style={{backgroundColor: `${vaca.color}20` || '#3F60E520'}}>
-                        <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
+          </>
+        ) : (
+          <div className="vaca-details-sections">
+            <div className="participants-section">
+              <h2>
+                <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
+              </h2>
+              {vaca.participants && vaca.participants.length > 0 ? (
+                <ul className="participants-list">
+                  {vaca.participants.map(participant => (
+                    <li key={participant.id} className="participant-item">
+                      <div className="participant-avatar" style={{backgroundColor: vaca.color || '#3F60E5'}}>
+                        {participant.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="transaction-info">
-                        <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
-                        <p className="transaction-description">{transaction.description}</p>
-                        <div className="transaction-details">
-                          <p className="transaction-date">
-                            {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
-                          </p>
-                          {participant && (
-                            <p className="transaction-participant">por {participant.name}</p>
-                          )}
-                        </div>
+                      <div className="participant-info">
+                        <h4>{participant.name}</h4>
+                        <p>{participant.email}</p>
                       </div>
                     </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="no-data-message">
-                <p>No hay transacciones registradas</p>
+                  ))}
+                </ul>
+              ) : (
+                <p className="no-data-message">No hay participantes aún</p>
+              )}
+            </div>
+            
+            <div className="vaca-section">
+              <h2>
+                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+              </h2>
+              <div className="add-transaction">
+                <button 
+                  className="add-transaction-btn"
+                  onClick={() => setShowAddPayment(!showAddPayment)}
+                >
+                  <FontAwesomeIcon icon={faPlus} /> Añadir pago
+                </button>
               </div>
-            )}
+              
+              {showAddPayment && (
+                <div className="payment-form">
+                  <div className="form-group">
+                    <label htmlFor="paymentAmount">Monto</label>
+                    <div className="amount-input-group">
+                      <span>$</span>
+                      <input
+                        type="number"
+                        id="paymentAmount"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        placeholder="0"
+                        min="0"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="paymentDescription">Descripción</label>
+                    <input
+                      type="text"
+                      id="paymentDescription"
+                      value={paymentDescription}
+                      onChange={(e) => setPaymentDescription(e.target.value)}
+                      placeholder="Ej: Pago mensual"
+                    />
+                  </div>
+                  
+                  <div className="payment-form-actions">
+                    <button 
+                      className="cancel-payment-btn"
+                      onClick={() => setShowAddPayment(false)}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      className="save-payment-btn"
+                      onClick={handleAddPayment}
+                      disabled={!paymentAmount}
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {vaca.transactions && vaca.transactions.length > 0 ? (
+                <ul className="transactions-list">
+                  {vaca.transactions.map(transaction => {
+      
+                    const participant = vaca.participants?.find(p => p.id === transaction.participant);
+                    
+                    return (
+                      <li key={transaction.id} className="transaction-item">
+                        <div className="transaction-icon" style={{backgroundColor: `${vaca.color}20` || '#3F60E520'}}>
+                          <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
+                        </div>
+                        <div className="transaction-info">
+                          <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
+                          <p className="transaction-description">{transaction.description}</p>
+                          <div className="transaction-details">
+                            <p className="transaction-date">
+                              {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
+                            </p>
+                            {participant && (
+                              <p className="transaction-participant">por {participant.name}</p>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="no-data-message">
+                  <p>No hay transacciones registradas</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Sección de acciones */}
         <div className="vaca-actions">   

@@ -2,6 +2,8 @@ import React from "react";
 import './HomeContent.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow } from '@fortawesome/free-solid-svg-icons';
+import '../../Resposive/dashboard-responsive.css'
+
 
 const HomeContent = ({ onVacasButtonClick, totalVacas = 0 }) => {
  

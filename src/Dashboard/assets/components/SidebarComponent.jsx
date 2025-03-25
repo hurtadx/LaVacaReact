@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import './SidebarComponent.css'; 
+import '../../Resposive/sidebar-responsive.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faHome, 

@@ -6,14 +6,15 @@ import { logoutUser } from '../Services/authService';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../Components/Notification/NotificationContext';
 import { supabase, checkSupabaseConnection } from '../Supabase/supabaseConfig';
-
 import VacaDetails from './content/Vacas/VacaDetails';
-
 import './Dashboard.css';
+import './Resposive/dashboard-responsive.css'; 
 import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
+import DashboardSkeleton from '../Components/SkeletonLoading/DashboardSkeleton'; 
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -206,7 +207,7 @@ const Dashboard = () => {
   };
 
   if (connectionStatus.checking) {
-    return <div className="loading">Verificando conexión...</div>;
+    return <DashboardSkeleton message="Verificando conexión..." />;
   }
   
   if (!connectionStatus.connected) {
@@ -220,7 +221,10 @@ const Dashboard = () => {
   }
 
   if (loading) {
-    return <div className="loading">Cargando...</div>;
+    
+    
+    
+    return <DashboardSkeleton />;
   }
 
   return (
