@@ -1,0 +1,98 @@
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 15px;
+  }
+  
+  .dash-title h1 {
+    font-size: 20px;
+  }
+  
+  .dash-title img {
+    height: 35px;
+  }
+  
+  .header-right {
+    gap: 10px;
+  }
+  
+  .user-info {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .notifications-panel {
+    width: 300px;
+    right: -10px;
+  }
+
+    .notifications-btn {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+    .notification-badge {
+    top: -2px;
+    right: -2px;
+  }
+  
+    .notifications-btn svg {
+    margin: 0;   }
+}
+
+@media (max-width: 480px) {
+  .dash-header-container {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .dashboard-header {
+    height: auto;
+    min-height: 60px;
+    padding: 8px 10px;
+  }
+  
+  .user-info {
+    margin-top: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .dash-title h1 {
+    font-size: 18px;
+  }
+  
+  .dash-title img {
+    height: 30px;
+  }
+  
+  .notifications-panel {
+    width: 280px;
+    right: -15px;
+  }
+
+  .notifications-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+    .header-right {
+    margin-top: 5px;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 375px) {
+  .dash-title h1 {
+    display: none;   }
+  
+  .notifications-panel {
+    width: 250px;
+    right: -20px;
+  }
+}
