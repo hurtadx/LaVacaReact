@@ -56,6 +56,109 @@
   margin-right: 8px;
 }
 
+
+.account-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.account-summary .card {
+  background-color: white; 
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 4px solid var(--primary-color);
+  border-left: 1px solid #e6e9f0;
+  border-right: 1px solid #e6e9f0;
+  border-bottom: 1px solid #e6e9f0;
+}
+
+.account-summary .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); 
+}
+
+.account-summary .card h3 {
+  margin-top: 0;
+  color: var(--dark-color);
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.account-summary .card h3::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.account-summary .card h3::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+.account-summary .card:hover h3::after {
+  width: 80px;
+}
+
+.account-summary .card p {
+  margin: 18px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.account-summary .card.interactive h3::before,
+.account-summary .card.interactive h3::after {
+  background-color: var(--light-color);
+}
+
+.account-summary .card.interactive {
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  border: none;
+  text-align: left;
+  width: 100%;
+  border-top: 4px solid var(--accent-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.account-summary .card.interactive:hover {
+  background-color: var(--accent-color);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.account-summary .card .amount {
+  color: var(--success-color);
+}
+
+.account-summary .card .days {
+  color: var(--warning-color);
+}
+
+
+
+
 .account-summary .card:hover h3::after {
   width: 80px;
 }
