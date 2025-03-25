@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../../Services/authService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
-import InvitationsList from './InvitationsList'; // Descomenta esta línea
+import InvitationsList from './InvitationsList'; 
 import './DashboardHeader.css';
+import '../../Resposive/header-responsive.css'; 
 import logo from '../../../Components/Img/LogoLaVaca.png';
 
 const DashboardHeader = ({ 
@@ -38,13 +39,13 @@ const DashboardHeader = ({
   };
   
   const handleInvitationResponse = (invitationId, response, vacaId) => {
-    // Llamamos a la función proporcionada por el padre
+    
     if (onInvitationResponse) {
       onInvitationResponse(invitationId, response, vacaId);
     }
     
-    // Opcionalmente, podrías cerrar el panel de notificaciones después de responder
-    // setShowNotifications(false);
+    
+    
   };
   
   return (
