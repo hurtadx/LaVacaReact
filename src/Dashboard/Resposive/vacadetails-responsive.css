@@ -1,0 +1,218 @@
+@media (max-width: 992px) {
+  .vaca-details-container {
+    gap: 20px;
+  }
+  
+  .vaca-details-summary {
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .vaca-details-progress {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .vaca-progress-circle {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+  }
+  
+  .vaca-progress-circle svg {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+    .vaca-details-header {
+    margin-bottom: 5px;
+    gap: 12px;
+  }
+  
+  .back-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .vaca-title-icon {
+    font-size: 20px;
+  }
+  
+  .vaca-details-header h1 {
+    font-size: 22px;
+  }
+  
+    .vaca-tabs {
+    display: flex;
+    border-bottom: 1px solid #e6e9f0;
+    margin: 10px 0 15px 0;
+    background: white;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .vaca-tab {
+    flex: 1;
+    padding: 12px 5px;
+    text-align: center;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    color: #777;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .vaca-tab.active {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+  
+    .vaca-details-summary {
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .vaca-description {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .vaca-details-stats {
+    gap: 10px;
+  }
+  
+  .stat {
+    font-size: 13px;
+    flex-basis: calc(50% - 5px);
+    margin-bottom: 5px;
+  }
+  
+    .vaca-progress-circle {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .vaca-progress-circle svg {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .progress-text strong {
+    font-size: 18px;
+  }
+  
+    .vaca-section, 
+  .participants-section {
+    padding: 15px;
+  }
+  
+  .vaca-section h2,
+  .participants-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+  }
+  
+    .transaction-item, 
+  .participant-item {
+    padding: 10px;
+  }
+  
+  .transaction-icon,
+  .participant-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .transaction-amount {
+    font-size: 14px;
+  }
+  
+  .transaction-description {
+    font-size: 13px;
+  }
+  
+    .payment-form {
+    padding: 15px;
+  }
+  
+    .participants-list,
+  .transactions-list {
+    max-height: 250px;
+  }
+  
+    .add-transaction-btn {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+    .participants-section {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    padding: 15px;
+  }
+  
+    .participants-list {
+    width: 100%;
+    padding: 0;
+  }
+  
+    .participant-item {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+  }
+  
+  .participant-info {
+    flex: 1;
+    min-width: 0;     overflow: hidden;   }
+  
+  .participant-info h4,
+  .participant-info p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;   }
+}
+
+@media (max-width: 480px) {
+  .vaca-details-header h1 {
+    font-size: 20px;
+  }
+  
+  .vaca-tab {
+    font-size: 12px;
+    padding: 10px 5px;
+  }
+  
+  .stat {
+    flex-basis: 100%;
+  }
+  
+    .transaction-description,
+  .transaction-details,
+  .participant-info p {
+    font-size: 12px;
+  }
+  
+  .vaca-amount-info h3 {
+    font-size: 18px;
+  }
+  
+  .progress-text strong {
+    font-size: 16px;
+  }
+
+  .participants-section {
+    padding: 10px;
+  }
+}
