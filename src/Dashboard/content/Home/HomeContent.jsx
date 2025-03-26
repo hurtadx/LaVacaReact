@@ -1,12 +1,67 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import './HomeContent.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCow, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
-import '../../Resposive/dashboard-responsive.css'
+import { faCow, faCalendarAlt, faHistory } from '@fortawesome/free-solid-svg-icons';
+import '../../Resposive/dashboard-responsive.css';
 
-const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSelect }) => {
+const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSelect, user }) => {
   const vacasToShow = Math.min(totalVacas, 5);
   const vacasIcons = Array.from({ length: vacasToShow }, (_, index) => index);
+  
+  
+  const [lastVisitedVaca, setLastVisitedVaca] = useState(null);
+  
+  
+  useEffect(() => {
+    const loadLastVisitedVaca = () => {
+      try {
+        
+        const lastVisitedKey = Object.keys(localStorage).find(key => 
+          key.includes('lastVisitedVaca')
+        );
+        
+        console.log("Clave encontrada:", lastVisitedKey);
+        
+        if (lastVisitedKey) {
+          const storedData = localStorage.getItem(lastVisitedKey);
+          console.log("Datos encontrados:", storedData);
+          
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            setLastVisitedVaca(parsedData);
+            console.log("Última vaca visitada cargada:", parsedData);
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar la última vaca visitada:", error);
+      }
+    };
+    
+    
+    loadLastVisitedVaca();
+    
+    
+    const handleStorageChange = (e) => {
+      if (e.key?.includes('lastVisitedVaca')) {
+        console.log("Cambio detectado en localStorage para lastVisitedVaca");
+        loadLastVisitedVaca();
+      }
+    };
+    
+    
+    const handleVacaVisited = () => {
+      console.log("Evento vacaVisited detectado");
+      loadLastVisitedVaca();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('vacaVisited', handleVacaVisited);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('vacaVisited', handleVacaVisited);
+    };
+  }, []); 
   
   
   const nextPaymentData = useMemo(() => {
@@ -48,9 +103,21 @@ const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSel
   return (
     <>
       <section className="account-summary">
-        <div className="card">
-          <h3>Total "Vaca Playa"</h3>
-          <p className="amount">$0.00</p>
+        <div className={`card ${lastVisitedVaca ? 'has-last-visited' : ''}`}>
+          <h3>
+            {lastVisitedVaca ? lastVisitedVaca.name : "Total Vaca"}
+            {lastVisitedVaca && <FontAwesomeIcon icon={faHistory} className="last-visited-icon" />}
+          </h3>
+          <p className="amount">
+            {lastVisitedVaca ? 
+              `$${lastVisitedVaca.current ? lastVisitedVaca.current.toLocaleString() : '0'}` : 
+              "Sin datos"}
+          </p>
+          {lastVisitedVaca && (
+            <p className="vaca-goal-text">
+              Meta: ${lastVisitedVaca.goal ? lastVisitedVaca.goal.toLocaleString() : '0'}
+            </p>
+          )}
         </div>
         
         <button className="card interactive" onClick={onVacasButtonClick}>
