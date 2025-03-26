@@ -18,6 +18,9 @@ En desarrollo activo. Características implementadas:
 - Fondo SVG ondulado para mejor apariencia visual
 - Dashboard interactivo con visualización de vacas
 - Creación y gestión de vacas (metas de ahorro grupales)
+- Dashboard inteligente que muestra la última vaca visitada
+- Sistema de alerta para próximos pagos de vacas pendientes
+- Vista optimizada para móviles y tablets con navegación simplificada
 
 ## 🔄 En Progreso
 - Registro de transacciones y aportes
@@ -37,6 +40,44 @@ En desarrollo activo. Características implementadas:
 - Context API para manejo de estado
 - React Router para navegación
 - FontAwesome para iconografía
+- LocalStorage para persistencia de datos de usuarios
+- Eventos personalizados para actualización en tiempo real
+
+## 🎨 Funcionalidades del Dashboard
+- **Tarjeta "Última Vaca Visitada"**: Muestra automáticamente la última vaca que visitaste con su saldo actual y meta
+- **Tarjeta "Tus Vacas"**: Visualización animada de la cantidad de vacas activas
+- **Tarjeta "Próximo Pago"**: Alerta inteligente que calcula y muestra la vaca con fecha límite más próxima
+- **Historial de Transacciones**: Visualización de movimientos recientes
+- **Navegación Intuitiva**: Acceso rápido a todas las vacas desde el sidebar
+- **Diseño Responsivo**: Adaptación perfecta a cualquier dispositivo
+
+## 📱 Interfaz de Usuario
+La aplicación cuenta con:
+- Página de inicio con registro/login mejorado visualmente
+- Carrusel de imágenes animadas informativas
+- Diseño completamente responsivo para móviles, tablets y escritorio
+- Transiciones y animaciones suaves para mejor experiencia de usuario
+- Dashboard principal con visualización de vacas activas
+- Página detallada para cada vaca
+- Formularios para crear vacas y registrar aportes
+- Sistema de navegación intuitivo
+- Interfaz móvil optimizada con navegación inferior
+
+## 🎨 Mejoras Visuales
+- Implementación de fondos SVG animados
+- Efectos de profundidad y sombras para mejor jerarquía visual
+- Paleta de colores consistente a través de variables CSS
+- Animaciones sutiles para mejorar la experiencia del usuario
+- Diseño optimizado para diferentes tamaños de pantalla
+- Transiciones suaves entre componentes
+
+## 📚 Estructura de Base de Datos
+El proyecto utiliza Supabase con las siguientes tablas principales:
+- **profiles**: Datos de los usuarios registrados
+- **vacas**: Proyectos de ahorro creados por los usuarios
+- **participants**: Relación entre usuarios y vacas
+- **transactions**: Registro de aportes económicos
+- **invitations**: Sistema de invitaciones pendientes
 
 ## 📋 Próximas Características
 - Recordatorios automáticos de pago
@@ -56,38 +97,11 @@ cd LaVacaReact
 npm install
 
 # Configurar variables de entorno
-# Crear archivo [.env.local](http://_vscodecontentref_/0) con credenciales de Supabase
+# Crear archivo .env.local con credenciales de Supabase
 
 # Iniciar el servidor de desarrollo
 npm run dev
 ```
-
-## 📱 Interfaz de Usuario
-La aplicación cuenta con:
-- Página de inicio con registro/login mejorado visualmente
-- Carrusel de imágenes animadas informativas
-- Diseño completamente responsivo para móviles, tablets y escritorio
-- Transiciones y animaciones suaves para mejor experiencia de usuario
-- Dashboard principal con visualización de vacas activas
-- Página detallada para cada vaca
-- Formularios para crear vacas y registrar aportes
-- Sistema de navegación intuitivo
-
-## 🎨 Mejoras Visuales
-- Implementación de fondos SVG animados
-- Efectos de profundidad y sombras para mejor jerarquía visual
-- Paleta de colores consistente a través de variables CSS
-- Animaciones sutiles para mejorar la experiencia del usuario
-- Diseño optimizado para diferentes tamaños de pantalla
-- Transiciones suaves entre componentes
-
-## 📚 Estructura de Base de Datos
-El proyecto utiliza Supabase con las siguientes tablas principales:
-- **profiles**: Datos de los usuarios registrados
-- **vacas**: Proyectos de ahorro creados por los usuarios
-- **participants**: Relación entre usuarios y vacas
-- **transactions**: Registro de aportes económicos
-- **invitations**: Sistema de invitaciones pendientes
 
 ## 💡 ¿Por qué LaVaca?
 LaVaca surge de la necesidad de facilitar el ahorro grupal de manera organizada y transparente. Muchas veces, coordinar ahorros entre amigos puede ser complicado y poco estructurado. Esta aplicación proporciona una solución centralizada para:
