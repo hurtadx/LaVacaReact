@@ -1,41 +1,8 @@
 
-.account-summary {
-  width: 389.156px;
-  height: 254px;
-  margin: 0 auto 35px;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 5px;
-  box-sizing: border-box;
-}
-
-.account-summary .card {
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.count {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-  color: white;
-  transform: translateY(-5px) translateX(5px);
-}
-
 
 @media (max-width: 1200px) {
   .account-summary {
-    width: 389.156px !important;
-    height: 254px !important;
-    margin: 0 auto 30px !important;
-    gap: 12px !important;
+    max-width: 600px;
   }
   
   .dashboard-module {
@@ -46,6 +13,11 @@
 
 
 @media (max-width: 992px) {
+  .account-summary {
+    max-width: 550px;
+    gap: 12px;
+  }
+  
   .dashboard-module {
     margin: 1.5%;
     margin-top: 40px;
@@ -63,7 +35,50 @@
 }
 
 
+
 @media (max-width: 768px) {
+  
+  .account-summary {
+    display: flex !important; 
+    flex-direction: row !important; 
+    justify-content: space-between !important;
+    width: 95% !important;
+    max-width: 500px !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-left: auto !important; 
+    margin-right: auto !important; 
+    margin-bottom: 25px !important;
+    padding: 0 !important; 
+    position: relative !important; 
+    left: 0 !important; 
+    right: 0 !important; 
+  }
+  
+  
+  .account-summary .card {
+    flex: 1 1 30% !important; 
+    width: 30% !important; 
+    max-width: 32% !important; 
+    padding: 8px !important;
+    min-height: 65px !important;
+    box-sizing: border-box !important;
+    margin: 40px auto 10px
+  }
+  
+  
+  .account-summary .card h3 {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .account-summary .card p {
+    font-size: 13px !important;
+    margin-top: 2px !important;
+  }
   
   .dash-layout {
     flex-direction: column;
@@ -84,37 +99,6 @@
     padding-bottom: 65px;
   }
   
-  
-  .account-summary {
-    width: 389.156px !important; 
-    height: 254px !important; 
-    margin: 0 auto 25px !important;
-    gap: 10px !important;
-  }
-  
-  .account-summary .card {
-    padding: 6px !important; 
-    min-height: 50px !important; 
-    transform: scale(0.92) !important; 
-    transform-origin: center center !important;
-    margin: 0 !important;
-  }
-  
-  .account-summary .card h3 {
-    font-size: 10px !important;
-    margin-bottom: 2px !important;
-    padding-bottom: 1px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  
-  .account-summary .card p {
-    font-size: 12px !important;
-    margin-top: 2px !important;
-  }
-  
-  
   .account-summary .card:hover {
     transform: scale(0.94) translateY(-1px) !important;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
@@ -123,7 +107,6 @@
   .account-summary .card.interactive:hover {
     transform: scale(0.94) translateY(-1px) !important;
   }
-  
   
   .transactions {
     width: 98% !important;
@@ -139,7 +122,6 @@
     font-size: 22px;
     transform: translateY(-2px) translateX(2px);
   }
-  
   
   .sidebar {
     width: 100%;
@@ -222,31 +204,35 @@
   .sidebar-dropdown.active .dropdown-menu {
     display: none !important;
   }
+
+  .transactions {
+    width: 98% !important;
+    margin: 120px auto 10px !important; 
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
 }
 
 
 @media (max-width: 480px) {
   .account-summary {
-    width: 389.156px !important; 
-    height: 254px !important; 
-    gap: 12px !important;
+    gap: 6px !important;
   }
   
   .account-summary .card {
-    transform: scale(0.85) !important; 
-    padding: 5px !important;
+    padding: 7px 5px !important;
+    min-height: 60px !important;
   }
   
   .account-summary .card h3 {
-    font-size: 9px !important;
-  }
-  
-  .account-summary .card h3::before {
-    display: none !important;
+    font-size: 10px !important;
   }
   
   .account-summary .card p {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   
   .transactions {
@@ -264,20 +250,23 @@
 
 
 @media (max-width: 375px) {
+  .account-summary {
+    gap: 4px !important;
+  }
+  
   .account-summary .card {
-    transform: scale(0.8) !important; 
-    padding: 4px 2px !important;
-    min-height: 45px !important;
+    padding: 5px 3px !important;
+    min-height: 55px !important;
   }
   
   .account-summary .card h3 {
-    font-size: 8px !important;
+    font-size: 9px !important;
     margin-bottom: 1px !important;
   }
   
   .account-summary .card p {
-    font-size: 10px !important;
-    margin-top: 1px !important;
+    font-size: 11px !important;
+    margin-top: 2px !important;
   }
   
   .account-summary {
