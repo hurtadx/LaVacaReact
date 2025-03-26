@@ -78,6 +78,55 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   }, [match?.params?.id, initialVaca, showNotification]);
 
+  useEffect(() => {
+    if (vaca && vaca.id) {
+      try {
+        
+        const userPrefix = user?.id ? `user_${user.id}_` : '';
+        localStorage.setItem(`${userPrefix}lastVisitedVaca`, JSON.stringify({
+          id: vaca.id,
+          name: vaca.name,
+          current: vaca.current,
+          goal: vaca.goal
+        }));
+        
+        
+        const storageEvent = new Event('storage');
+        storageEvent.key = `${userPrefix}lastVisitedVaca`;
+        window.dispatchEvent(storageEvent);
+      } catch (error) {
+        console.error("Error al guardar la última vaca visitada:", error);
+      }
+    }
+  }, [vaca, user?.id]);
+
+  useEffect(() => {
+    if (vaca && vaca.id && user) {
+      try {
+        
+        const userPrefix = user?.id ? `user_${user.id}_` : '';
+        
+        
+        localStorage.setItem(`${userPrefix}lastVisitedVaca`, JSON.stringify({
+          id: vaca.id,
+          name: vaca.name,
+          current: vaca.current,
+          goal: vaca.goal
+        }));
+        
+        console.log("Guardando última vaca visitada:", vaca.name);
+        
+        
+        const event = new CustomEvent('vacaVisited', { 
+          detail: { userId: user.id, vacaId: vaca.id }
+        });
+        window.dispatchEvent(event);
+      } catch (error) {
+        console.error("Error al guardar la última vaca visitada:", error);
+      }
+    }
+  }, [vaca, user]);
+
   const progressPercent = vaca.current 
     ? Math.min((vaca.current / vaca.goal) * 100, 100) 
     : 0;

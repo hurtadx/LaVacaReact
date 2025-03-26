@@ -178,14 +178,20 @@ export const registerUser = async (email, password, username) => {
 
 export const logoutUser = async () => {
   try {
+    
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('lastVisitedVaca')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
     const { error } = await supabase.auth.signOut();
-    
-    if (error) throw error;
-    
+    if (error) {
+      return { success: false, error: error.message };
+    }
     return { success: true, error: null };
   } catch (error) {
-    const { code, message } = handleAuthError(error);
-    return { success: false, error: message, code };
+    return { success: false, error: error.message };
   }
 };
 
@@ -294,7 +300,7 @@ export const syncUserProfile = async (userData) => {
           returning: 'minimal' 
         }
       );
-    // ...
+    
   } catch (error) {
     console.error('Error al sincronizar perfil:', error);
     return { success: false, error };
