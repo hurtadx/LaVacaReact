@@ -1,27 +1,8 @@
-.account-summary {
-  width: 389.156px;
-  height: 254px;
-  margin: 0 auto 35px;   overflow: hidden;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;   padding: 5px;   box-sizing: border-box;
-}
 
-.account-summary .card {
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
 
 @media (max-width: 1200px) {
-    .account-summary {
-    width: 389.156px !important;
-    height: 254px !important;
-    margin: 0 auto 30px !important;     gap: 12px !important;
+  .account-summary {
+    max-width: 600px;
   }
   
   .dashboard-module {
@@ -30,13 +11,19 @@
   }
 }
 
+
 @media (max-width: 992px) {
+  .account-summary {
+    max-width: 550px;
+    gap: 12px;
+  }
+  
   .dashboard-module {
     margin: 1.5%;
     margin-top: 40px;
   }
   
-    .vaca-details-sections,
+  .vaca-details-sections,
   .vaca-details-summary {
     flex-direction: column;
   }
@@ -47,14 +34,96 @@
   }
 }
 
+
+
 @media (max-width: 768px) {
+  
+  .account-summary {
+    display: flex !important; 
+    flex-direction: row !important; 
+    justify-content: space-between !important;
+    width: 95% !important;
+    max-width: 500px !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-left: auto !important; 
+    margin-right: auto !important; 
+    margin-bottom: 25px !important;
+    padding: 0 !important; 
+    position: relative !important; 
+    left: 0 !important; 
+    right: 0 !important; 
+  }
+  
+  
+  .account-summary .card {
+    flex: 1 1 30% !important; 
+    width: 30% !important; 
+    max-width: 32% !important; 
+    padding: 8px !important;
+    min-height: 65px !important;
+    box-sizing: border-box !important;
+    margin: 40px auto 10px
+  }
+  
+  
+  .account-summary .card h3 {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .account-summary .card p {
+    font-size: 13px !important;
+    margin-top: 2px !important;
+  }
+  
   .dash-layout {
     flex-direction: column;
     height: auto;
     min-height: calc(100vh - 60px);
   }
   
-    .sidebar {
+  .dashboard-main-content {
+    order: 1;
+    padding-bottom: 70px;
+    min-height: calc(100vh - 130px);
+  }
+  
+  .dashboard-module {
+    margin: 10px auto;
+    margin-top: 15px;
+    width: 98%;
+    padding-bottom: 65px;
+  }
+  
+  .account-summary .card:hover {
+    transform: scale(0.94) translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  .account-summary .card.interactive:hover {
+    transform: scale(0.94) translateY(-1px) !important;
+  }
+  
+  .transactions {
+    width: 98% !important;
+    margin: 10px auto !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .count {
+    font-size: 22px;
+    transform: translateY(-2px) translateX(2px);
+  }
+  
+  .sidebar {
     width: 100%;
     height: auto;
     padding: 0;
@@ -98,7 +167,7 @@
     transform: translateY(-3px);
   }
   
-    .sidebar-dropdown .sidebar-item-title {
+  .sidebar-dropdown .sidebar-item-title {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -124,7 +193,7 @@
     padding-bottom: 0 !important;
   }
   
-    .sidebar-dropdown .dropdown-toggle {
+  .sidebar-dropdown .dropdown-toggle {
     display: none;
   }
   
@@ -135,108 +204,35 @@
   .sidebar-dropdown.active .dropdown-menu {
     display: none !important;
   }
-  
-    .account-summary {
-    width: 389.156px !important;
-    height: 254px !important;
-    margin: 0 auto 25px !important;     display: grid;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px !important;
-    width: 100%;
-    margin-bottom: 20px;
-  }
-  
-  .account-summary .card {
-    padding: 8px !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    max-height: 100%;
-    overflow: hidden;
-  }
-  
-  .account-summary .card h3 {
-    font-size: 11px !important;
-    margin-bottom: 4px !important;
-    padding-bottom: 4px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  
-  .account-summary .card p {
-    font-size: 13px !important;
-    margin-top: 5px !important;
-  }
-  
-    .transactions {
-    width: 95% !important;
-    margin: 15px auto !important;
+
+  .transactions {
+    width: 98% !important;
+    margin: 120px auto 10px !important; 
     padding: 10px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
-    margin-top: 10px !important;     border-radius: 10px;
+    border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   }
-  
-    .account-summary .card.interactive:hover {
-    transform: translateY(-2px) scale(1.01) !important;
-  }
-  
-  .account-summary .card:hover {
-    transform: translateY(-2px) !important;
-  }
-  
-  .dashboard-main-content {
-    order: 1;
-    padding-bottom: 70px;
-    min-height: calc(100vh - 130px);
-  }
-  
-  .dashboard-module {
-    margin: 10px;
-    margin-top: 20px;
-  }
-  
-      .account-summary .card:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
-  }
-  
-  .account-summary .card.interactive:hover {
-    transform: translateY(-1px) scale(1) !important;
-  }
-  
-    .dashboard-module {
-    margin: 10px auto;
-    margin-top: 15px;
-    width: 98%;
-    padding-bottom: 65px;   }
-  
-    .transactions {
-    width: 98% !important;
-    margin: 10px auto !important;
-    align-self: center;
-  }
-
-    .count {
-    font-size: 22px;
-    transform: translateY(-3px) translateX(3px);   }
 }
+
 
 @media (max-width: 480px) {
   .account-summary {
-    width: 389.156px !important;
-    height: 254px !important;
     gap: 6px !important;
-    margin: 0 auto 20px !important;
+  }
+  
+  .account-summary .card {
+    padding: 7px 5px !important;
+    min-height: 60px !important;
   }
   
   .account-summary .card h3 {
     font-size: 10px !important;
   }
   
-  .account-summary .card h3::before {
-    display: none !important;
+  .account-summary .card p {
+    font-size: 12px !important;
   }
   
   .transactions {
@@ -252,7 +248,27 @@
   }
 }
 
+
 @media (max-width: 375px) {
+  .account-summary {
+    gap: 4px !important;
+  }
+  
+  .account-summary .card {
+    padding: 5px 3px !important;
+    min-height: 55px !important;
+  }
+  
+  .account-summary .card h3 {
+    font-size: 9px !important;
+    margin-bottom: 1px !important;
+  }
+  
+  .account-summary .card p {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+  }
+  
   .account-summary {
     gap: 4px !important;
     margin: 0 auto 15px !important;
@@ -276,10 +292,3 @@
     margin-top: 5px !important;
   }
 }
-
-.count {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-  color: white;
-  transform: translateY(-5px) translateX(5px); }
