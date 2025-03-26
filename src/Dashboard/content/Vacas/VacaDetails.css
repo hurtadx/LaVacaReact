@@ -564,7 +564,6 @@
   top: 0;
 }
 
-/* Añadir a tu archivo CSS de VacaDetails */
 .vaca-actions {
   display: flex;
   gap: 12px;
@@ -596,9 +595,7 @@
   border-top: 1px solid #eee;
 }
 
-/* Estilos compartidos para participants-section y user-search */
 
-/* Contenedor base */
 .participants-section,
 .user-search {
   display: flex;
@@ -607,7 +604,6 @@
   width: 100%;
 }
 
-/* Form de búsqueda y añadir participante */
 .search-form,
 .add-participant-form {
   margin-bottom: 15px;
@@ -671,7 +667,6 @@ button[type="submit"],
   height: 40px !important;
 }
 
-/* Resultados y listas */
 .search-results-container,
 .participants-list {
   border: 1px solid #eee;
@@ -761,7 +756,6 @@ button[type="submit"],
   color: #666;
 }
 
-/* Botones de acción */
 .user-select-indicator,
 .participant-actions {
   margin-left: 10px;
@@ -778,7 +772,6 @@ button[type="submit"],
   border: 2px solid #ddd;
 }
 
-/* Usuarios seleccionados */
 .selected-users-container {
   background-color: #f8f9fa;
   border-radius: 8px;
@@ -844,7 +837,6 @@ button[type="submit"],
   background-color: var(--primary-dark);
 }
 
-/* Mensajes de error */
 .error-message {
   color: #e74c3c;
   background-color: #fef2f0;
@@ -854,7 +846,6 @@ button[type="submit"],
   font-size: 13px;
 }
 
-/* Mensaje de no resultados */
 .no-results {
   padding: 20px;
   text-align: center;
@@ -862,7 +853,6 @@ button[type="submit"],
   font-style: italic;
 }
 
-/* Sección de participantes */
 .participants-section h3 {
   margin-top: 0;
   margin-bottom: 15px;
@@ -876,7 +866,6 @@ button[type="submit"],
   border-bottom: 1px solid #eee;
 }
 
-/* Botón de eliminar participante */
 .remove-participant-btn {
   background-color: rgba(239, 68, 68, 0.1);
   color: #EF4444;
@@ -895,7 +884,6 @@ button[type="submit"],
   background-color: rgba(239, 68, 68, 0.2);
 }
 
-/* Responsive */
 @media (max-width: 576px) {
   .add-participant-form,
   .search-form {
