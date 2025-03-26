@@ -90,7 +90,7 @@ El proyecto utiliza Supabase con las siguientes tablas principales:
 ## 🔧 Instalación
 ```bash
 # Clonar el repositorio
-git clone [URL del repositorio]
+git clone https://github.com/hurtadx/LaVacaReact
 
 # Instalar dependencias
 cd LaVacaReact
