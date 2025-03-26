@@ -164,6 +164,11 @@ const Dashboard = () => {
       console.error("Error al cerrar sesión", error);
     }
   };
+
+  const handleVacaSelect = (vaca) => {
+    setActiveItem('Vacas');
+    setSelectedVacaId(vaca.id);
+  };
   
   const renderContent = () => {
     switch(activeItem) {
@@ -175,6 +180,8 @@ const Dashboard = () => {
                 }} 
                 totalVacas={vacas.length}
                 loading={loading}
+                vacas={vacas}
+                onVacaSelect={handleVacaSelect}
                />;
       case 'Vacas':
         
@@ -202,6 +209,8 @@ const Dashboard = () => {
                 }} 
                 totalVacas={vacas.length}
                 loading={loading}
+                vacas={vacas}
+                onVacaSelect={handleVacaSelect}
                />;
     }
   };
