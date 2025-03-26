@@ -292,6 +292,23 @@
   animation: shake 3s infinite;
 }
 
+.last-visited-icon {
+  margin-left: 8px;
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.card.has-last-visited .vaca-goal-text {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #666;
+  font-weight: normal;
+}
+
+.card.has-last-visited h3::before {
+  background-color: var(--accent-color);
+}
+
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% {
     transform: translateY(0);
