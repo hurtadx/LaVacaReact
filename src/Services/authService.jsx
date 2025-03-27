@@ -33,13 +33,13 @@ export const enrichUserData = async (user) => {
   if (!user || !user.id) return null;
   
   try {
-    
+    // Obtener el perfil actualizado
     const profile = await syncUserProfile(user);
-    
+    console.log("Profile recibido en enrichUserData:", profile);
     
     return {
       ...user,
-      profile,
+      profile, // Guardar el perfil completo
       displayName: profile?.username || user.user_metadata?.username || user.email.split('@')[0]
     };
   } catch (error) {
@@ -127,11 +127,34 @@ export const registerUser = async (email, password, username) => {
       password,
       options: {
         data: {
-          username,
+          username: username, // Asegurarse de que sea explícito
         },
         emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
+    
+    // Verificar si se creó el usuario y guardar inmediatamente el perfil
+    if (data?.user?.id) {
+      console.log("Usuario creado, ID:", data.user.id);
+      console.log("Creando perfil con username:", username);
+      
+      // Insertar el perfil directamente
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: email,
+          username: username, // Usar el username proporcionado
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      
+      if (profileError) {
+        console.error("Error al crear perfil en registro:", profileError);
+      } else {
+        console.log("Perfil creado exitosamente");
+      }
+    }
     
     if (error) {
       const { code, message } = handleAuthError(error);
@@ -283,27 +306,63 @@ export const onAuthStateChange = (callback) => {
  */
 export const syncUserProfile = async (userData) => {
   try {
-    const { id, email, username, avatar_url } = userData;
+    
+    console.log("syncUserProfile recibió:", JSON.stringify(userData?.user_metadata, null, 2));
+    
+  
+    let username = null;
+    
+    if (userData.user_metadata?.username) {
+      username = userData.user_metadata.username;
+      console.log("Username encontrado en user_metadata:", username);
+    } else if (userData.username) {
+      username = userData.username;
+      console.log("Username encontrado en root:", username);
+    } else if (userData.email) {
+      
+      username = userData.email.split('@')[0];
+      console.log("Usando email como username:", username);
+    }
+    
+    console.log("Username final para guardar:", username);
+    
     
     const { data, error } = await supabase
       .from('profiles')
       .upsert(
         { 
-          id,  
-          email,
-          username,
-          avatar_url,
+          id: userData.id,  
+          email: userData.email,
+          username: username, 
+          avatar_url: userData.avatar_url,
           updated_at: new Date().toISOString() 
         },
         { 
           onConflict: 'id',  
-          returning: 'minimal' 
+          returning: 'representation' 
         }
       );
+      
+    if (error) {
+      console.error("Error al sincronizar perfil:", error);
+      throw error;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userData.id)
+      .single();
+      
+    console.log("Perfil sincronizado:", profile);
+    
+
+    return profile;
     
   } catch (error) {
-    console.error('Error al sincronizar perfil:', error);
-    return { success: false, error };
+    console.error('Error en syncUserProfile:', error);
+    
+    return null;
   }
 };
 
