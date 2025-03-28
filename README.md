@@ -26,8 +26,6 @@ En desarrollo activo. Características implementadas:
 - Registro de transacciones y aportes
 - Sistema de participantes por vaca
 - Sistema de invitaciones a nuevos participantes
-- Búsqueda de usuarios para invitar
-- Gestión de invitaciones (aceptar/rechazar)
 - Sistema de notificaciones para invitaciones pendientes
 
 ## 🛠 Tecnologías
