@@ -62,7 +62,6 @@ La aplicación cuenta con:
 - Interfaz móvil optimizada con navegación inferior
 
 ## 🎨 Mejoras Visuales
-- Implementación de fondos SVG animados
 - Efectos de profundidad y sombras para mejor jerarquía visual
 - Paleta de colores consistente a través de variables CSS
 - Animaciones sutiles para mejorar la experiencia del usuario
