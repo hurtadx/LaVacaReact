@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 import AuthForm from '../Components/AuthForm/AuthForm';
 import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
-import AnimatedCarrousel from '../Components/AnimatedCarrousel/AnimatedCarrousel';
 import Dashboard from '../Dashboard/Dashboard';
+import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
 import { checkTablesExist } from "../Services/vacaService.jsx";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
+import { supabase } from '../Supabase/supabaseConfig';
 
 const ErrorHandler = () => {
   const { captureError } = useNotification();
@@ -87,8 +88,20 @@ const AppContent = () => {
       {location.pathname !== '/dashboard' && <Header />}
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Rutas públicas - solo accesibles si NO está autenticado */}
+          <Route element={<PublicRoute />}>
+            <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
+            <Route path="/auth/callback" element={<div>Procesando autenticación...</div>} />
+          </Route>
+          
+          {/* Rutas privadas - solo accesibles si está autenticado */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/:section" element={<Dashboard />} />
+          </Route>
+          
+          {/* Ruta de fallback para cualquier otra URL */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       {location.pathname !== '/dashboard' && <Footer />}
@@ -96,16 +109,37 @@ const AppContent = () => {
   );
 };
 
+// Componente para escuchar cambios en la autenticación
+const AuthChangeListener = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Cambio en autenticación:", event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/dashboard');
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/');
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+  
+  return null;
+};
+
 const App = () => {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
       <NotificationProvider>
-        <ErrorHandler />
-        <ErrorBoundary>
+        <BrowserRouter>
+          <AuthChangeListener />
           <AppContent />
-        </ErrorBoundary>
+        </BrowserRouter>
       </NotificationProvider>
-    </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

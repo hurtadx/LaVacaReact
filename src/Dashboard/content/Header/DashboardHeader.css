@@ -101,7 +101,7 @@
   transition: transform 0.2s ease;
 }
 
-/* Efecto hover - pulsación suave */
+
 .notifications-btn:hover {
   animation: pulse 0.8s infinite;   background-color: transparent;
 }
@@ -142,7 +142,7 @@
   padding: 15px;
   margin-top: 10px;
   color: var(--text-primary);
-  animation: fadeIn 0.3s ease-out; /* Aparición suave del panel */
+  animation: fadeIn 0.3s ease-out; 
 }
 
 @keyframes fadeIn {
