@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../../Supabase/supabaseConfig';
 import './VacaDetails.css';
 import '../../../Dashboard/Resposive/vacadetails-responsive.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,31 +17,27 @@ import InviteUsers from './Invitations/InviteUsers';
 import { NotificationContext } from '../../../Components/Notification/NotificationContext';
 import { 
   getVacaDetails, 
-  addVacaTransaction,
-  inviteParticipants
+  addVacaTransaction,  inviteParticipants
 } from '../../../Services/vacaService.jsx';
-
+import { getCurrentUser } from '../../../Services/authService.jsx';
+import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
+import TransactionsList from '../../../Components/Transactions/TransactionsList.jsx';
 
 const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
   const [vaca, setVaca] = useState(initialVaca || {});
-  const [showAddPayment, setShowAddPayment] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentDescription, setPaymentDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [user, setUser] = useState(passedUser || null);
   const { showNotification } = useContext(NotificationContext);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeTab, setActiveTab] = useState('transactions');
-
-  
-  useEffect(() => {
+  const [showTransactionForm, setShowTransactionForm] = useState(false);    useEffect(() => {
     if (!passedUser) {
       const loadUser = async () => {
         try {
-          const { data } = await supabase.auth.getUser();
-          if (data?.user) {
-            setUser(data.user);
+          const { user: currentUser, error } = await getCurrentUser();
+          if (currentUser && !error) {
+            setUser(currentUser);
           }
         } catch (error) {
           console.error("Error al cargar usuario:", error);
@@ -60,7 +55,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         setLoading(true);
         try {
           const { data, error } = await getVacaDetails(match.params.id);
-          if (error) {
+          if (error) {teExpen
             throw new Error(error);
           }
           if (data) {
@@ -153,87 +148,28 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   
   const daysLeft = calculateDaysLeft();
 
-  const handleAddPayment = async () => {
-    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
-      showNotification("Por favor ingresa un monto válido", "error");
-      return;
-    }
+  // Reemplazar handleAddPayment por handleTransactionComplete
+  const handleTransactionComplete = (transactionData) => {
+    showNotification("Transacción registrada exitosamente", "success");
     
-    setLoading(true);
-    
-    try {
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        showNotification("Debes iniciar sesión para realizar un pago", "error");
-        setLoading(false);
-        return;
-      }
-      
-      
-      const isParticipant = vaca.participants?.some(p => p.user_id === user.id);
-      
-      if (!isParticipant && vaca.user_id !== user.id) {
-        
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username, email')
-          .eq('id', user.id)
-          .single();
-          
-        const { error: addParticipantError } = await supabase
-          .from('participants')
-          .insert({
-            vaca_id: vaca.id,
-            name: profile?.username || user.email?.split('@')[0] || 'Usuario',
-            email: profile?.email || user.email,
-            user_id: user.id
-          });
-          
-        if (addParticipantError) {
-          console.error("Error añadiendo participante:", addParticipantError);
-          showNotification("Error al registrarte como participante", "error");
-          setLoading(false);
-          return;
-        }
-      }
-      
-      
-      const { data, error, newTotal } = await addVacaTransaction({
-        vacaId: vaca.id,
-        amount: parseFloat(paymentAmount),
-        description: paymentDescription || "Pago",
-        participant: user.id
-      });
-      
-      if (error) {
-        showNotification(`Error: ${error}`, "error");
-        setLoading(false);
-        return;
-      }
-      
-      showNotification("Pago registrado exitosamente", "success");
-      
-      
+    // Si es una contribución, actualizar el monto actual
+    if (transactionData.type === 'contribution') {
       setVaca(prev => ({
         ...prev,
-        current: newTotal,
-        transactions: [data, ...(prev.transactions || [])]
+        current: transactionData.newTotal || prev.current,
+        transactions: [transactionData.data, ...(prev.transactions || [])]
       }));
-      
-      setShowAddPayment(false);
-      setPaymentAmount('');
-      setPaymentDescription('');
-    } catch (error) {
-      console.error("Error en pago:", error);
-      showNotification("Error al procesar el pago", "error");
-    } finally {
-      setLoading(false);
+    } else {
+      // Para otros tipos de transacciones
+      setVaca(prev => ({
+        ...prev,
+        transactions: [transactionData.data, ...(prev.transactions || [])]
+      }));
     }
+    
+    setShowTransactionForm(false);
   };
 
-  
   const handleInvitationComplete = (data) => {
     const count = data?.sent || 0;
     showNotification(
@@ -243,6 +179,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       'success'
     );
     setShowInviteForm(false);
+  };
+
+  const handleExpenseCreated = (newExpense) => {
+    setShowCreateExpenseForm(false);
+    // Actualizar la lista de gastos o mostrar notificación
   };
 
   if (loading) {
@@ -255,6 +196,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
 
   return (
     <div className="vaca-details-container">
+      {/* Header existente */}
       <div className="vaca-details-header">
         <button className="back-button" onClick={onBackClick}>
           <FontAwesomeIcon icon={faArrowLeft} /> Volver
@@ -330,6 +272,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         
         {window.innerWidth <= 768 ? (
           <>
+            {/* Tabs para móvil */}
             <div className="vaca-tabs">
               <button 
                 className={`vaca-tab ${activeTab === 'transactions' ? 'active' : ''}`}
@@ -345,6 +288,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               </button>
             </div>
             
+            {/* Contenido según la pestaña activa */}
             {activeTab === 'transactions' ? (
               <div className="vaca-section">
                 <h2>
@@ -353,90 +297,26 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 <div className="add-transaction">
                   <button 
                     className="add-transaction-btn"
-                    onClick={() => setShowAddPayment(!showAddPayment)}
+                    onClick={() => setShowTransactionForm(!showTransactionForm)}
                   >
-                    <FontAwesomeIcon icon={faPlus} /> Añadir pago
+                    <FontAwesomeIcon icon={faPlus} /> Nueva Transacción
                   </button>
                 </div>
                 
-                {showAddPayment && (
-                  <div className="payment-form">
-                    <div className="form-group">
-                      <label htmlFor="paymentAmount">Monto</label>
-                      <div className="amount-input-group">
-                        <span>$</span>
-                        <input
-                          type="number"
-                          id="paymentAmount"
-                          value={paymentAmount}
-                          onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder="0"
-                          min="0"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="paymentDescription">Descripción</label>
-                      <input
-                        type="text"
-                        id="paymentDescription"
-                        value={paymentDescription}
-                        onChange={(e) => setPaymentDescription(e.target.value)}
-                        placeholder="Ej: Pago mensual"
-                      />
-                    </div>
-                    
-                    <div className="payment-form-actions">
-                      <button 
-                        className="cancel-payment-btn"
-                        onClick={() => setShowAddPayment(false)}
-                      >
-                        Cancelar
-                      </button>
-                      <button 
-                        className="save-payment-btn"
-                        onClick={handleAddPayment}
-                        disabled={!paymentAmount}
-                      >
-                        Guardar
-                      </button>
-                    </div>
-                  </div>
-                )}
-                
-                {vaca.transactions && vaca.transactions.length > 0 ? (
-                  <ul className="transactions-list">
-                    {vaca.transactions.map(transaction => {
-        
-                      const participant = vaca.participants?.find(p => p.id === transaction.participant);
-                      
-                      return (
-                        <li key={transaction.id} className="transaction-item">
-                          <div className="transaction-icon" style={{backgroundColor: `${vaca.color}20` || '#3F60E520'}}>
-                            <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
-                          </div>
-                          <div className="transaction-info">
-                            <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
-                            <p className="transaction-description">{transaction.description}</p>
-                            <div className="transaction-details">
-                              <p className="transaction-date">
-                                {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
-                              </p>
-                              {participant && (
-                                <p className="transaction-participant">por {participant.name}</p>
-                              )}
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                {showTransactionForm ? (
+                  <TransactionForm 
+                    vacaId={vaca.id}
+                    userId={user.id}
+                    participantId={vaca.participants?.find(p => p.user_id === user.id)?.id}
+                    onSuccess={handleTransactionComplete}
+                    onCancel={() => setShowTransactionForm(false)}
+                  />
                 ) : (
-                  <div className="no-data-message">
-                    <p>No hay transacciones registradas</p>
-                  </div>
+                  <TransactionsList 
+                    transactions={vaca.transactions || []} 
+                    participants={vaca.participants || []}
+                    vacaColor={vaca.color}
+                  />
                 )}
               </div>
             ) : (
@@ -465,7 +345,38 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             )}
           </>
         ) : (
+          /* Vista de escritorio con ambas secciones */
           <div className="vaca-details-sections">
+            <div className="vaca-section">
+              <h2>
+                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+              </h2>
+              <div className="add-transaction">
+                <button 
+                  className="add-transaction-btn"
+                  onClick={() => setShowTransactionForm(!showTransactionForm)}
+                >
+                  <FontAwesomeIcon icon={faPlus} /> Nueva Transacción
+                </button>
+              </div>
+              
+              {showTransactionForm ? (
+                <TransactionForm 
+                  vacaId={vaca.id}
+                  userId={user.id}
+                  participantId={vaca.participants?.find(p => p.user_id === user.id)?.id}
+                  onSuccess={handleTransactionComplete}
+                  onCancel={() => setShowTransactionForm(false)}
+                />
+              ) : (
+                <TransactionsList 
+                  transactions={vaca.transactions || []} 
+                  participants={vaca.participants || []}
+                  vacaColor={vaca.color}
+                />
+              )}
+            </div>
+            
             <div className="participants-section">
               <h2>
                 <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
@@ -488,106 +399,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 <p className="no-data-message">No hay participantes aún</p>
               )}
             </div>
-            
-            <div className="vaca-section">
-              <h2>
-                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
-              </h2>
-              <div className="add-transaction">
-                <button 
-                  className="add-transaction-btn"
-                  onClick={() => setShowAddPayment(!showAddPayment)}
-                >
-                  <FontAwesomeIcon icon={faPlus} /> Añadir pago
-                </button>
-              </div>
-              
-              {showAddPayment && (
-                <div className="payment-form">
-                  <div className="form-group">
-                    <label htmlFor="paymentAmount">Monto</label>
-                    <div className="amount-input-group">
-                      <span>$</span>
-                      <input
-                        type="number"
-                        id="paymentAmount"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        placeholder="0"
-                        min="0"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="paymentDescription">Descripción</label>
-                    <input
-                      type="text"
-                      id="paymentDescription"
-                      value={paymentDescription}
-                      onChange={(e) => setPaymentDescription(e.target.value)}
-                      placeholder="Ej: Pago mensual"
-                    />
-                  </div>
-                  
-                  <div className="payment-form-actions">
-                    <button 
-                      className="cancel-payment-btn"
-                      onClick={() => setShowAddPayment(false)}
-                    >
-                      Cancelar
-                    </button>
-                    <button 
-                      className="save-payment-btn"
-                      onClick={handleAddPayment}
-                      disabled={!paymentAmount}
-                    >
-                      Guardar
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {vaca.transactions && vaca.transactions.length > 0 ? (
-                <ul className="transactions-list">
-                  {vaca.transactions.map(transaction => {
-      
-                    const participant = vaca.participants?.find(p => p.id === transaction.participant);
-                    
-                    return (
-                      <li key={transaction.id} className="transaction-item">
-                        <div className="transaction-icon" style={{backgroundColor: `${vaca.color}20` || '#3F60E520'}}>
-                          <FontAwesomeIcon icon={faPiggyBank} style={{color: vaca.color || '#3F60E5'}} />
-                        </div>
-                        <div className="transaction-info">
-                          <p className="transaction-amount">${transaction?.amount?.toLocaleString() || '0'}</p>
-                          <p className="transaction-description">{transaction.description}</p>
-                          <div className="transaction-details">
-                            <p className="transaction-date">
-                              {transaction?.date ? new Date(transaction.date).toLocaleDateString() : 'Fecha desconocida'}
-                            </p>
-                            {participant && (
-                              <p className="transaction-participant">por {participant.name}</p>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <div className="no-data-message">
-                  <p>No hay transacciones registradas</p>
-                </div>
-              )}
-            </div>
           </div>
         )}
 
-        {/* Sección de acciones */}
+        {/* Sección de invitaciones */}
         <div className="vaca-actions">   
-          {/* Botón para invitar usuarios - solo visible para el creador */}
           {vaca && user && vaca.user_id === user.id && (
             <button 
               className="secondary-button invite-btn"

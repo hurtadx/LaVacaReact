@@ -359,3 +359,80 @@
 .card.interactive h3 {
   margin-bottom: 15px;
 }
+
+.home-transactions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.home-transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #edf2f7;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.home-transaction-item:hover {
+  background-color: #f8fafc;
+}
+
+.home-transaction-item.positive .transaction-amount {
+  color: #48BB78;
+}
+
+.home-transaction-item.negative .transaction-amount {
+  color: #F56565;
+}
+
+.transaction-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-title {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.transaction-vaca {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.transaction-amount {
+  font-weight: 600;
+}
+
+.view-all-transactions {
+  text-align: center;
+  padding: 10px;
+}
+
+.view-all-transactions button {
+  background: none;
+  border: none;
+  color: #3F60E5;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 5px 10px;
+}
+
+.view-all-transactions button:hover {
+  text-decoration: underline;
+}
+
+.no-transactions {
+  padding: 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: #718096;
+}

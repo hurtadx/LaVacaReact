@@ -14,7 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { createVaca } from "../../../Services/vacaService";
 import { searchUsers } from "../../../Services/userService";
-import { supabase } from "../../../Supabase/supabaseConfig";
+import { getCurrentUser } from "../../../Services/authService";
 import { useNotification } from "../../../Components/Notification/NotificationContext";
 import { NotificationContext } from "../../../Components/Notification/NotificationContext";
 import './CreateVacaForm.css';
@@ -167,18 +167,17 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
     if (!formData.name || !formData.goal) {
       showNotification("El nombre y la meta son obligatorios", "error");
       return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
+    }    setLoading(true);
+      try {      const { user: currentUser, error: authError } = await getCurrentUser();
       
-      if (!user) {
+      if (!currentUser || authError) {
         showNotification("Debes iniciar sesión para crear una vaca", "error");
         setLoading(false);
         return;
       }
+      
+      console.log("Current user data:", currentUser);
+      console.log("Current user ID:", currentUser.id);
       
       const vacaToSave = {
         name: formData.name,
@@ -190,8 +189,9 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
       };
       
       console.log("Creando vaca con datos:", vacaToSave);
+      console.log("Enviando user_id:", currentUser.id);
       
-      const { data, error } = await createVaca(vacaToSave, user.id);
+      const { data, error } = await createVaca(vacaToSave, currentUser.id);
       
       if (error) {
         showNotification(`Error al crear la vaca: ${error}`, "error");

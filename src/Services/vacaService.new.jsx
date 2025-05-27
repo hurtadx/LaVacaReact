@@ -51,7 +51,10 @@ export const getInvitations = async (userId) => {
       return { data: [], error: 'Se requiere un ID de usuario' };
     }
     
-    const response = await apiService.get(`/api/users/${userId}/invitations?status=pending`);
+    const response = await apiService.get('/api/invitations/user', {
+      user_id: userId,
+      status: 'pending'
+    });
     
     return { data: response.invitations || [], error: null };
   } catch (error) {
@@ -129,11 +132,6 @@ export const checkTablesExist = async () => {
  */
 export const createVaca = async (vacaData, userId) => {
   try {
-    console.log("createVaca called with:");
-    console.log("vacaData:", vacaData);
-    console.log("userId:", userId);
-    console.log("userId type:", typeof userId);
-    
     if (!vacaData.name || !vacaData.goal) {
       return { 
         data: null, 
@@ -141,14 +139,7 @@ export const createVaca = async (vacaData, userId) => {
       };
     }
 
-    if (!userId) {
-      return { 
-        data: null, 
-        error: 'Se requiere un ID de usuario válido' 
-      };
-    }
-
-    const requestPayload = {
+    const response = await apiService.post('/api/vacas', {
       name: vacaData.name,
       description: vacaData.description || '',
       goal: parseFloat(vacaData.goal),
@@ -156,11 +147,7 @@ export const createVaca = async (vacaData, userId) => {
       color: vacaData.color || '#3F60E5',
       user_id: userId,
       participants: vacaData.participants || []
-    };
-
-    console.log("Sending request payload:", requestPayload);
-
-    const response = await apiService.post('/api/vacas', requestPayload);
+    });
 
     return { data: response.vaca, error: null };
   } catch (error) {
@@ -178,11 +165,9 @@ export const getUserVacas = async (userId) => {
   console.log("getUserVacas called with userId:", userId);
   
   try {
-    if (!userId) {
-      return { data: [], error: 'Se requiere un ID de usuario' };
-    }
-
-    const response = await apiService.get(`/api/users/${userId}/vacas`);
+    const response = await apiService.get('/api/vacas/user', {
+      user_id: userId
+    });
 
     console.log("User vacas API response:", response);
 

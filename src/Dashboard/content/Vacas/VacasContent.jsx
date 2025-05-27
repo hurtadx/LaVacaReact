@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { getUserVacas, checkTablesExist } from "../../../Services";
-import { supabase } from "../../../Supabase/supabaseConfig";
+import { getCurrentUser } from "../../../Services";
 import { useNotification, NotificationContext } from "../../../Components/Notification/NotificationContext";
 import CreateVacaForm from './CreateVacaForm';
 import VacaDetails from './VacaDetails';
@@ -77,24 +77,22 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
       }
     }
   }, [selectedVacaId, vacas]);
-
-  const loadUserVacas = async () => {
-    setLoading(true);
+  const loadUserVacas = async () => {    setLoading(true);
     
     try {
+      // Get current user from auth service
+      const { user: currentUser, error: authError } = await getCurrentUser();
       
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
+      if (!currentUser?.id || authError) {
         showNotification("Debes iniciar sesión para ver tus vacas", "error");
         setLoading(false);
         return;
       }
       
-      console.log("Cargando vacas para el usuario:", session.user.id);
+      console.log("Cargando vacas para el usuario:", currentUser.id);
       
-      
-      const { data, error } = await getUserVacas(session.user.id);
+      // Load user's vacas
+      const { data, error } = await getUserVacas(currentUser.id);
       
       if (error) {
         console.error("Error al cargar vacas:", error);

@@ -1,10 +1,26 @@
 import apiService, { handleApiCall } from './apiService';
-import { enrichUserData } from './authService';
+import { enrichUserData } from './authService.new';
 
 /**
  * User Service Layer - API Based
  * Replaces Supabase calls with custom backend API endpoints
  */
+
+/**
+ * Obtiene el usuario actual autenticado
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const getCurrentUser = async () => {
+  return handleApiCall(async () => {
+    const response = await apiService.get('/api/auth/me');
+    
+    if (!response.user) {
+      return null;
+    }
+
+    return await enrichUserData(response.user);
+  });
+};
 
 /**
  * Busca usuarios por nombre o email
@@ -214,3 +230,6 @@ export const exportUserData = async () => {
     return response.data;
   });
 };
+
+// Mantener compatibilidad con la función anterior de auth state change
+export { onAuthStateChange } from './authService.new';
