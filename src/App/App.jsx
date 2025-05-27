@@ -8,8 +8,8 @@ import Dashboard from '../Dashboard/Dashboard';
 import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
 import { checkTablesExist } from "../Services/vacaService.jsx";
+import { onAuthStateChange } from "../Services/authService.jsx";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
-import { supabase } from '../Supabase/supabaseConfig';
 
 const ErrorHandler = () => {
   const { captureError } = useNotification();
@@ -94,13 +94,13 @@ const AppContent = () => {
             <Route path="/auth/callback" element={<div>Procesando autenticación...</div>} />
           </Route>
           
-          {/* Rutas privadas - solo accesibles si está autenticado */}
+          
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/:section" element={<Dashboard />} />
           </Route>
           
-          {/* Ruta de fallback para cualquier otra URL */}
+         
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -114,17 +114,17 @@ const AuthChangeListener = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Cambio en autenticación:", event);
+    const unsubscribe = onAuthStateChange((user) => {
+      console.log("Cambio en autenticación:", user ? "SIGNED_IN" : "SIGNED_OUT");
       
-      if (event === 'SIGNED_IN' && session) {
+      if (user) {
         navigate('/dashboard');
-      } else if (event === 'SIGNED_OUT') {
+      } else {
         navigate('/');
       }
     });
     
-    return () => subscription.unsubscribe();
+    return unsubscribe;
   }, [navigate]);
   
   return null;
