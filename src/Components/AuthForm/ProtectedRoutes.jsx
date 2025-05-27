@@ -1,19 +1,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { supabase } from '../../Supabase/supabaseConfig';
+import { getCurrentUser } from '../../Services/authService.jsx';
 import DashboardSkeleton from '../SkeletonLoading/DashboardSkeleton';
 
 export const PrivateRoute = () => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const location = useLocation();
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        setAuthenticated(!!data.session);
+        const { user, error } = await getCurrentUser();
+        setAuthenticated(!!user && !error);
       } catch (error) {
         console.error("Error verificando autenticación:", error);
         setAuthenticated(false);
@@ -43,8 +42,8 @@ export const PublicRoute = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        setAuthenticated(!!data.session);
+        const { user, error } = await getCurrentUser();
+        setAuthenticated(!!user && !error);
       } catch (error) {
         console.error("Error verificando autenticación:", error);
         setAuthenticated(false);
