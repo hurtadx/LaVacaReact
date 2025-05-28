@@ -7,8 +7,8 @@ import Footer from '../Layout/Footer/Footer';
 import Dashboard from '../Dashboard/Dashboard';
 import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
-import { checkTablesExist } from "../Services/vacaService.jsx";
-import { onAuthStateChange } from "../Services/authService.jsx";
+import { checkTablesExist } from "../Services";
+import { onAuthStateChange } from "../Services";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
 
 const ErrorHandler = () => {
@@ -86,13 +86,13 @@ const AppContent = () => {
   return (
     <div className="App">
       {location.pathname !== '/dashboard' && <Header />}
-      <main className="main-content">
-        <Routes>
+      <main className="main-content">        <Routes>
           {/* Rutas públicas - solo accesibles si NO está autenticado */}
           <Route element={<PublicRoute />}>
             <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
             <Route path="/auth/callback" element={<div>Procesando autenticación...</div>} />
           </Route>
+          
           
           
           <Route element={<PrivateRoute />}>
