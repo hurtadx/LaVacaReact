@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserVacas, getInvitations } from '../Services/vacaService.jsx';
-import { getCurrentUser, logoutUser } from '../Services/authService';
+import { getUserVacas, getInvitations, getCurrentUser, logoutUser } from '../Services';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../Components/Notification/NotificationContext';
 import VacaDetails from './content/Vacas/VacaDetails';
