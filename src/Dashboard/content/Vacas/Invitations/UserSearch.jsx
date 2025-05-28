@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { searchUsers } from '../../../../Services/userService';
+import { searchUsers } from '../../../../Services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 

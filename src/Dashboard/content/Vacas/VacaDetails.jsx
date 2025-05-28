@@ -17,9 +17,10 @@ import InviteUsers from './Invitations/InviteUsers';
 import { NotificationContext } from '../../../Components/Notification/NotificationContext';
 import { 
   getVacaDetails, 
-  addVacaTransaction,  inviteParticipants
-} from '../../../Services/vacaService.jsx';
-import { getCurrentUser } from '../../../Services/authService.jsx';
+  addVacaTransaction,
+  inviteParticipants,
+  getCurrentUser
+} from '../../../Services';
 import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
 import TransactionsList from '../../../Components/Transactions/TransactionsList.jsx';
 
