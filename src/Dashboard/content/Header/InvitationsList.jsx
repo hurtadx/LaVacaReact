@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { respondToInvitation } from '../../../Services/vacaService.jsx';
+import { respondToInvitation } from '../../../Services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import './InvitationsList.css';

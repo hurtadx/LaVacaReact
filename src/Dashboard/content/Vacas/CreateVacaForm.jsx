@@ -10,11 +10,9 @@ import {
   faCheckCircle,
   faTimes,
   faSpinner,
-  faEnvelope // Añadir esta importación
+  faEnvelope
 } from '@fortawesome/free-solid-svg-icons';
-import { createVaca } from "../../../Services/vacaService";
-import { searchUsers } from "../../../Services/userService";
-import { getCurrentUser } from "../../../Services/authService";
+import { createVaca, searchUsers, getCurrentUser } from "../../../Services";
 import { useNotification } from "../../../Components/Notification/NotificationContext";
 import { NotificationContext } from "../../../Components/Notification/NotificationContext";
 import './CreateVacaForm.css';
