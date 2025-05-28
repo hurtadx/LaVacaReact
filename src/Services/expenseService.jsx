@@ -14,7 +14,6 @@ import apiService, { handleApiCall } from './apiService';
 export const getExpenses = async (vacaId, filters = {}) => {
   try {
     const params = {
-      vaca_id: vacaId,
       page: filters.page || 1,
       limit: filters.limit || 50
     };
@@ -48,7 +47,7 @@ export const getExpenses = async (vacaId, filters = {}) => {
       params.status = filters.status;
     }
 
-    const response = await apiService.get('/api/expenses', params);
+    const response = await apiService.get(`/api/expenses/vaca/${vacaId}`, params);
     
     // Procesar datos para agregar propiedades que espera el componente
     const processedData = response.expenses.map(expense => ({
@@ -199,7 +198,7 @@ export const deleteExpenseReceipt = async (expenseId) => {
  */
 export const approveExpense = async (expenseId, userId) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/expenses/${expenseId}/approve`, {
+    const response = await apiService.put(`/api/expenses/${expenseId}/approve`, {
       user_id: userId
     });
     return response.expense;
@@ -215,7 +214,7 @@ export const approveExpense = async (expenseId, userId) => {
  */
 export const rejectExpense = async (expenseId, userId, reason) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/expenses/${expenseId}/reject`, {
+    const response = await apiService.put(`/api/expenses/${expenseId}/reject`, {
       user_id: userId,
       reason
     });
@@ -231,7 +230,7 @@ export const rejectExpense = async (expenseId, userId, reason) => {
 export const getPendingExpenses = async (vacaId = null) => {
   return handleApiCall(async () => {
     const endpoint = vacaId 
-      ? `/api/vacas/${vacaId}/expenses/pending`
+      ? `/api/expenses/vaca/${vacaId}/pending`
       : '/api/expenses/pending';
     
     const response = await apiService.get(endpoint);
@@ -246,7 +245,7 @@ export const getPendingExpenses = async (vacaId = null) => {
  */
 export const getExpensesSummary = async (vacaId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/vacas/${vacaId}/expenses/summary`);
+    const response = await apiService.get(`/api/expenses/vaca/${vacaId}/summary`);
     return response.summary;
   });
 };

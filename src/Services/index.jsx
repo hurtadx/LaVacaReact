@@ -2,11 +2,10 @@
 
 
 
-// Vaca Service exports
+// Vaca Service exports - usando versión nueva con API
 export {
   inviteParticipants,
   getInvitations,
-  respondToInvitation,
   checkTablesExist,
   createVaca,
   getUserVacas,
@@ -17,11 +16,10 @@ export {
   getVacaParticipants,
   addVacaParticipant,
   removeVacaParticipant,
-  getVacaTransactions,
   getVacaStats,
   closeVaca,
   reopenVaca
-} from './vacaService.jsx';
+} from './vacaService.new.jsx';
 
 // User Service exports
 export {
@@ -36,24 +34,14 @@ export {
   getUserPreferences,
   deleteUserAccount,
   exportUserData
-} from './userService.jsx';
-
-// Auth Service exports
-export {
-  getCurrentUser,
-  enrichUserData,
-  loginUser,
-  registerUser,
-  logoutUser,
-  resendVerificationEmail,
-  syncUserProfile,
-  onAuthStateChange
-} from './authService.jsx';
+} from './userService.new.jsx';
 
 // Transaction Service exports
 export {
   getTransactionTypes,
   createTransaction,
+  getUserTransactions,
+  getVacaTransactions,
   getTransactionDetails,
   updateTransaction,
   deleteTransaction,
@@ -66,7 +54,19 @@ export {
   getPendingTransactions,
   createBatchTransactions,
   getTransactionStats
-} from './transactionService.jsx';
+} from './transactionService.new.jsx';
+
+// Auth Service exports - usando versión híbrida (Supabase para auth + API para datos)
+export {
+  getCurrentUser,
+  enrichUserData,
+  loginUser,
+  registerUser,
+  logoutUser,
+  resendVerificationEmail,
+  syncUserProfile,
+  onAuthStateChange
+} from './authService.jsx';
 
 // Expense Service exports
 export {
@@ -105,9 +105,12 @@ export {
 // Invitation Service exports
 export {
   createInvitations,
+  getUserInvitations,
   getSentInvitations,
   getVacaInvitations,
-  respondToInvitation as respondToInvitationService,
+  respondToInvitation,
+  acceptInvitation,
+  rejectInvitation,
   cancelInvitation,
   resendInvitation,
   getInvitationDetails,
@@ -134,6 +137,6 @@ export {
   updateVoteRules
 } from './voteService.jsx';
 
-// API Service (for direct use when needed)
+
 export { default as apiService } from './apiService.jsx';
 
