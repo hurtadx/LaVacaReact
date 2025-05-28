@@ -33,10 +33,10 @@ export const createVote = async (voteData) => {
  */
 export const getVacaVotes = async (vacaId, status = null) => {
   return handleApiCall(async () => {
-    const params = { vaca_id: vacaId };
+    const params = {};
     if (status) params.status = status;
     
-    const response = await apiService.get('/api/votes', params);
+    const response = await apiService.get(`/api/votes/vaca/${vacaId}`, params);
     return response.votes;
   });
 };
@@ -123,7 +123,7 @@ export const deleteVote = async (voteId, userId) => {
  */
 export const closeVote = async (voteId, userId) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/votes/${voteId}/close`, {
+    const response = await apiService.put(`/api/votes/${voteId}/close`, {
       closed_by: userId
     });
     return response.vote;
@@ -137,7 +137,7 @@ export const closeVote = async (voteId, userId) => {
  */
 export const getVoteResult = async (voteId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/votes/${voteId}/result`);
+    const response = await apiService.get(`/api/votes/${voteId}/results`);
     return response.result;
   });
 };
