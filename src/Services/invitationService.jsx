@@ -24,14 +24,16 @@ export const createInvitations = async (vacaId, userIds, senderId) => {
 };
 
 /**
- * Obtiene las invitaciones de un usuario
+ * Obtiene las invitaciones de un usuario (recibidas)
  * @param {string} userId - ID del usuario
  * @param {string} status - Estado de las invitaciones ('pending', 'accepted', 'rejected')
  * @returns {Promise<{data: Array|null, error: string|null}>}
  */
 export const getUserInvitations = async (userId, status = 'pending') => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/users/${userId}/invitations?status=${status}`);
+    const response = await apiService.get(`/api/invitations/user/${userId}/received`, {
+      status: status
+    });
     return response.invitations;
   });
 };
@@ -43,9 +45,7 @@ export const getUserInvitations = async (userId, status = 'pending') => {
  */
 export const getSentInvitations = async (senderId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get('/api/invitations/sent', {
-      sender_id: senderId
-    });
+    const response = await apiService.get(`/api/invitations/user/${senderId}/sent`);
     return response.invitations;
   });
 };
@@ -57,9 +57,7 @@ export const getSentInvitations = async (senderId) => {
  */
 export const getVacaInvitations = async (vacaId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get('/api/invitations/vaca', {
-      vaca_id: vacaId
-    });
+    const response = await apiService.get(`/api/invitations/vaca/${vacaId}`);
     return response.invitations;
   });
 };
@@ -73,11 +71,37 @@ export const getVacaInvitations = async (vacaId) => {
  */
 export const respondToInvitation = async (invitationId, response, userId) => {
   return handleApiCall(async () => {
-    const apiResponse = await apiService.patch(`/api/invitations/${invitationId}`, {
-      status: response === 'accept' ? 'accepted' : 'rejected',
-      user_id: userId
-    });
-    return apiResponse.invitation;
+    if (response === 'accept') {
+      const apiResponse = await apiService.put(`/api/invitations/${invitationId}/accept`);
+      return apiResponse.result;
+    } else {
+      const apiResponse = await apiService.put(`/api/invitations/${invitationId}/reject`);
+      return apiResponse.result;
+    }
+  });
+};
+
+/**
+ * Acepta una invitación
+ * @param {string} invitationId - ID de la invitación
+ * @returns {Promise<{data: Object, error: string|null}>}
+ */
+export const acceptInvitation = async (invitationId) => {
+  return handleApiCall(async () => {
+    const response = await apiService.put(`/api/invitations/${invitationId}/accept`);
+    return response.result;
+  });
+};
+
+/**
+ * Rechaza una invitación
+ * @param {string} invitationId - ID de la invitación
+ * @returns {Promise<{data: Object, error: string|null}>}
+ */
+export const rejectInvitation = async (invitationId) => {
+  return handleApiCall(async () => {
+    const response = await apiService.put(`/api/invitations/${invitationId}/reject`);
+    return response.result;
   });
 };
 
@@ -128,7 +152,7 @@ export const getInvitationDetails = async (invitationId) => {
  */
 export const markInvitationAsRead = async (invitationId, userId) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/invitations/${invitationId}/read`, {
+    const response = await apiService.put(`/api/invitations/${invitationId}/read`, {
       user_id: userId
     });
     return response.invitation;
