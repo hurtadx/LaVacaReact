@@ -88,7 +88,7 @@ export const createTransaction = async (transactionData) => {
  */
 export const getUserTransactions = async (userId, options = {}) => {
   return handleApiCall(async () => {
-    const response = await apiService.get('/api/users/me/transactions', {
+    const response = await apiService.get(`/api/transactions/user/${userId}`, {
       page: options.page || 1,
       limit: options.limit || 20,
       start_date: options.startDate,
@@ -109,7 +109,7 @@ export const getUserTransactions = async (userId, options = {}) => {
  */
 export const getVacaTransactions = async (vacaId, options = {}) => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/vacas/${vacaId}/transactions`, {
+    const response = await apiService.get(`/api/transactions/vaca/${vacaId}`, {
       page: options.page || 1,
       limit: options.limit || 50,
       type: options.type,
@@ -166,7 +166,7 @@ export const deleteTransaction = async (transactionId) => {
  */
 export const approveTransaction = async (transactionId, userId) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/transactions/${transactionId}/approve`, {
+    const response = await apiService.put(`/api/transactions/${transactionId}/approve`, {
       user_id: userId
     });
     return response.transaction;
@@ -182,7 +182,7 @@ export const approveTransaction = async (transactionId, userId) => {
  */
 export const rejectTransaction = async (transactionId, userId, reason) => {
   return handleApiCall(async () => {
-    const response = await apiService.patch(`/api/transactions/${transactionId}/reject`, {
+    const response = await apiService.put(`/api/transactions/${transactionId}/reject`, {
       user_id: userId,
       reason
     });
@@ -257,7 +257,7 @@ export const downloadReceipt = async (transactionId) => {
  */
 export const getTransactionSummary = async (vacaId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/vacas/${vacaId}/transactions/summary`);
+    const response = await apiService.get(`/api/transactions/vaca/${vacaId}/summary`);
     return response.summary;
   });
 };
@@ -270,7 +270,7 @@ export const getTransactionSummary = async (vacaId) => {
 export const getPendingTransactions = async (vacaId = null) => {
   return handleApiCall(async () => {
     const endpoint = vacaId 
-      ? `/api/vacas/${vacaId}/transactions/pending`
+      ? `/api/transactions/vaca/${vacaId}/pending`
       : '/api/transactions/pending';
     
     const response = await apiService.get(endpoint);
@@ -301,5 +301,42 @@ export const getTransactionStats = async (filters = {}) => {
   return handleApiCall(async () => {
     const response = await apiService.get('/api/transactions/stats', filters);
     return response.stats;
+  });
+};
+
+/**
+ * Obtiene el resumen de transacciones de un usuario
+ * @param {string} userId - ID del usuario
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const getUserTransactionSummary = async (userId) => {
+  return handleApiCall(async () => {
+    const response = await apiService.get(`/api/transactions/user/${userId}/summary`);
+    return response.summary;
+  });
+};
+
+/**
+ * Obtiene estadísticas de transacciones para una vaca específica
+ * @param {string} vacaId - ID de la vaca
+ * @param {Object} filters - Filtros para las estadísticas
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const getVacaTransactionStats = async (vacaId, filters = {}) => {
+  return handleApiCall(async () => {
+    const response = await apiService.get(`/api/transactions/vaca/${vacaId}/stats`, filters);
+    return response.stats;
+  });
+};
+
+/**
+ * Obtiene el historial de una transacción específica
+ * @param {string} transactionId - ID de la transacción
+ * @returns {Promise<{data: Array|null, error: string|null}>}
+ */
+export const getTransactionHistory = async (transactionId) => {
+  return handleApiCall(async () => {
+    const response = await apiService.get(`/api/transactions/${transactionId}/history`);
+    return response.history;
   });
 };

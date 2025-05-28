@@ -2,18 +2,47 @@ import apiService, { handleApiCall } from './apiService';
 
 /**
  * Transaction Service Layer - API Based
- * Replaces Supabase calls with custom backend API endpoints
+ * Replaces Supabase calls with custom Spring Boot backend API endpoints
+ * 
+ * Backend API Specifications:
+ * - UUIDs are required for all IDs
+ * - Transaction types: 'contribution', 'expense', 'withdrawal'
+ * - Proper 400 Bad Request error handling
+ * - URL parameters used for user identification
+ * - Amount validation (positive numbers)
  */
+
+/**
+ * Utility function to validate UUID format
+ * @param {string} id - ID to validate
+ * @returns {boolean} - True if valid UUID
+ */
+const isValidUUID = (id) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
 
 /**
  * Obtiene los tipos de transacción disponibles
  * @returns {Promise<{data: Array|null, error: string|null}>}
  */
 export const getTransactionTypes = async () => {
-  return handleApiCall(async () => {
+  try {
     const response = await apiService.get('/api/transaction-types');
-    return response.types;
-  });
+    return { data: response.types || [], error: null };
+  } catch (error) {
+    console.error("Error al obtener tipos de transacción:", error);
+    
+    // Devolver tipos por defecto si no se pueden obtener del backend
+    return { 
+      data: [
+        { id: 'contribution', name: 'Contribución', description: 'Aporte a la vaca' },
+        { id: 'expense', name: 'Gasto', description: 'Gasto de la vaca' },
+        { id: 'withdrawal', name: 'Retiro', description: 'Retiro de fondos' }
+      ], 
+      error: null 
+    };
+  }
 };
 
 /**
