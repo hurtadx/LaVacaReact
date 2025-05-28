@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserFriends, faUserPlus, faEnvelope, faBan, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { getVacaMembers, inviteMember, removeParticipant } from '../../Services/participantsService';
+import { getParticipants, removeParticipant, calculateExitDistribution, processParticipantExit, createInvitations } from '../../Services';
 import { formatCurrency } from '../../Utils/formatters';
 import './MembersManager.css';
 
@@ -19,11 +19,10 @@ const MembersManager = ({ vacaId, isAdmin, currentUserId }) => {
   useEffect(() => {
     loadMembers();
   }, [vacaId]);
-  
-  const loadMembers = async () => {
+    const loadMembers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await getVacaMembers(vacaId);
+      const { data, error } = await getParticipants(vacaId);
       if (error) throw error;
       
       setMembers(data || []);
@@ -33,13 +32,12 @@ const MembersManager = ({ vacaId, isAdmin, currentUserId }) => {
       setLoading(false);
     }
   };
-  
-  const handleInvite = async (e) => {
+    const handleInvite = async (e) => {
     e.preventDefault();
     setSendingInvite(true);
     
     try {
-      const { error } = await inviteMember(vacaId, inviteEmail, inviteMessage);
+      const { error } = await createInvitations(vacaId, [{ email: inviteEmail, message: inviteMessage }]);
       if (error) throw error;
       
       setInviteEmail('');
@@ -52,12 +50,11 @@ const MembersManager = ({ vacaId, isAdmin, currentUserId }) => {
       setSendingInvite(false);
     }
   };
-  
-  const handleRemoveMember = async (memberId) => {
+    const handleRemoveMember = async (memberId) => {
     if (!confirm("¿Estás seguro de que deseas eliminar a este miembro?")) return;
     
     try {
-      const { error } = await removeParticipant(vacaId, memberId);
+      const { error } = await removeParticipant(memberId);
       if (error) throw error;
       
       loadMembers();
@@ -65,21 +62,33 @@ const MembersManager = ({ vacaId, isAdmin, currentUserId }) => {
       setError("Error eliminando miembro: " + err.message);
     }
   };
-  
-  const handleExitRequest = async () => {
+    const handleExitRequest = async () => {
     try {
+      // Find the current user's participant ID
+      const currentParticipant = members.find(m => m.user_id === currentUserId);
+      if (!currentParticipant) {
+        throw new Error("No se encontró información del participante actual");
+      }
+      
       // Calcular monto de salida
-      const response = await calculateExitAmount(vacaId, currentUserId);
-      setExitAmount(response.amount);
+      const { data, error } = await calculateExitDistribution(currentParticipant.id);
+      if (error) throw error;
+      
+      setExitAmount(data.amount || 0);
       setShowExitConfirmation(true);
     } catch (err) {
       setError("Error calculando monto de salida: " + err.message);
     }
   };
-  
-  const confirmExit = async () => {
+    const confirmExit = async () => {
     try {
-      const { error } = await exitVaca(vacaId, currentUserId);
+      // Find the current user's participant ID
+      const currentParticipant = members.find(m => m.user_id === currentUserId);
+      if (!currentParticipant) {
+        throw new Error("No se encontró información del participante actual");
+      }
+      
+      const { error } = await processParticipantExit(currentParticipant.id);
       if (error) throw error;
       
       // Redirigir al usuario a la pantalla principal o mostrar mensaje
