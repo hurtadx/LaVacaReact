@@ -3,7 +3,7 @@
  * Replaces direct Supabase calls with clean API endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 class ApiService {
   constructor() {
@@ -141,7 +141,6 @@ class ApiService {
       return false;
     }
   }
-
   /**
    * Make authenticated API request with retry logic
    */
@@ -155,10 +154,26 @@ class ApiService {
       }
     };
 
+    // Log detallado de la petición
+    this.logRequestDetails(options.method || 'GET', endpoint, options.body, config.headers);
+
     try {
       const response = await fetch(url, config);
+      
+      // Log de la respuesta
+      console.log("📥 ===== HTTP RESPONSE DEBUG =====");
+      console.log("📍 URL:", url);
+      console.log("📊 Status:", response.status, response.statusText);
+      console.log("📋 Response Headers:", Object.fromEntries(response.headers.entries()));
+      console.log("================================");
+      
       return await this.handleResponse(response);
     } catch (error) {
+      console.error("❌ ===== HTTP ERROR DEBUG =====");
+      console.error("📍 URL:", url);
+      console.error("❌ Error:", error);
+      console.error("==============================");
+      
       if (error.message === 'Token expired, retry needed' && !options._isRetry) {
         // Retry the request once after token refresh
         return this.request(endpoint, { ...options, _isRetry: true });
@@ -217,6 +232,21 @@ class ApiService {
       body: formData,
       isFormData: true
     });
+  }
+
+  /**
+   * Debug logging para peticiones HTTP
+   */
+  logRequestDetails(method, endpoint, data, headers) {
+    console.log("🔍 ===== HTTP REQUEST DEBUG =====");
+    console.log("📍 URL:", `${this.baseURL}${endpoint}`);
+    console.log("🔧 Method:", method);
+    console.log("📋 Headers:", headers);
+    console.log("📦 Body (raw):", data);
+    console.log("📦 Body (stringified):", typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
+    console.log("📏 Body size:", typeof data === 'object' ? JSON.stringify(data).length : (data?.length || 0), "bytes");
+    console.log("🕐 Timestamp:", new Date().toISOString());
+    console.log("===============================");
   }
 }
 
