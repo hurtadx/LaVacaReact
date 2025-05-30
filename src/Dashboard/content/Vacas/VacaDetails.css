@@ -200,57 +200,103 @@
 }
 
 .participants-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-height: none;
+  overflow-y: visible;
+  list-style: none;
+  padding: 20px;
+  margin: 0;
 }
 
 .participant-item {
+  flex: 0 0 calc(33.333% - 12px);
+  min-width: 200px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.2s ease;
   display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 10px 15px;
-  background-color: #f8fafd;
-  border-radius: 8px;
-  transition: transform 0.2s ease;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #eaedf0;
 }
 
 .participant-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-.participant-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  color: white;
-  font-weight: 600;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+  background-color: #fff;
 }
 
 .participant-info {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
 }
 
-.participant-info h4 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--dark-color);
+.participant-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 24px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-bottom: 5px;
+  position: relative;
 }
 
-.participant-info p {
+.participant-avatar::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: none;
+}
+
+.participant-avatar[data-registered="true"]::after {
+  display: block;
+  background-color: #3F60E5;
+}
+
+.participant-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.participant-name {
   margin: 0;
-  font-size: 14px;
-  color: #777;
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.participant-email {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .add-transaction {
@@ -884,24 +930,61 @@ button[type="submit"],
   background-color: rgba(239, 68, 68, 0.2);
 }
 
-@media (max-width: 576px) {
-  .add-participant-form,
-  .search-form {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .participants-section h3 {
-    font-size: 16px;
-  }
-  
-  .search-input-wrapper,
-  .participant-input-wrapper {
-    width: 100%;
-  }
+/* Participants header with refresh button */
+.participants-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  gap: 10px;
+}
 
-  .search-btn,
-  .add-participant-btn {
-    margin-top: 8px !important;
+.participants-header h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.refresh-participants-btn {
+  background-color: #f0f4ff;
+  color: var(--primary-color);
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  height: 36px;
+}
+
+.refresh-participants-btn:hover {
+  background-color: #e0e8ff;
+  transform: rotate(180deg);
+}
+
+.refresh-participants-btn:active {
+  transform: rotate(180deg) scale(0.95);
+}
+
+/* Mobile responsive for participants header */
+@media (max-width: 768px) {
+  .participants-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .participants-header h2 {
+    font-size: 18px;
+  }
+  
+  .refresh-participants-btn {
+    padding: 6px 8px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 }

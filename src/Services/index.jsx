@@ -13,7 +13,6 @@ export {
   addVacaTransaction,
   updateVaca,
   deleteVaca,
-  getVacaParticipants,
   addVacaParticipant,
   removeVacaParticipant,
   getVacaStats,
@@ -90,16 +89,27 @@ export {
 
 // Participant Service exports
 export {
+  getVacaParticipants,
+  getActiveParticipants,
+  getPendingParticipants,
+  getPageableParticipants,
+  getUserParticipations,
+  getParticipantByEmail,
+  getParticipantContributions,
+  createParticipant,
+  updateParticipant,
+  updateParticipantStatus,
+  activateParticipant,
+  deactivateParticipant,
+  removeParticipant,
+  bulkInviteParticipants,
   getParticipants,
   addParticipant,
-  updateParticipant,
-  removeParticipant,
   getParticipantBalance,
   calculateExitDistribution,
   processParticipantExit,
   getParticipantTransactions,
-  getParticipantStats,
-  updateParticipantStatus
+  getParticipantStats
 } from './participantService.jsx';
 
 // Invitation Service exports

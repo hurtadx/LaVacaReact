@@ -76,20 +76,24 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
         }
       }
     }
-  }, [selectedVacaId, vacas]);
-  const loadUserVacas = async () => {    setLoading(true);
+  }, [selectedVacaId, vacas]);  const loadUserVacas = async () => {    setLoading(true);
     
     try {
       // Get current user from auth service
       const { user: currentUser, error: authError } = await getCurrentUser();
       
+      console.log("🔍 LOAD VACAS - getCurrentUser result:", { user: currentUser, error: authError });
+      console.log("🔍 LOAD VACAS - currentUser.id:", currentUser?.id);
+      console.log("🔍 LOAD VACAS - Token in localStorage:", localStorage.getItem('lavaca_access_token') ? 'Present' : 'Missing');
+      
       if (!currentUser?.id || authError) {
+        console.error("❌ LOAD VACAS - No user or auth error:", authError);
         showNotification("Debes iniciar sesión para ver tus vacas", "error");
         setLoading(false);
         return;
       }
       
-      console.log("Cargando vacas para el usuario:", currentUser.id);
+      console.log("✅ LOAD VACAS - Loading vacas for user:", currentUser.id);
       
       // Load user's vacas
       const { data, error } = await getUserVacas(currentUser.id);
@@ -148,15 +152,13 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
   if (showCreateForm) {
     return <CreateVacaForm onSave={handleCreateVaca} onCancel={() => setShowCreateForm(false)} />;
   }
-  
-  return (
+    return (
     <div className="vacas-container">
       <section className="vacas-header">
         <h1>Tus Vacas</h1>
         <button className="create-vaca-btn" onClick={() => setShowCreateForm(true)}>
           <FontAwesomeIcon icon={faPlus} /> Crear Nueva Vaca
-        </button>
-      </section>
+        </button>      </section>
       
       <section className="vacas-list">
         {loading ? (

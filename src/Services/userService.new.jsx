@@ -59,20 +59,26 @@ export const searchUsers = async (searchTerm) => {
         data: [], 
         error: 'El término de búsqueda debe tener al menos 3 caracteres' 
       };
-    }
-
-    const cleanSearchTerm = searchTerm.trim();
+    }    const cleanSearchTerm = searchTerm.trim();
     
-    // Construir URL con parámetros de query según especificación del backend
-    const response = await apiService.get(`/api/users/search?q=${encodeURIComponent(cleanSearchTerm)}&limit=10`);
+    console.log(`🔍 Buscando usuarios con término: "${cleanSearchTerm}"`);
+    
 
+    const response = await apiService.get(`/api/search/users?q=${encodeURIComponent(cleanSearchTerm)}&limit=10`);
+      console.log(`📊 Respuesta de búsqueda:`, response);
+    
+
+    const usersArray = Array.isArray(response) ? response : (response.users || []);
+    
     // Procesar los datos para mantener compatibilidad con el formato anterior
-    const safeUserData = (response.users || []).map(user => ({
+    const safeUserData = usersArray.map(user => ({
       id: user.id,
       username: user.username || user.email?.split('@')[0] || 'Usuario',
       email: user.email,
       avatarUrl: user.avatarUrl || user.avatar_url || null 
     }));
+    
+    console.log(`✅ Usuarios procesados (${safeUserData.length}):`, safeUserData);
     
     return { data: safeUserData, error: null };
   } catch (error) {

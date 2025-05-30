@@ -13,7 +13,7 @@ import apiService, { handleApiCall } from './apiService';
 export const getVacaParticipants = async (vacaId) => {
   return handleApiCall(async () => {
     const response = await apiService.get(`/api/participants/vaca/${vacaId}`);
-    return response.participants;
+    return response.participants || response.data || response;
   });
 };
 

@@ -11,7 +11,8 @@ import {
   faPlus,
   faPiggyBank,
   faCow,
-  faUserPlus
+  faUserPlus,
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
 import InviteUsers from './Invitations/InviteUsers';
 import { NotificationContext } from '../../../Components/Notification/NotificationContext';
@@ -19,7 +20,8 @@ import {
   getVacaDetails, 
   addVacaTransaction,
   inviteParticipants,
-  getCurrentUser
+  getCurrentUser,
+  getVacaParticipants
 } from '../../../Services';
 import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
 import TransactionsList from '../../../Components/Transactions/TransactionsList.jsx';
@@ -32,7 +34,10 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const { showNotification } = useContext(NotificationContext);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeTab, setActiveTab] = useState('transactions');
-  const [showTransactionForm, setShowTransactionForm] = useState(false);    useEffect(() => {
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [participants, setParticipants] = useState([]);
+
+  useEffect(() => {
     if (!passedUser) {
       const loadUser = async () => {
         try {
@@ -102,15 +107,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         
         const userPrefix = user?.id ? `user_${user.id}_` : '';
         
-        
-        localStorage.setItem(`${userPrefix}lastVisitedVaca`, JSON.stringify({
+          localStorage.setItem(`${userPrefix}lastVisitedVaca`, JSON.stringify({
           id: vaca.id,
           name: vaca.name,
           current: vaca.current,
           goal: vaca.goal
         }));
-        
-        console.log("Guardando última vaca visitada:", vaca.name);
         
         
         const event = new CustomEvent('vacaVisited', { 
@@ -148,9 +150,8 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   };
   
   const daysLeft = calculateDaysLeft();
-
   // Reemplazar handleAddPayment por handleTransactionComplete
-  const handleTransactionComplete = (transactionData) => {
+  const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");
     
     // Si es una contribución, actualizar el monto actual
@@ -169,9 +170,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
     
     setShowTransactionForm(false);
+    
+    // Refresh participants in case new participants were added through transactions
+    await loadParticipants();
   };
-
-  const handleInvitationComplete = (data) => {
+  const handleInvitationComplete = async (data) => {
     const count = data?.sent || 0;
     showNotification(
       count === 1 
@@ -180,18 +183,43 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       'success'
     );
     setShowInviteForm(false);
+    
+    // Refresh participants list after sending invitations
+    await loadParticipants();
   };
-
   const handleExpenseCreated = (newExpense) => {
     setShowCreateExpenseForm(false);
     // Actualizar la lista de gastos o mostrar notificación
   };
 
+  // Load participants using the API endpoint
+  const loadParticipants = async () => {
+    if (vaca?.id) {
+      try {
+        const result = await getVacaParticipants(vaca.id);
+        
+        if (result.error) {
+          console.error("Error loading participants:", result.error);
+          // Fallback to existing participants data
+          setParticipants(vaca.participants || []);
+        } else {
+          setParticipants(result.data || []);
+        }
+      } catch (error) {
+        console.error("Exception loading participants:", error);
+        // Fallback to existing participants data
+        setParticipants(vaca.participants || []);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadParticipants();
+  }, [vaca?.id, vaca.participants]);
   if (loading) {
     return <div className="loading-spinner">Cargando detalles...</div>;
   }
-  
-  if (!vaca) {
+    if (!vaca) {
     return <div className="error-message">No se pudieron cargar los detalles</div>;
   }
 
@@ -208,8 +236,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             style={{color: vaca.color || '#3F60E5'}} 
             className="vaca-title-icon" 
           />
-          <h1>{vaca.name}</h1>
-        </div>
+          <h1>{vaca.name}</h1>        </div>
       </div>
       
       <div className="vaca-details-content">
@@ -237,7 +264,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               
               <div className="stat">
                 <FontAwesomeIcon icon={faUsers} className="stat-icon" />
-                <span>{vaca.participants?.length || 0} participantes</span>
+                <span>{participants?.length || 0} participantes</span>
               </div>
             </div>
           </div>
@@ -308,35 +335,49 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                   <TransactionForm 
                     vacaId={vaca.id}
                     userId={user.id}
-                    participantId={vaca.participants?.find(p => p.user_id === user.id)?.id}
+                    participantId={participants?.find(p => p.user_id === user.id)?.id}
                     onSuccess={handleTransactionComplete}
                     onCancel={() => setShowTransactionForm(false)}
-                  />
-                ) : (
+                  />                ) : (
                   <TransactionsList 
                     transactions={vaca.transactions || []} 
-                    participants={vaca.participants || []}
+                    participants={participants || []}
                     vacaColor={vaca.color}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="participants-section">
-                <h2>
-                  <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
-                </h2>
-                {vaca.participants && vaca.participants.length > 0 ? (
+                  />                )}
+              </div>            ) : (              <div className="participants-section">
+                <div className="participants-header">
+                  <h2>
+                    <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
+                  </h2>
+                  <button 
+                    className="refresh-participants-btn"
+                    onClick={loadParticipants}
+                    title="Actualizar participantes"
+                  >
+                    <FontAwesomeIcon icon={faSync} />
+                  </button>
+                </div>{participants && participants.length > 0 ? (
                   <ul className="participants-list">
-                    {vaca.participants.map(participant => (
-                      <li key={participant.id} className="participant-item">
-                        <div className="participant-avatar" style={{backgroundColor: vaca.color || '#3F60E5'}}>
-                          {participant.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="participant-info">
-                          <h4>{participant.name}</h4>
-                          <p>{participant.email}</p>
-                        </div>
-                      </li>
+                    {participants.map(participant => (
+                          <li key={participant.id} className="participant-item">
+                            <div className="participant-info">
+                              <div 
+                                className="participant-avatar" 
+                                style={{backgroundColor: vaca.color || '#3F60E5'}}
+                                data-registered={participant.user_id ? "true" : "false"}
+                              >
+                                {participant.name?.charAt(0)?.toUpperCase() || '?'}
+                              </div>
+                              <div className="participant-details">
+                                <span className="participant-name">{participant.name}</span>
+                                {participant.email && (
+                                  <span className="participant-email">
+                                    {participant.email}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </li>
                     ))}
                   </ul>
                 ) : (
@@ -361,39 +402,52 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 </button>
               </div>
               
-              {showTransactionForm ? (
-                <TransactionForm 
+              {showTransactionForm ? (                <TransactionForm 
                   vacaId={vaca.id}
                   userId={user.id}
-                  participantId={vaca.participants?.find(p => p.user_id === user.id)?.id}
+                  participantId={participants?.find(p => p.user_id === user.id)?.id}
                   onSuccess={handleTransactionComplete}
                   onCancel={() => setShowTransactionForm(false)}
-                />
-              ) : (
+                />) : (
                 <TransactionsList 
                   transactions={vaca.transactions || []} 
-                  participants={vaca.participants || []}
+                  participants={participants || []}
                   vacaColor={vaca.color}
                 />
-              )}
-            </div>
-            
-            <div className="participants-section">
-              <h2>
-                <FontAwesomeIcon icon={faUsers} /> Participantes ({vaca.participants?.length || 0})
-              </h2>
-              {vaca.participants && vaca.participants.length > 0 ? (
+              )}            </div>              <div className="participants-section">              
+                <div className="participants-header">
+                  <h2>
+                    <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
+                  </h2>
+                  <button 
+                    className="refresh-participants-btn"
+                    onClick={loadParticipants}
+                    title="Actualizar participantes"
+                  >
+                    <FontAwesomeIcon icon={faSync} />
+                  </button>
+                </div>{participants && participants.length > 0 ? (
                 <ul className="participants-list">
-                  {vaca.participants.map(participant => (
-                    <li key={participant.id} className="participant-item">
-                      <div className="participant-avatar" style={{backgroundColor: vaca.color || '#3F60E5'}}>
-                        {participant.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="participant-info">
-                        <h4>{participant.name}</h4>
-                        <p>{participant.email}</p>
-                      </div>
-                    </li>
+                  {participants.map(participant => (
+                        <li key={participant.id} className="participant-item">
+                          <div className="participant-info">
+                            <div 
+                              className="participant-avatar" 
+                              style={{backgroundColor: vaca.color || '#3F60E5'}}
+                              data-registered={participant.user_id ? "true" : "false"}
+                            >
+                              {participant.name?.charAt(0)?.toUpperCase() || '?'}
+                            </div>
+                            <div className="participant-details">
+                              <span className="participant-name">{participant.name}</span>
+                              {participant.email && (
+                                <span className="participant-email">
+                                  {participant.email}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </li>
                   ))}
                 </ul>
               ) : (
@@ -415,13 +469,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
           )}
         </div>
 
-        {/* Modal de invitaciones */}
-        {showInviteModal && (
+        {/* Modal de invitaciones */}        {showInviteModal && (
           <InviteUsers 
             vacaId={vaca.id}
             userId={user.id}
-            onInvitationComplete={(data) => {
-              handleInvitationComplete(data);
+            onInvitationComplete={async (data) => {
+              await handleInvitationComplete(data);
               setShowInviteModal(false); 
             }}
             onClose={() => setShowInviteModal(false)}

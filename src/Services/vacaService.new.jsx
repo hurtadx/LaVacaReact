@@ -339,24 +339,17 @@ export const createVaca = async (vacaData, userId) => {
  * @returns {Promise<{data: Array, error: string|null}>}
  */
 export const getUserVacas = async (userId) => {
-  console.log("getUserVacas called with userId:", userId);
-  
   try {
     if (!userId || !isValidUUID(userId)) {
       return { data: [], error: 'Se requiere un ID de usuario válido (UUID)' };
     }    
-    const response = await apiService.get(`/api/vacas?userId=${userId}`);
-
-    console.log("User vacas API response:", response);
-
-   
+    
+    const response = await apiService.get(`/api/users/${userId}/vacas`);
     const vacasArray = Array.isArray(response) ? response : (response.vacas || []);
     
-    console.log("Processed vacas array:", vacasArray);
-
     return { data: vacasArray, error: null };
   } catch (error) {
-    console.error("Error al obtener vacas:", error);
+    console.error("❌ Error al obtener vacas:", error);
     
     if (error.status === 400) {
       return { data: [], error: 'ID de usuario inválido' };
