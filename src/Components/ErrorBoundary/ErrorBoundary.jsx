@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { NotificationContext } from '../Notification/NotificationContext';
+import { NotificationContext } from '../../components/Notification/NotificationContext';
 
 class ErrorBoundary extends Component {
  g

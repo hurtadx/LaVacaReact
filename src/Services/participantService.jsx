@@ -10,9 +10,9 @@ import apiService, { handleApiCall } from './apiService';
  * @param {string} vacaId - ID de la vaca
  * @returns {Promise<{data: Array, error: string|null}>}
  */
-export const getVacaParticipants = async (vacaId) => {
+export const getParticipantsByVaca = async (vacaId) => {
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/participants/vaca/${vacaId}`);
+    const response = await apiService.get(`/api/participants/vaca/${vacaId}/details`);
     return response.participants || response.data || response;
   });
 };
@@ -181,7 +181,7 @@ export const bulkInviteParticipants = async (inviteData) => {
 };
 
 // Legacy functions for backward compatibility
-export const getParticipants = getVacaParticipants;
+export const getParticipants = getParticipantsByVaca;
 export const addParticipant = createParticipant;
 
 /**

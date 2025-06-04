@@ -1,8 +1,3 @@
-
-
-
-
-// Vaca Service exports - usando versión nueva con API
 export {
   inviteParticipants,
   getInvitations,
@@ -17,10 +12,12 @@ export {
   removeVacaParticipant,
   getVacaStats,
   closeVaca,
-  reopenVaca
-} from './vacaService.new.jsx';
+  reopenVaca,
+  getVacaParticipants,
+  getVacaTransactions
+} from '../Services/vacaService.jsx';
 
-// User Service exports
+
 export {
   searchUsers,
   updateUserProfile,
@@ -33,14 +30,12 @@ export {
   getUserPreferences,
   deleteUserAccount,
   exportUserData
-} from './userService.new.jsx';
+} from './userService.jsx';
 
 // Transaction Service exports
-export {
-  getTransactionTypes,
+export {  getTransactionTypes,
   createTransaction,
   getUserTransactions,
-  getVacaTransactions,
   getTransactionDetails,
   updateTransaction,
   deleteTransaction,
@@ -53,9 +48,8 @@ export {
   getPendingTransactions,
   createBatchTransactions,
   getTransactionStats
-} from './transactionService.new.jsx';
+} from '../Services/transactionService.new.jsx';
 
-// Auth Service exports - usando versión híbrida (Supabase para auth + API para datos)
 export {
   getCurrentUser,
   enrichUserData,
@@ -85,11 +79,10 @@ export {
   getExpensesStats,
   requestReimbursement,
   processReimbursement
-} from './expenseService.jsx';
+} from '../Services/expenseService.jsx';
 
-// Participant Service exports
+
 export {
-  getVacaParticipants,
   getActiveParticipants,
   getPendingParticipants,
   getPageableParticipants,
@@ -110,7 +103,7 @@ export {
   processParticipantExit,
   getParticipantTransactions,
   getParticipantStats
-} from './participantService.jsx';
+} from '../Services/participantService.jsx';
 
 // Invitation Service exports
 export {
@@ -128,7 +121,6 @@ export {
   getInvitationStats
 } from './invitationService.jsx';
 
-// Vote Service exports
 export {
   createVote,
   getVacaVotes,
@@ -145,8 +137,8 @@ export {
   notifyVoteParticipants,
   getVoteRules,
   updateVoteRules
-} from './voteService.jsx';
+} from '../Services/voteService.jsx';
 
 
-export { default as apiService } from './apiService.jsx';
+export { default as apiService } from '../Services/apiService.jsx';
 

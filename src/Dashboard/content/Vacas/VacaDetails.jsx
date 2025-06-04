@@ -12,19 +12,37 @@ import {
   faPiggyBank,
   faCow,
   faUserPlus,
-  faSync
+  faSync,  faEllipsisV,
+  faEdit,
+  faCog,
+  faTimes,
+  faCheck,
+  faSignOutAlt,
+  faUserMinus,
+  faChartLine,
+  faExclamationTriangle,
+  faInfoCircle,
+  faTrash,
+  faEye,
+  faDownload
 } from '@fortawesome/free-solid-svg-icons';
-import InviteUsers from './Invitations/InviteUsers';
-import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import InviteParticipantsModal from '../../../components/InviteParticipantsModal/InviteParticipantsModal';
+import { NotificationContext } from '../../../components/Notification/NotificationContext';
 import { 
   getVacaDetails, 
   addVacaTransaction,
   inviteParticipants,
   getCurrentUser,
-  getVacaParticipants
+  getVacaParticipants,
+  updateVaca,
+  removeVacaParticipant,
+  getVacaTransactions,
+  removeParticipant,
+  getVacaStats
 } from '../../../Services';
 import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
 import TransactionsList from '../../../Components/Transactions/TransactionsList.jsx';
+import ParticipantCard from '../../../Components/Participants/ParticipantCard.jsx';
 
 const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
   const [vaca, setVaca] = useState(initialVaca || {});
@@ -36,6 +54,32 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const [activeTab, setActiveTab] = useState('transactions');
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [participants, setParticipants] = useState([]);
+  
+  // New state for enhanced features
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showEditVacaModal, setShowEditVacaModal] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [showExitVacaModal, setShowExitVacaModal] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [vacaStats, setVacaStats] = useState({});
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    description: '',
+    goal: '',
+    deadline: ''
+  });
+  const [rulesData, setRulesData] = useState({
+    invitationPermissions: 'admin_only',
+    contributionAmount: '',
+    contributionFrequency: 'monthly',
+    contributionDeadline: '',
+    approvalPercentage: 75,
+    goalSettings: 'fixed',
+    penaltySettings: 'none',
+    memberExpulsion: 'majority_vote',
+    exitPolicy: 'anytime'
+  });
+  const optionsMenuRef = useRef(null);
 
   useEffect(() => {
     if (!passedUser) {
@@ -61,11 +105,17 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         setLoading(true);
         try {
           const { data, error } = await getVacaDetails(match.params.id);
-          if (error) {teExpen
+          if (error) {
             throw new Error(error);
           }
           if (data) {
             setVaca(data);
+            setEditFormData({
+              name: data.name || '',
+              description: data.description || '',
+              goal: data.goal || '',
+              deadline: data.deadline || ''
+            });
           }
         } catch (error) {
           console.error("Error al cargar detalles:", error);
@@ -125,6 +175,28 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   }, [vaca, user]);
 
+  // Load additional data
+  useEffect(() => {
+    if (vaca?.id) {
+      loadTransactions();
+      loadVacaStats();
+    }
+  }, [vaca?.id]);
+
+  // Close options menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) {
+        setShowOptionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const progressPercent = vaca.current 
     ? Math.min((vaca.current / vaca.goal) * 100, 100) 
     : 0;
@@ -150,11 +222,59 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   };
   
   const daysLeft = calculateDaysLeft();
-  // Reemplazar handleAddPayment por handleTransactionComplete
+
+  // Load transactions
+  const loadTransactions = async () => {
+    try {
+      const result = await getVacaTransactions(vaca.id);
+      if (result.data) {
+        setTransactions(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading transactions:", error);
+    }
+  };
+  // Load vaca statistics
+  const loadVacaStats = async () => {
+    try {
+      const result = await getVacaStats(vaca.id);
+      if (result.data) {
+        setVacaStats(result.data);
+      } else if (result.error) {
+        console.warn("Could not load vaca stats:", result.error);
+       
+        setVacaStats({
+          totalContributions: 0,
+          totalExpenses: 0,
+          currentBalance: 0,
+          goalProgress: 0,
+          participantCount: 0,
+          transactionCount: 0,
+          averageContribution: 0,
+          lastActivity: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.warn("Error loading vaca stats:", error.message);
+  
+      setVacaStats({
+        totalContributions: 0,
+        totalExpenses: 0,
+        currentBalance: 0,
+        goalProgress: 0,
+        participantCount: 0,
+        transactionCount: 0,
+        averageContribution: 0,
+        lastActivity: new Date().toISOString()
+      });
+    }
+  };
+
+  // Handle transaction completion
   const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");
     
-    // Si es una contribución, actualizar el monto actual
+    // If it's a contribution, update current amount
     if (transactionData.type === 'contribution') {
       setVaca(prev => ({
         ...prev,
@@ -162,7 +282,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         transactions: [transactionData.data, ...(prev.transactions || [])]
       }));
     } else {
-      // Para otros tipos de transacciones
+
       setVaca(prev => ({
         ...prev,
         transactions: [transactionData.data, ...(prev.transactions || [])]
@@ -171,9 +291,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     
     setShowTransactionForm(false);
     
-    // Refresh participants in case new participants were added through transactions
+    // Refresh participants and transactions
     await loadParticipants();
+    await loadTransactions();
   };
+
   const handleInvitationComplete = async (data) => {
     const count = data?.sent || 0;
     showNotification(
@@ -186,28 +308,28 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     
     // Refresh participants list after sending invitations
     await loadParticipants();
-  };
-  const handleExpenseCreated = (newExpense) => {
-    setShowCreateExpenseForm(false);
-    // Actualizar la lista de gastos o mostrar notificación
-  };
-
-  // Load participants using the API endpoint
+  };  // Load participants using the API endpoint
   const loadParticipants = async () => {
+    console.log("🚀 loadParticipants ejecutándose - vaca:", vaca);
     if (vaca?.id) {
       try {
-        const result = await getVacaParticipants(vaca.id);
+        console.log("🔄 Cargando participantes para vaca:", vaca.id);        const result = await getVacaParticipants(vaca.id);
+        
+        console.log("🔍 Resultado completo getVacaParticipants:", result);
         
         if (result.error) {
-          console.error("Error loading participants:", result.error);
+          console.error("❌ Error loading participants:", result.error);
           // Fallback to existing participants data
+          console.log("🔄 Usando participantes existentes como fallback");
           setParticipants(vaca.participants || []);
         } else {
+          console.log("✅ Participantes cargados exitosamente:", result.data);
+          console.log("📊 Número de participantes:", result.data?.length || 0);
           setParticipants(result.data || []);
         }
       } catch (error) {
         console.error("Exception loading participants:", error);
-        // Fallback to existing participants data
+        
         setParticipants(vaca.participants || []);
       }
     }
@@ -216,16 +338,74 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   useEffect(() => {
     loadParticipants();
   }, [vaca?.id, vaca.participants]);
+
+  // Handle edit vaca
+  const handleEditVaca = async () => {
+    try {
+      const result = await updateVaca(vaca.id, editFormData);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      setVaca(prev => ({
+        ...prev,
+        ...editFormData
+      }));
+      
+      showNotification("Vaca actualizada exitosamente", "success");
+      setShowEditVacaModal(false);
+    } catch (error) {
+      console.error("Error updating vaca:", error);
+      showNotification("Error al actualizar la vaca", "error");
+    }
+  };
+
+  // Handle remove participant
+  const handleRemoveParticipant = async (participantId) => {
+    try {
+      const result = await removeParticipant(vaca.id, participantId);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      showNotification("Participante eliminado exitosamente", "success");
+      await loadParticipants();
+    } catch (error) {
+      console.error("Error removing participant:", error);
+      showNotification("Error al eliminar participante", "error");
+    }
+  };
+
+  // Handle exit vaca
+  const handleExitVaca = async () => {
+    try {
+      const currentParticipant = participants.find(p => p.user_id === user.id);
+      if (currentParticipant) {
+        await handleRemoveParticipant(currentParticipant.id);
+        showNotification("Has salido de la vaca exitosamente", "success");
+        onBackClick();
+      }
+    } catch (error) {
+      console.error("Error exiting vaca:", error);
+      showNotification("Error al salir de la vaca", "error");
+    }
+  };
+
+  // Check if user is admin
+  const isAdmin = vaca.user_id === user?.id;
+  const isParticipant = participants.some(p => p.user_id === user?.id);
+
   if (loading) {
     return <div className="loading-spinner">Cargando detalles...</div>;
   }
-    if (!vaca) {
+  
+  if (!vaca) {
     return <div className="error-message">No se pudieron cargar los detalles</div>;
   }
 
   return (
     <div className="vaca-details-container">
-      {/* Header existente */}
+      {/* Enhanced Header with Options Menu */}
       <div className="vaca-details-header">
         <button className="back-button" onClick={onBackClick}>
           <FontAwesomeIcon icon={faArrowLeft} /> Volver
@@ -236,13 +416,60 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             style={{color: vaca.color || '#3F60E5'}} 
             className="vaca-title-icon" 
           />
-          <h1>{vaca.name}</h1>        </div>
+          <h1>{vaca.name}</h1>
+        </div>        <div className="header-actions">
+          {/* Admin actions - visible directly */}
+          {isAdmin && (
+            <>              <button 
+                className="primary-action-btn edit-vaca-btn"
+                onClick={() => setShowEditVacaModal(true)}
+                title="Editar esta vaca"
+              >
+                <FontAwesomeIcon icon={faEdit} /> <span>Editar</span>
+              </button>
+              <button 
+                className="secondary-action-btn rules-btn"
+                onClick={() => setShowRulesModal(true)}
+                title="Configurar reglas y opciones"
+              >
+                <FontAwesomeIcon icon={faCog} /> <span>Reglas</span>
+              </button>
+            </>
+          )}
+          
+          {/* Options menu for additional actions */}
+          <div className="options-menu" ref={optionsMenuRef}>
+            <button 
+              className="options-menu-button"
+              onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+              title="Más opciones"
+            >
+              <FontAwesomeIcon icon={faEllipsisV} />
+            </button>
+            {showOptionsMenu && (
+              <div className="options-menu-dropdown">
+                {isParticipant && !isAdmin && (
+                  <button onClick={() => setShowExitVacaModal(true)} className="exit-option">
+                    <FontAwesomeIcon icon={faSignOutAlt} /> Salir de la Vaca
+                  </button>
+                )}
+                <button>
+                  <FontAwesomeIcon icon={faDownload} /> Exportar Datos
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       
       <div className="vaca-details-content">
+        {/* Enhanced Vaca Summary with Editable Description */}
         <div className="vaca-details-summary" style={{ borderTopColor: vaca.color || '#3F60E5' }}>
           <div className="vaca-details-info">
-            <p className="vaca-description">{vaca.description || 'Sin descripción'}</p>
+            <div className="vaca-description-section">
+              <h3>Descripción</h3>
+              <p className="vaca-description">{vaca.description || 'Sin descripción'}</p>
+            </div>
             
             <div className="vaca-details-stats">
               <div className="stat">
@@ -252,7 +479,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               
               <div className="stat">
                 <FontAwesomeIcon icon={faCalendarAlt} className="stat-icon" />
-                <span>Fecha límite: {vaca?.deadline ? new Date(vaca.deadline).toLocaleString() : 'Sin fecha límite'}</span>
+                <span>Fecha límite: {formattedDeadline}</span>
               </div>
               
               {daysLeft !== null && (
@@ -298,186 +525,397 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
           </div>
         </div>
         
-        {window.innerWidth <= 768 ? (
-          <>
-            {/* Tabs para móvil */}
-            <div className="vaca-tabs">
+        {/* Enhanced Layout: 2/3 Transactions, 1/3 Participants */}
+        <div className="vaca-main-content">
+          {/* Transactions Section (2/3 width) */}
+          <div className="transactions-main-section">
+            <div className="section-header">
+              <h2>
+                <FontAwesomeIcon icon={faMoneyBillWave} /> Historial de Transacciones
+              </h2>
               <button 
-                className={`vaca-tab ${activeTab === 'transactions' ? 'active' : ''}`}
-                onClick={() => setActiveTab('transactions')}
+                className="add-transaction-btn"
+                onClick={() => setShowTransactionForm(!showTransactionForm)}
               >
-                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
-              </button>
-              <button 
-                className={`vaca-tab ${activeTab === 'participants' ? 'active' : ''}`}
-                onClick={() => setActiveTab('participants')}
-              >
-                <FontAwesomeIcon icon={faUsers} /> Participantes
+                <FontAwesomeIcon icon={faPlus} /> Nueva Transacción
               </button>
             </div>
             
-            {/* Contenido según la pestaña activa */}
-            {activeTab === 'transactions' ? (
-              <div className="vaca-section">
-                <h2>
-                  <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
-                </h2>
-                <div className="add-transaction">
-                  <button 
-                    className="add-transaction-btn"
-                    onClick={() => setShowTransactionForm(!showTransactionForm)}
-                  >
-                    <FontAwesomeIcon icon={faPlus} /> Nueva Transacción
-                  </button>
-                </div>
-                
-                {showTransactionForm ? (
-                  <TransactionForm 
-                    vacaId={vaca.id}
-                    userId={user.id}
-                    participantId={participants?.find(p => p.user_id === user.id)?.id}
-                    onSuccess={handleTransactionComplete}
-                    onCancel={() => setShowTransactionForm(false)}
-                  />                ) : (
-                  <TransactionsList 
-                    transactions={vaca.transactions || []} 
-                    participants={participants || []}
-                    vacaColor={vaca.color}
-                  />                )}
-              </div>            ) : (              <div className="participants-section">
-                <div className="participants-header">
-                  <h2>
-                    <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
-                  </h2>
-                  <button 
-                    className="refresh-participants-btn"
-                    onClick={loadParticipants}
-                    title="Actualizar participantes"
-                  >
-                    <FontAwesomeIcon icon={faSync} />
-                  </button>
-                </div>{participants && participants.length > 0 ? (
-                  <ul className="participants-list">
-                    {participants.map(participant => (
-                          <li key={participant.id} className="participant-item">
-                            <div className="participant-info">
-                              <div 
-                                className="participant-avatar" 
-                                style={{backgroundColor: vaca.color || '#3F60E5'}}
-                                data-registered={participant.user_id ? "true" : "false"}
-                              >
-                                {participant.name?.charAt(0)?.toUpperCase() || '?'}
-                              </div>
-                              <div className="participant-details">
-                                <span className="participant-name">{participant.name}</span>
-                                {participant.email && (
-                                  <span className="participant-email">
-                                    {participant.email}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-data-message">No hay participantes aún</p>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          /* Vista de escritorio con ambas secciones */
-          <div className="vaca-details-sections">
-            <div className="vaca-section">
-              <h2>
-                <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
-              </h2>
-              <div className="add-transaction">
-                <button 
-                  className="add-transaction-btn"
-                  onClick={() => setShowTransactionForm(!showTransactionForm)}
-                >
-                  <FontAwesomeIcon icon={faPlus} /> Nueva Transacción
-                </button>
-              </div>
-              
-              {showTransactionForm ? (                <TransactionForm 
-                  vacaId={vaca.id}
-                  userId={user.id}
-                  participantId={participants?.find(p => p.user_id === user.id)?.id}
-                  onSuccess={handleTransactionComplete}
-                  onCancel={() => setShowTransactionForm(false)}
-                />) : (
+            {showTransactionForm ? (
+              <TransactionForm 
+                vacaId={vaca.id}
+                userId={user.id}
+                participantId={participants?.find(p => p.user_id === user.id)?.id}
+                onSuccess={handleTransactionComplete}
+                onCancel={() => setShowTransactionForm(false)}
+              />
+            ) : (
+              <div className="transactions-list-container">
                 <TransactionsList 
-                  transactions={vaca.transactions || []} 
+                  transactions={transactions.length > 0 ? transactions : vaca.transactions || []} 
                   participants={participants || []}
                   vacaColor={vaca.color}
                 />
-              )}            </div>              <div className="participants-section">              
-                <div className="participants-header">
-                  <h2>
-                    <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
-                  </h2>
+              </div>
+            )}
+          </div>
+
+          {/* Participants Section (1/3 width) */}
+          <div className="participants-main-section">
+            <div className="section-header">
+              <h2>
+                <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
+              </h2>
+              <div className="participants-actions">                {isAdmin && (
                   <button 
-                    className="refresh-participants-btn"
-                    onClick={loadParticipants}
-                    title="Actualizar participantes"
+                    className="invite-participants-btn"
+                    onClick={() => setShowInviteModal(true)}
                   >
-                    <FontAwesomeIcon icon={faSync} />
+                    <FontAwesomeIcon icon={faUserPlus} /> Invitar
                   </button>
-                </div>{participants && participants.length > 0 ? (
-                <ul className="participants-list">
-                  {participants.map(participant => (
-                        <li key={participant.id} className="participant-item">
-                          <div className="participant-info">
-                            <div 
-                              className="participant-avatar" 
-                              style={{backgroundColor: vaca.color || '#3F60E5'}}
-                              data-registered={participant.user_id ? "true" : "false"}
-                            >
-                              {participant.name?.charAt(0)?.toUpperCase() || '?'}
-                            </div>
-                            <div className="participant-details">
-                              <span className="participant-name">{participant.name}</span>
-                              {participant.email && (
-                                <span className="participant-email">
-                                  {participant.email}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="no-data-message">No hay participantes aún</p>
-              )}
+                )}
+                <button 
+                  className="refresh-participants-btn"
+                  onClick={loadParticipants}
+                  title="Actualizar participantes"
+                >
+                  <FontAwesomeIcon icon={faSync} />
+                </button>
+              </div>
+            </div>            {participants && participants.length > 0 ? (
+              <div className="participants-list">                {participants.map(participant => {
+                  const participantStats = vacaStats[participant.id] || {};
+                  return (
+                    <ParticipantCard
+                      key={participant.id}
+                      participant={participant}
+                      stats={participantStats}
+                      vacaColor={vaca.color || '#3F60E5'}
+                      isAdmin={isAdmin}
+                      currentUserId={user?.id}
+                      onRemove={() => handleRemoveParticipant(participant.id)}
+                      onViewDetails={(participant) => {
+                        console.log('Ver detalles de:', participant);
+                        // TODO: Implementar modal de detalles
+                      }}
+                      onInviteUsers={() => setShowInviteModal(true)}
+                    />
+                  );
+                })}
+              </div>            ) : (
+              <div className="empty-participants-state">
+                <FontAwesomeIcon icon={faUsers} className="empty-icon" />
+                <h3>No hay participantes</h3>
+                <p>Esta vaca aún no tiene participantes registrados.</p>
+                {isAdmin ? (
+                  <div className="empty-state-actions">
+                    <p className="admin-hint">Como administrador, puedes invitar personas para que se unan a esta vaca.</p>
+                    <button 
+                      className="invite-first-participants-btn"
+                      onClick={() => setShowInviteModal(true)}
+                    >
+                      <FontAwesomeIcon icon={faUserPlus} /> Invitar Primeros Participantes
+                    </button>
+                  </div>
+                ) : (
+                  <p className="participant-hint">Contacta al administrador para unirte a esta vaca.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Edit Vaca Modal */}
+        {showEditVacaModal && (
+          <div className="modal-overlay">
+            <div className="modal-content edit-vaca-modal">
+              <div className="modal-header">
+                <h3>Editar Vaca</h3>
+                <button 
+                  className="close-modal-btn"
+                  onClick={() => setShowEditVacaModal(false)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Nombre:</label>
+                  <input
+                    type="text"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData(prev => ({
+                      ...prev,
+                      name: e.target.value
+                    }))}
+                    placeholder="Nombre de la vaca"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Descripción:</label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData(prev => ({
+                      ...prev,
+                      description: e.target.value
+                    }))}
+                    placeholder="Descripción de la vaca"
+                    rows="3"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Meta ($):</label>
+                  <input
+                    type="number"
+                    value={editFormData.goal}
+                    onChange={(e) => setEditFormData(prev => ({
+                      ...prev,
+                      goal: parseFloat(e.target.value) || 0
+                    }))}
+                    placeholder="Meta de ahorro"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Fecha límite:</label>
+                  <input
+                    type="date"
+                    value={editFormData.deadline ? new Date(editFormData.deadline).toISOString().split('T')[0] : ''}
+                    onChange={(e) => setEditFormData(prev => ({
+                      ...prev,
+                      deadline: e.target.value
+                    }))}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="cancel-btn"
+                  onClick={() => setShowEditVacaModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="save-btn"
+                  onClick={handleEditVaca}
+                >
+                  Guardar Cambios
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Sección de invitaciones */}
-        <div className="vaca-actions">   
-          {vaca && user && vaca.user_id === user.id && (
-            <button 
-              className="secondary-button invite-btn"
-              onClick={() => setShowInviteModal(true)} 
-            >
-              <FontAwesomeIcon icon={faUserPlus} /> Invitar usuarios
-            </button>
-          )}
-        </div>
+        {/* Rules/Options Modal */}
+        {showRulesModal && (
+          <div className="modal-overlay">
+            <div className="modal-content rules-modal">
+              <div className="modal-header">
+                <h3>Reglas y Opciones</h3>
+                <button 
+                  className="close-modal-btn"
+                  onClick={() => setShowRulesModal(false)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="rules-sections">
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faUserPlus} /> Permisos de Invitación</h4>
+                    <select
+                      value={rulesData.invitationPermissions}
+                      onChange={(e) => setRulesData(prev => ({
+                        ...prev,
+                        invitationPermissions: e.target.value
+                      }))}
+                    >
+                      <option value="admin_only">Solo administrador</option>
+                      <option value="all_members">Todos los miembros</option>
+                      <option value="founding_members">Miembros fundadores</option>
+                    </select>
+                  </div>
 
-        {/* Modal de invitaciones */}        {showInviteModal && (
-          <InviteUsers 
-            vacaId={vaca.id}
-            userId={user.id}
-            onInvitationComplete={async (data) => {
-              await handleInvitationComplete(data);
-              setShowInviteModal(false); 
-            }}
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faMoneyBillWave} /> Contribuciones</h4>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Monto mínimo ($):</label>
+                        <input
+                          type="number"
+                          value={rulesData.contributionAmount}
+                          onChange={(e) => setRulesData(prev => ({
+                            ...prev,
+                            contributionAmount: e.target.value
+                          }))}
+                          placeholder="Monto mínimo"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Frecuencia:</label>
+                        <select
+                          value={rulesData.contributionFrequency}
+                          onChange={(e) => setRulesData(prev => ({
+                            ...prev,
+                            contributionFrequency: e.target.value
+                          }))}
+                        >
+                          <option value="flexible">Flexible</option>
+                          <option value="weekly">Semanal</option>
+                          <option value="monthly">Mensual</option>
+                          <option value="quarterly">Trimestral</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faChartLine} /> Configuración de Meta</h4>
+                    <select
+                      value={rulesData.goalSettings}
+                      onChange={(e) => setRulesData(prev => ({
+                        ...prev,
+                        goalSettings: e.target.value
+                      }))}
+                    >
+                      <option value="fixed">Meta fija</option>
+                      <option value="adjustable">Ajustable por votación</option>
+                      <option value="progressive">Progresiva</option>
+                    </select>
+                  </div>
+
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faExclamationTriangle} /> Penalizaciones</h4>
+                    <select
+                      value={rulesData.penaltySettings}
+                      onChange={(e) => setRulesData(prev => ({
+                        ...prev,
+                        penaltySettings: e.target.value
+                      }))}
+                    >
+                      <option value="none">Sin penalizaciones</option>
+                      <option value="late_fee">Multa por retraso</option>
+                      <option value="progressive_penalty">Penalización progresiva</option>
+                    </select>
+                  </div>
+
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faUserMinus} /> Expulsión de Miembros</h4>
+                    <select
+                      value={rulesData.memberExpulsion}
+                      onChange={(e) => setRulesData(prev => ({
+                        ...prev,
+                        memberExpulsion: e.target.value
+                      }))}
+                    >
+                      <option value="admin_only">Solo administrador</option>
+                      <option value="majority_vote">Votación mayoritaria</option>
+                      <option value="unanimous_vote">Votación unánime</option>
+                    </select>
+                  </div>
+
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faSignOutAlt} /> Política de Salida</h4>
+                    <select
+                      value={rulesData.exitPolicy}
+                      onChange={(e) => setRulesData(prev => ({
+                        ...prev,
+                        exitPolicy: e.target.value
+                      }))}
+                    >
+                      <option value="anytime">En cualquier momento</option>
+                      <option value="notice_required">Aviso previo requerido</option>
+                      <option value="penalty_applies">Con penalización</option>
+                      <option value="no_exit">No permitido</option>
+                    </select>
+                  </div>
+
+                  <div className="rules-section">
+                    <h4><FontAwesomeIcon icon={faCheck} /> Porcentaje de Aprobación</h4>
+                    <div className="form-group">
+                      <label>Porcentaje requerido para decisiones importantes:</label>
+                      <input
+                        type="range"
+                        min="50"
+                        max="100"
+                        value={rulesData.approvalPercentage}
+                        onChange={(e) => setRulesData(prev => ({
+                          ...prev,
+                          approvalPercentage: parseInt(e.target.value)
+                        }))}
+                      />
+                      <span className="percentage-display">{rulesData.approvalPercentage}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="cancel-btn"
+                  onClick={() => setShowRulesModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button className="save-btn">
+                  Guardar Reglas
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Exit Vaca Modal */}
+        {showExitVacaModal && (
+          <div className="modal-overlay">
+            <div className="modal-content exit-vaca-modal">
+              <div className="modal-header">
+                <h3><FontAwesomeIcon icon={faExclamationTriangle} /> Salir de la Vaca</h3>
+                <button 
+                  className="close-modal-btn"
+                  onClick={() => setShowExitVacaModal(false)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="exit-warning">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="warning-icon" />
+                  <p>¿Estás seguro de que quieres salir de esta vaca?</p>
+                  <p className="warning-text">
+                    Esta acción no se puede deshacer. Perderás acceso a todas las transacciones 
+                    y ya no podrás participar en esta vaca.
+                  </p>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="cancel-btn"
+                  onClick={() => setShowExitVacaModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="exit-btn"
+                  onClick={handleExitVaca}
+                >
+                  <FontAwesomeIcon icon={faSignOutAlt} /> Salir de la Vaca
+                </button>
+              </div>
+            </div>
+          </div>
+        )}        {/* Invite Participants Modal */}
+        {showInviteModal && (
+          <InviteParticipantsModal 
+            isOpen={showInviteModal}
             onClose={() => setShowInviteModal(false)}
+            vacaId={vaca.id}
+            onInviteSuccess={async () => {
+              // Recargar participantes después de invitar
+              await loadParticipants();
+              // Recargar stats si es necesario
+              if (vaca.id) {
+                await loadVacaStats();
+              }
+            }}
           />
         )}
       </div>
