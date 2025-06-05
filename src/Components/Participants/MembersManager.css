@@ -37,11 +37,10 @@
 
 .invite-btn, .exit-btn {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;  justify-content: center;
   gap: 8px;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   border: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -72,7 +71,7 @@
 /* Formulario de invitación */
 .invite-form {
   background-color: #f8fafc;
-  border-radius: 10px;
+  border-radius: var(--border-radius, 16px);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
   border: 1px solid #e2e8f0;
@@ -101,7 +100,7 @@
 .invite-form textarea {
   padding: 0.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   font-size: 0.875rem;
   transition: all 0.2s;
 }
@@ -118,11 +117,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.65rem 1.25rem;
-  background-color: #3F60E5;
+  padding: 0.65rem 1.25rem;  background-color: #3F60E5;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

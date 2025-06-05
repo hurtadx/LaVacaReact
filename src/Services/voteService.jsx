@@ -148,7 +148,7 @@ export const getVoteResult = async (voteId) => {
  * @returns {Promise<{data: Array|null, error: string|null}>}
  */
 export const getUserActiveVotes = async (userId) => {  return handleApiCall(async () => {
-    const response = await apiService.get(`/api/users/${userId}/votes/active`);
+    const response = await apiService.get(`/api/votes/user/${userId}/pending`);
     return response.votes;
   });
 };
@@ -166,7 +166,7 @@ export const getUserVoteHistory = async (userId, options = {}) => {  return hand
       ...(options.vacaId && { vaca_id: options.vacaId })
     });
     
-    const response = await apiService.get(`/api/users/${userId}/votes/history?${queryParams}`);
+    const response = await apiService.get(`/api/votes/user/${userId}?${queryParams}`);
     return response.votes;
   });
 };

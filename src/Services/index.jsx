@@ -1,21 +1,13 @@
+// Vaca Service exports - previously empty, now implemented
 export {
-  inviteParticipants,
-  getInvitations,
-  checkTablesExist,
   createVaca,
-  getUserVacas,
   getVacaDetails,
   addVacaTransaction,
   updateVaca,
   deleteVaca,
-  addVacaParticipant,
-  removeVacaParticipant,
   getVacaStats,
-  closeVaca,
-  reopenVaca,
-  getVacaParticipants,
-  getVacaTransactions
-} from '../Services/vacaService.jsx';
+  checkTablesExist
+} from './vacaService.jsx';
 
 
 export {
@@ -26,6 +18,7 @@ export {
   uploadAvatar,
   deleteAvatar,
   getUserStats,
+  getUserVacas,
   updateUserPreferences,
   getUserPreferences,
   deleteUserAccount,
@@ -33,9 +26,11 @@ export {
 } from './userService.jsx';
 
 // Transaction Service exports
-export {  getTransactionTypes,
+export {
+  getTransactionTypes,
   createTransaction,
   getUserTransactions,
+  getVacaTransactions,
   getTransactionDetails,
   updateTransaction,
   deleteTransaction,
@@ -83,6 +78,7 @@ export {
 
 
 export {
+  getVacaParticipants,
   getActiveParticipants,
   getPendingParticipants,
   getPageableParticipants,
@@ -108,7 +104,9 @@ export {
 // Invitation Service exports
 export {
   createInvitations,
+  createInvitations as inviteParticipants, // Alias for compatibility
   getUserInvitations,
+  getUserInvitations as getInvitations, // Alias for compatibility
   getSentInvitations,
   getVacaInvitations,
   respondToInvitation,

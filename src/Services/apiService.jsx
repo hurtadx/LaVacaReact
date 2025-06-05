@@ -84,16 +84,16 @@ class ApiService {
    */
   async handleResponse(response) {
     if (response.status === 401) {
-      // Token expired, try to refresh
+      // El token expiró, voy a intentar renovarlo
       const refreshed = await this.refreshAccessToken();
       if (!refreshed) {
         this.clearAuth();
-        // Redirect to login or emit auth error event
+        // Redirijo al login o emito un evento de error de auth
         window.dispatchEvent(new CustomEvent('auth:token-expired'));
         throw new Error('Session expired. Please login again.');
       }
       
-      // Retry the original request would need to be handled by the caller
+      // Reintentar la petición original tendría que manejarlo quien llame
       throw new Error('Token expired, retry needed');
     }
 
@@ -182,7 +182,7 @@ class ApiService {
     }
   }
 
-  // HTTP Methods
+  // Métodos HTTP que uso en el servicio
   async get(endpoint, params = {}) {
     const url = new URL(`${this.baseURL}${endpoint}`);
     Object.keys(params).forEach(key => {
@@ -224,7 +224,7 @@ class ApiService {
   }
 
   /**
-   * Upload files (form data)
+   * Subir archivos (form data)
    */
   async upload(endpoint, formData) {
     return this.request(endpoint, {
@@ -250,10 +250,10 @@ class ApiService {
   }
 }
 
-// Create singleton instance
+// Creo una instancia singleton
 const apiService = new ApiService();
 
-// Initialize stored tokens on startup
+// Inicializo los tokens guardados al arrancar
 apiService.getStoredTokens();
 
 export default apiService;

@@ -6,7 +6,7 @@
   --text-color: #000;
   --shadow-color: rgba(31, 38, 135, 0.15);
   --input-padding: 1rem;
-  --border-radius: 8px;
+  --border-radius: var(--border-radius, 16px);
 
 body {
   margin: 0;
@@ -43,7 +43,7 @@ body {
   justify-content: center; 
   gap: 0; 
   padding: 60px 50px;
-  border-radius: 30px;
+  border-radius: var(--border-radius-2xl, 32px);
   margin-left: 5%;
   margin-right: 2%;   position: relative;
   overflow: hidden;
@@ -164,7 +164,7 @@ body {
   flex: 1;
   max-width: 450px;
   margin-right: 5%;   padding: 40px 35px;
-  background: rgba(255, 255, 255, 0.95);   border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);   border-radius: var(--border-radius-lg, 20px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);   animation: fadeIn 0.5s ease-out;
   position: relative;
   overflow: hidden;
@@ -204,7 +204,7 @@ body {
   left: 0;
   width: 60px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--border-radius-xs, 8px);
   background-color: var(--color-lavaca);
 }
 
@@ -228,7 +228,7 @@ body {
   width: 100%;
   padding: 14px 16px;
   border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: var(--border-radius-sm, 12px);
   font-size: 16px;
   color: #333;
   background-color: #f8fafc;
@@ -281,7 +281,7 @@ button[type="submit"]:focus {
   background-color: var(--color-lavaca) !important;
   color: white !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: var(--border-radius-sm, 12px) !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   position: relative !important;
@@ -340,7 +340,7 @@ button[type="submit"]:focus {
   border-left: 4px solid #4299e1;
   padding: 16px;
   margin: 15px 0;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm, 12px);
   font-size: 14px;
   color: #2c5282;
 }
@@ -355,7 +355,7 @@ button[type="submit"]:focus {
   border: 1px solid #2b6cb0 !important;
   padding: 8px 12px !important;
   font-size: 14px !important;
-  border-radius: 6px !important;
+  border-radius: var(--border-radius-xs, 8px) !important;
   cursor: pointer !important;
   transition: all 0.2s !important;
 }

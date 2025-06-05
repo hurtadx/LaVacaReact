@@ -7,13 +7,12 @@
   gap: 10px;
 }
 
-.transaction-item {
-  display: flex;
+.transaction-item {  display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px;
   background-color: #f8fafd;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   transition: transform 0.2s ease;
 }
 
@@ -104,6 +103,6 @@
   color: #777;
   text-align: center;
   background-color: #f8fafd;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   padding: 20px;
 }

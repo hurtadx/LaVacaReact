@@ -13,7 +13,7 @@
   align-items: center;
   width: 100%;
   border: 2px solid #dee2e6;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   overflow: hidden;
 }
 
@@ -35,10 +35,9 @@
   width: 40px !important;
   height: 40px !important;
   min-width: 40px !important;
-  background-color: var(--primary-color) !important;
-  color: white !important;
+  background-color: var(--primary-color) !important;  color: white !important;
   border: none !important;
-  border-radius: 0 8px 8px 0 !important;
+  border-radius: 0 var(--border-radius, 16px) var(--border-radius, 16px) 0 !important;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -65,7 +64,7 @@
 
 .search-results-container {
   border: 1px solid #eee;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 16px);
   overflow: hidden;
 }
 
@@ -148,7 +147,7 @@
 
 .selected-users-container {
   background-color: #f8f9fa;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 16px);
   padding: 15px;
   border: 1px solid #e9ecef;
 }
@@ -170,7 +169,7 @@
   background-color: var(--primary-color);
   color: white;
   padding: 6px 10px;
-  border-radius: 20px;
+  border-radius: var(--border-radius-lg, 20px);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -192,7 +191,7 @@
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-xs, 8px);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -209,7 +208,7 @@
   color: #e74c3c;
   background-color: #fef2f0;
   padding: 10px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-xs, 8px);
   margin-top: 8px;
   font-size: 13px;
 }
@@ -228,12 +227,11 @@
 }
 
 .invite-users-modal {
-  width: 100%;
-  max-width: 550px;
+  width: 100%;  max-width: 550px;
   max-height: 85vh;
   overflow-y: auto;
   background-color: white;
-  border-radius: 10px;
+  border-radius: var(--border-radius, 16px);
   padding: 25px;
   position: relative;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);

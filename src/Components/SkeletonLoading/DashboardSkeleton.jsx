@@ -65,7 +65,7 @@ const DashboardSkeleton = ({ message = "Cargando tu dashboard..." }) => {
             </div>
           </div>
           
-          {/* Loading message */}
+          {/* Mensaje de carga */}
           <div className="skeleton-message">{message}</div>
         </main>
       </div>

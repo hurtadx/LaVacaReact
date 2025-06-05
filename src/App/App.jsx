@@ -56,19 +56,17 @@ const AppContent = () => {
       if (isChecking.current || dbChecked) return;
       isChecking.current = true;
       
-      try {
-        console.log("Verificando estructura de base de datos una sola vez...");
-        const tables = await checkTablesExist();
+      try {        console.log("Verificando estructura de base de datos una sola vez...");
+        const result = await checkTablesExist();
         
-        const missingTables = [];
-        if (!tables.vacas) missingTables.push('vacas');
-        
-        
-        if (!tables.transactions) missingTables.push('transactions');
-        
-        if (missingTables.length > 0) {
-          console.log("Tablas faltantes:", missingTables);
+        if (result.error) {
+          console.error("Error al verificar tablas:", result.error);
+          showNotification("Error al verificar la configuración de la base de datos.", "error");
+        } else if (!result.data) {
+          console.log("Las tablas de la base de datos no están disponibles");
           showNotification("La base de datos no está correctamente configurada. Contacta al administrador.", "error");
+        } else {
+          console.log("Base de datos configurada correctamente");
         }
         
         setDbChecked(true);

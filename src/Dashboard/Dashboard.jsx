@@ -61,10 +61,10 @@ const Dashboard = () => {
     // Initial load
     loadPendingInvitations(user.id);
     
-    // Set up polling for invitations
+    // Configuro el polling para las invitaciones
     const pollInterval = setInterval(() => {
       loadPendingInvitations(user.id);
-    }, 30000); // Poll every 30 seconds
+    }, 30000); // Polling cada 30 segundos
     
     return () => {
       console.log("Cleaning up invitations polling for user:", user.id);

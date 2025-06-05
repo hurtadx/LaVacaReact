@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import './VacaDetails.css';
 import '../../../Dashboard/Resposive/vacadetails-responsive.css';
+import '../../../components/VacaConfigModal/VacaConfigModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
@@ -12,7 +13,8 @@ import {
   faPiggyBank,
   faCow,
   faUserPlus,
-  faSync,  faEllipsisV,
+  faSync,  
+  faEllipsisV,
   faEdit,
   faCog,
   faTimes,
@@ -24,10 +26,13 @@ import {
   faInfoCircle,
   faTrash,
   faEye,
-  faDownload
+  faDownload,
+  faCheckCircle,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
-import InviteParticipantsModal from '../../../components/InviteParticipantsModal/InviteParticipantsModal';
-import { NotificationContext } from '../../../components/Notification/NotificationContext';
+import UserSearch from './Invitations/UserSearch.jsx';
+import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import VacaConfigModal from '../../../components/VacaConfigModal/VacaConfigModal.jsx';
 import { 
   getVacaDetails, 
   addVacaTransaction,
@@ -35,9 +40,9 @@ import {
   getCurrentUser,
   getVacaParticipants,
   updateVaca,
-  removeVacaParticipant,
   getVacaTransactions,
   removeParticipant,
+  bulkInviteParticipants,
   getVacaStats
 } from '../../../Services';
 import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
@@ -50,34 +55,48 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [user, setUser] = useState(passedUser || null);
   const { showNotification } = useContext(NotificationContext);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeTab, setActiveTab] = useState('transactions');
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [participants, setParticipants] = useState([]);
   
-  // New state for enhanced features
+  // Estado adicional para funciones avanzadas
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showEditVacaModal, setShowEditVacaModal] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showExitVacaModal, setShowExitVacaModal] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [vacaStats, setVacaStats] = useState({});
+  
+  // Estado adicional para gestión de participantes
+  const [showInviteSection, setShowInviteSection] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [invitingUsers, setInvitingUsers] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(null);
+  const [activeParticipants, setActiveParticipants] = useState([]);
+  const [pendingParticipants, setPendingParticipants] = useState([]);
+  
   const [editFormData, setEditFormData] = useState({
     name: '',
     description: '',
     goal: '',
     deadline: ''
-  });
-  const [rulesData, setRulesData] = useState({
-    invitationPermissions: 'admin_only',
-    contributionAmount: '',
-    contributionFrequency: 'monthly',
-    contributionDeadline: '',
-    approvalPercentage: 75,
-    goalSettings: 'fixed',
-    penaltySettings: 'none',
-    memberExpulsion: 'majority_vote',
-    exitPolicy: 'anytime'
+  });  const [vacaConfig, setVacaConfig] = useState({
+    invitePermission: 'creator',
+    amountType: 'variable',
+    fixedAmount: '',
+    frequency: 'monthly',
+    deadlineType: 'specific',
+    specificDay: '',
+    nDays: '7',
+    minApproval: '51',
+    customApproval: '',
+    hasGoal: true,
+    goalAmount: vaca?.goal || '',
+    penaltyType: 'none',
+    penaltyPercent: '',
+    penaltyFixed: '',
+    kickPolicy: 'vote',
+    exitPolicy: 'refund'
   });
   const optionsMenuRef = useRef(null);
 
@@ -172,18 +191,29 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       } catch (error) {
         console.error("Error al guardar la última vaca visitada:", error);
       }
-    }
-  }, [vaca, user]);
-
-  // Load additional data
+    }  }, [vaca, user]);  // Cargo datos adicionales
   useEffect(() => {
     if (vaca?.id) {
+      console.log("🔄 Loading additional data for vaca:", vaca.id);
       loadTransactions();
       loadVacaStats();
+      loadParticipants(); // Lo agrego aquí también para asegurarme que se llame
     }
   }, [vaca?.id]);
 
-  // Close options menu when clicking outside
+  // Este useEffect me ayuda a hacer debug del estado de la vaca
+  useEffect(() => {
+    console.log("🐮 Vaca state changed:", {
+      hasVaca: !!vaca,
+      vacaId: vaca?.id,
+      vacaName: vaca?.name,
+      hasParticipants: !!vaca?.participants,
+      participantsLength: vaca?.participants?.length,
+      fullVaca: vaca
+    });
+  }, [vaca]);
+
+  // Cierro el menú de opciones al hacer clic afuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) {
@@ -223,7 +253,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   
   const daysLeft = calculateDaysLeft();
 
-  // Load transactions
+  // Cargo las transacciones de la vaca
   const loadTransactions = async () => {
     try {
       const result = await getVacaTransactions(vaca.id);
@@ -231,17 +261,16 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         setTransactions(result.data);
       }
     } catch (error) {
-      console.error("Error loading transactions:", error);
+      console.error("Error cargando transacciones:", error);
     }
   };
-  // Load vaca statistics
+  // Cargo las estadísticas de la vaca
   const loadVacaStats = async () => {
     try {
       const result = await getVacaStats(vaca.id);
       if (result.data) {
-        setVacaStats(result.data);
-      } else if (result.error) {
-        console.warn("Could not load vaca stats:", result.error);
+        setVacaStats(result.data);      } else if (result.error) {
+        console.warn("No pude cargar las estadísticas de la vaca:", result.error);
        
         setVacaStats({
           totalContributions: 0,
@@ -255,7 +284,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         });
       }
     } catch (error) {
-      console.warn("Error loading vaca stats:", error.message);
+      console.warn("Error cargando estadísticas de vaca:", error.message);
   
       setVacaStats({
         totalContributions: 0,
@@ -270,11 +299,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
-  // Handle transaction completion
+  // Manejo cuando se completa una transacción
   const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");
     
-    // If it's a contribution, update current amount
+    // Si es una contribución, actualizo el monto actual
     if (transactionData.type === 'contribution') {
       setVaca(prev => ({
         ...prev,
@@ -291,7 +320,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     
     setShowTransactionForm(false);
     
-    // Refresh participants and transactions
+    // Actualizo participantes y transacciones
     await loadParticipants();
     await loadTransactions();
   };
@@ -306,40 +335,208 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     );
     setShowInviteForm(false);
     
-    // Refresh participants list after sending invitations
+    // Actualizo la lista de participantes después de enviar invitaciones
     await loadParticipants();
-  };  // Load participants using the API endpoint
+  };
+  // Cargar participantes desde la API
   const loadParticipants = async () => {
     console.log("🚀 loadParticipants ejecutándose - vaca:", vaca);
     if (vaca?.id) {
       try {
-        console.log("🔄 Cargando participantes para vaca:", vaca.id);        const result = await getVacaParticipants(vaca.id);
+        console.log("🔄 Cargando participantes para vaca:", vaca.id);        
+        console.log("🌐 Endpoint que se va a llamar:", `/api/participants/vaca/${vaca.id}/details`);
+        
+        const result = await getVacaParticipants(vaca.id);
         
         console.log("🔍 Resultado completo getVacaParticipants:", result);
+        console.log("🔍 result.data:", result.data);
+        console.log("🔍 result.error:", result.error);
+        
+        // Aquí manejo las respuestas que pueden venir en diferentes formatos
+        let participantsData = [];
+        if (result.data) {
+          participantsData = Array.isArray(result.data) ? result.data : [];
+        } else if (!result.error && vaca.participants) {
+          // Si no hay datos de la API, uso los que ya tengo en vaca
+          participantsData = Array.isArray(vaca.participants) ? vaca.participants : [];
+        }
+        
+        console.log("📊 participantsData procesados:", participantsData);
+        console.log("📊 Número de participantes:", participantsData.length);
+        
+        // Siempre actualizo la lista de participantes y los separo por estado
+        setParticipants(participantsData);        // Proceso los datos y normalizo los campos que pueden faltar
+        const processedParticipants = participantsData.map(p => {
+          // Normalizo el estado para manejar tanto español como inglés
+          let normalizedStatus = 'pending';
+          if (p.status === 'active' || p.status === 'activo' || p.status === 'accepted') {
+            normalizedStatus = 'active';
+          } else if (p.status === 'pending' || p.status === 'invited' || p.status === 'pendiente') {
+            normalizedStatus = 'pending';
+          }
+          
+          return {
+            ...p,
+            // Solo uso datos reales del backend, con mínimos fallbacks
+            name: p.name || `Usuario ${p.user_id?.slice(0, 8) || 'Sin ID'}`,
+            email: p.email || `usuario_${p.user_id?.slice(0, 8) || 'unknown'}@example.com`,
+            status: normalizedStatus,
+            // Agrego campos calculados para la interfaz
+            displayName: p.name || `Usuario ${p.user_id?.slice(0, 8)}`,
+            avatarLetter: (p.name || 'U').charAt(0).toUpperCase()
+          };
+        });
+        
+        // Registro en consola los participantes procesados
+        processedParticipants.forEach((p, index) => {
+          console.log(`👤 Participante ${index}:`, {
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            status: p.status,
+            user_id: p.user_id,
+            displayName: p.displayName
+          });
+        });
+        
+        // Actualizo el estado con los datos procesados
+        setParticipants(processedParticipants);
+        
+        const active = processedParticipants.filter(p => {
+          const isActive = p.status === 'active';
+          console.log(`👤 ${p.displayName} - Status: ${p.status}, isActive: ${isActive}`);
+          return isActive;
+        });        
+        const pending = processedParticipants.filter(p => {
+          const isPending = p.status === 'pending';
+          console.log(`👤 ${p.displayName} - Status: ${p.status}, isPending: ${isPending}`);
+          return isPending;
+        });
+        
+        console.log("✅ Participantes activos:", active);
+        console.log("✅ Participantes pendientes:", pending);
+        
+        setActiveParticipants(active);
+        setPendingParticipants(pending);
         
         if (result.error) {
-          console.error("❌ Error loading participants:", result.error);
-          // Fallback to existing participants data
-          console.log("🔄 Usando participantes existentes como fallback");
-          setParticipants(vaca.participants || []);
-        } else {
-          console.log("✅ Participantes cargados exitosamente:", result.data);
-          console.log("📊 Número de participantes:", result.data?.length || 0);
-          setParticipants(result.data || []);
+          console.warn("⚠️ API returned error but we have data:", result.error);
         }
-      } catch (error) {
-        console.error("Exception loading participants:", error);
         
-        setParticipants(vaca.participants || []);
+      } catch (error) {
+        console.error("❌ Exception loading participants:", error);
+        
+        // Aquí uso los participantes que ya tengo como fallback
+        const fallbackParticipants = vaca.participants || [];
+        console.log("🔄 Usando participantes de fallback:", fallbackParticipants);
+        
+        setParticipants(fallbackParticipants);
+        
+        // Aunque esté en fallback, sigo separándolos por estado
+        const active = fallbackParticipants.filter(p => p.status === 'active' || !p.status || p.status === 'accepted');
+        const pending = fallbackParticipants.filter(p => p.status === 'pending' || p.status === 'invited');
+        
+        setActiveParticipants(active);
+        setPendingParticipants(pending);
       }
     }
   };
+  // Calculo datos reales de contribución de cada participante
+  const calculateContributionData = (participant) => {
+    // Obtengo las transacciones de este participante específico
+    const participantTransactions = transactions.filter(t => 
+      t.user_id === participant.user_id || t.participant_id === participant.id
+    );
+    
+    // Calculo el total que ha contribuido este participante
+    const contributed = participantTransactions
+      .filter(t => t.type === 'contribution')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    // Calculo el porcentaje basado en la meta de la vaca
+    const percentage = vaca.goal && vaca.goal > 0 
+      ? Math.round((contributed / vaca.goal) * 100) 
+      : 0;
+    
+    // Obtengo la fecha de la última actividad
+    const lastTransaction = participantTransactions
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+    
+    const lastActivity = lastTransaction 
+      ? Math.floor((new Date() - new Date(lastTransaction.created_at)) / (1000 * 60 * 60 * 24))
+      : null;
+    
+    return {
+      contributed: contributed,
+      percentage: Math.min(percentage, 100), // No más del 100%
+      lastActivity: lastActivity,
+      transactionCount: participantTransactions.length
+    };
+  };
 
+  // Manejo la selección de usuarios desde la búsqueda
+  const handleUserSelect = async (users) => {
+    if (!users || users.length === 0) return;
+    
+    setInvitingUsers(true);
+    
+    try {
+      const inviteData = {
+        vacaId: vaca.id,
+        users: users.map(user => ({
+          email: user.email,
+          name: user.username || user.name
+        }))
+      };
+      
+      const result = await bulkInviteParticipants(inviteData);
+      
+      if (result.data) {
+        showNotification(
+          `${users.length} ${users.length === 1 ? 'invitación enviada' : 'invitaciones enviadas'} con éxito`,
+          'success'
+        );
+        setSelectedUsers([]);
+        setShowInviteSection(false);
+        await loadParticipants();
+      }
+    } catch (error) {
+      console.error("Error al enviar invitaciones:", error);
+      showNotification("Error al enviar invitaciones", "error");
+    } finally {
+      setInvitingUsers(false);
+    }
+  };
+
+  // Manejo la eliminación de participantes pendientes
+  const handleRemoveParticipantInvitation = async (participantId) => {
+    try {
+      const result = await removeParticipant(participantId);
+      
+      if (result.data || !result.error) {
+        showNotification("Invitación eliminada con éxito", "success");
+        setShowRemoveConfirm(null);
+        await loadParticipants();
+      }
+    } catch (error) {
+      console.error("Error al eliminar participante:", error);
+      showNotification("Error al eliminar invitación", "error");
+    }
+  };
   useEffect(() => {
-    loadParticipants();
+    console.log("🔍 useEffect loadParticipants - vaca?.id:", vaca?.id);
+    console.log("🔍 useEffect loadParticipants - vaca object:", vaca);
+    console.log("🔍 useEffect loadParticipants - dependencies:", { vacaId: vaca?.id, hasParticipants: !!vaca.participants });
+    
+    if (vaca?.id) {
+      console.log("✅ Calling loadParticipants because vaca.id exists:", vaca.id);
+      loadParticipants();
+    } else {
+      console.log("❌ NOT calling loadParticipants - no vaca.id");
+    }
   }, [vaca?.id, vaca.participants]);
 
-  // Handle edit vaca
+  // Manejo la edición de la vaca
   const handleEditVaca = async () => {
     try {
       const result = await updateVaca(vaca.id, editFormData);
@@ -360,7 +557,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
-  // Handle remove participant
+  // Manejo la eliminación de participantes
   const handleRemoveParticipant = async (participantId) => {
     try {
       const result = await removeParticipant(vaca.id, participantId);
@@ -376,7 +573,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
-  // Handle exit vaca
+  // Manejo cuando alguien quiere salir de la vaca
   const handleExitVaca = async () => {
     try {
       const currentParticipant = participants.find(p => p.user_id === user.id);
@@ -391,7 +588,57 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
-  // Check if user is admin
+  // Esta función la uso para probar manualmente el endpoint
+  const testParticipantsEndpoint = async () => {
+    console.log("🧪 === TEST MANUAL DE ENDPOINT ===");
+    console.log("🎯 Vaca ID:", vaca?.id);
+    
+    if (!vaca?.id) {
+      console.error("❌ No hay vaca ID para testing");
+      return;
+    }
+
+    try {
+      // Pruebo el endpoint directamente
+      const directResponse = await fetch(`http://localhost:8080/api/participants/vaca/${vaca.id}/details`);
+      console.log("📡 Direct fetch response status:", directResponse.status);
+      console.log("📡 Direct fetch response ok:", directResponse.ok);
+      
+      if (directResponse.ok) {
+        const directData = await directResponse.json();
+        console.log("📦 Direct fetch data:", directData);
+      } else {
+        const errorText = await directResponse.text();
+        console.error("❌ Direct fetch error:", errorText);
+      }
+
+      // Ahora pruebo usando el participantService
+      console.log("🔧 Testing via participantService...");
+      const serviceResult = await getVacaParticipants(vaca.id);
+      console.log("🔧 Service result:", serviceResult);    } catch (error) {
+      console.error("💥 Test error:", error);
+    }
+    console.log("🧪 === FIN DEL TEST ===");
+  };
+
+  // Aquí manejo los eventos del modal de configuración
+  const handleSaveConfig = () => {
+    console.log('Saving vaca config:', vacaConfig);
+    // TODO: Necesito implementar la funcionalidad de guardar
+    setShowRulesModal(false);
+    showNotification("Configuración guardada exitosamente", "success");
+  };
+
+  const handleExitVacaFromConfig = () => {
+    setShowRulesModal(false);
+    setShowExitVacaModal(true);
+  };
+
+  const handleCloseConfig = () => {
+    setShowRulesModal(false);
+  };
+
+  // Verifico si el usuario es administrador
   const isAdmin = vaca.user_id === user?.id;
   const isParticipant = participants.some(p => p.user_id === user?.id);
 
@@ -420,22 +667,23 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         </div>        <div className="header-actions">
           {/* Admin actions - visible directly */}
           {isAdmin && (
-            <>              <button 
-                className="primary-action-btn edit-vaca-btn"
-                onClick={() => setShowEditVacaModal(true)}
-                title="Editar esta vaca"
-              >
-                <FontAwesomeIcon icon={faEdit} /> <span>Editar</span>
-              </button>
-              <button 
-                className="secondary-action-btn rules-btn"
-                onClick={() => setShowRulesModal(true)}
-                title="Configurar reglas y opciones"
-              >
-                <FontAwesomeIcon icon={faCog} /> <span>Reglas</span>
-              </button>
-            </>
+            <button 
+              className="primary-action-btn edit-vaca-btn"
+              onClick={() => setShowEditVacaModal(true)}
+              title="Editar esta vaca"
+            >
+              <FontAwesomeIcon icon={faEdit} /> <span>Editar</span>
+            </button>
           )}
+          
+          {/* Rules button - visible for all participants */}
+          <button 
+            className="secondary-action-btn rules-btn"
+            onClick={() => setShowRulesModal(true)}
+            title="Ver reglas y configuración"
+          >
+            <FontAwesomeIcon icon={faCog} /> <span>Reglas</span>
+          </button>
           
           {/* Options menu for additional actions */}
           <div className="options-menu" ref={optionsMenuRef}>
@@ -522,13 +770,27 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               <h3>${vaca?.current !== undefined ? vaca.current.toLocaleString() : '0'}</h3>
               <p>de ${vaca?.goal?.toLocaleString() || '0'}</p>
             </div>
-          </div>
-        </div>
+          </div>        </div>
         
-        {/* Enhanced Layout: 2/3 Transactions, 1/3 Participants */}
+        {/* Mobile Tab Navigation */}
+        <div className="vaca-tabs">
+          <button 
+            className={`vaca-tab ${activeTab === 'transactions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('transactions')}
+          >
+            <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
+          </button>
+          <button 
+            className={`vaca-tab ${activeTab === 'participants' ? 'active' : ''}`}
+            onClick={() => setActiveTab('participants')}
+          >
+            <FontAwesomeIcon icon={faUsers} /> Participantes
+          </button>
+        </div>
+          {/* Enhanced Layout: 2/3 Transactions, 1/3 Participants */}
         <div className="vaca-main-content">
           {/* Transactions Section (2/3 width) */}
-          <div className="transactions-main-section">
+          <div className={`transactions-main-section ${activeTab === 'transactions' ? 'active-tab' : ''}`}>
             <div className="section-header">
               <h2>
                 <FontAwesomeIcon icon={faMoneyBillWave} /> Historial de Transacciones
@@ -558,68 +820,191 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 />
               </div>
             )}
-          </div>
-
-          {/* Participants Section (1/3 width) */}
-          <div className="participants-main-section">
+          </div>          {/* Comprehensive Participants Management Section (1/3 width) */}
+          <div className={`participants-main-section ${activeTab === 'participants' ? 'active-tab' : ''}`}>
             <div className="section-header">
               <h2>
-                <FontAwesomeIcon icon={faUsers} /> Participantes ({participants?.length || 0})
+                <FontAwesomeIcon icon={faUsers} /> Gestión de Participantes
               </h2>
-              <div className="participants-actions">                {isAdmin && (
-                  <button 
-                    className="invite-participants-btn"
-                    onClick={() => setShowInviteModal(true)}
-                  >
-                    <FontAwesomeIcon icon={faUserPlus} /> Invitar
-                  </button>
-                )}
-                <button 
+              <div className="participants-actions">                <button 
                   className="refresh-participants-btn"
-                  onClick={loadParticipants}
-                  title="Actualizar participantes"
+                  onClick={testParticipantsEndpoint}
+                  title="TEST - Verificar endpoint"
                 >
                   <FontAwesomeIcon icon={faSync} />
                 </button>
+                {isAdmin && (
+                  <button 
+                    className="invite-toggle-btn"
+                    onClick={() => setShowInviteSection(!showInviteSection)}
+                  >
+                    <FontAwesomeIcon icon={faUserPlus} />
+                    {showInviteSection ? 'Cancelar' : 'Invitar'}
+                  </button>
+                )}
               </div>
-            </div>            {participants && participants.length > 0 ? (
-              <div className="participants-list">                {participants.map(participant => {
-                  const participantStats = vacaStats[participant.id] || {};
-                  return (
-                    <ParticipantCard
-                      key={participant.id}
-                      participant={participant}
-                      stats={participantStats}
-                      vacaColor={vaca.color || '#3F60E5'}
-                      isAdmin={isAdmin}
-                      currentUserId={user?.id}
-                      onRemove={() => handleRemoveParticipant(participant.id)}
-                      onViewDetails={(participant) => {
-                        console.log('Ver detalles de:', participant);
-                        // TODO: Implementar modal de detalles
-                      }}
-                      onInviteUsers={() => setShowInviteModal(true)}
-                    />
-                  );
-                })}
-              </div>            ) : (
-              <div className="empty-participants-state">
-                <FontAwesomeIcon icon={faUsers} className="empty-icon" />
-                <h3>No hay participantes</h3>
-                <p>Esta vaca aún no tiene participantes registrados.</p>
-                {isAdmin ? (
-                  <div className="empty-state-actions">
-                    <p className="admin-hint">Como administrador, puedes invitar personas para que se unan a esta vaca.</p>
+            </div>
+
+            {/* Invite Section */}
+            {showInviteSection && (
+              <div className="invite-section">
+                <h3>Invitar Nuevos Participantes</h3>
+                <UserSearch 
+                  onUserSelect={handleUserSelect}
+                  excludeUsers={participants}
+                />
+              </div>
+            )}
+
+            {/* Active Participants */}
+            {activeParticipants && activeParticipants.length > 0 && (
+              <div className="participants-category">
+                <h3 className="category-title">
+                  <FontAwesomeIcon icon={faCheckCircle} className="active-icon" />
+                  Participantes Activos ({activeParticipants.length})
+                </h3>
+                <div className="participants-grid">                {activeParticipants.map(participant => {
+                    const contributionData = calculateContributionData(participant);
+                    return (
+                      <div key={participant.id} className="participant-card active">
+                        <div className="participant-header">                          <div 
+                            className="participant-avatar"
+                            style={{backgroundColor: vaca.color || '#3F60E5'}}
+                          >
+                            {participant.avatarLetter || participant.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <div className="participant-info">
+                            <span className="participant-name">{participant.displayName || participant.name || 'Usuario desconocido'}</span>
+                            <span className="participant-email">{participant.email || 'Sin email'}</span>
+                          </div>
+                        </div>
+                        <div className="participant-stats">                          <div className="stat-item">
+                            <span className="stat-label">Contribuido:</span>
+                            <span className="stat-value">
+                              ${contributionData.contributed > 0 
+                                ? contributionData.contributed.toLocaleString() 
+                                : '0'}
+                            </span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Progreso:</span>
+                            <span className="stat-value">{contributionData.percentage}%</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Última actividad:</span>
+                            <span className="stat-value">
+                              {contributionData.lastActivity !== null 
+                                ? `${contributionData.lastActivity} días` 
+                                : 'Sin actividad'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Pending Participants */}
+            {pendingParticipants && pendingParticipants.length > 0 && (
+              <div className="participants-category">
+                <h3 className="category-title">
+                  <FontAwesomeIcon icon={faClock} className="pending-icon" />
+                  Invitaciones Pendientes ({pendingParticipants.length})
+                </h3>
+                <div className="participants-grid">
+                  {pendingParticipants.map(participant => {
+                    return (
+                      <div key={participant.id} className="participant-card pending">
+                        <div className="participant-header">                          <div 
+                            className="participant-avatar pending"
+                            style={{backgroundColor: '#fbbf24'}}
+                          >
+                            {participant.avatarLetter || participant.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <div className="participant-info">
+                            <span className="participant-name">{participant.displayName || participant.name || 'Usuario desconocido'}</span>
+                            <span className="participant-email">{participant.email || 'Sin email'}</span>
+                            <span className="pending-label">
+                              <FontAwesomeIcon icon={faClock} /> Pendiente
+                            </span>
+                          </div>
+                        </div>
+                        <div className="participant-stats">
+                          <div className="stat-item">
+                            <span className="stat-label">Contribuido:</span>
+                            <span className="stat-value">$0</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Porcentaje:</span>
+                            <span className="stat-value">0%</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Última actividad:</span>
+                            <span className="stat-value">-</span>
+                          </div>
+                        </div>
+                        {isAdmin && (
+                          <div className="participant-actions">
+                            <button 
+                              className="remove-invitation-btn"
+                              onClick={() => setShowRemoveConfirm(participant.id)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                              Eliminar invitación
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* No participants message */}
+            {(!activeParticipants || activeParticipants.length === 0) && 
+             (!pendingParticipants || pendingParticipants.length === 0) && (
+              <div className="no-participants">
+                <FontAwesomeIcon icon={faUsers} className="no-participants-icon" />
+                <p>No hay participantes aún</p>
+                {isAdmin && (
+                  <button 
+                    className="invite-first-btn"
+                    onClick={() => setShowInviteSection(true)}
+                  >
+                    <FontAwesomeIcon icon={faUserPlus} />
+                    Invitar primeros participantes
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Remove Confirmation Modal */}
+            {showRemoveConfirm && (
+              <div className="confirmation-overlay">
+                <div className="confirmation-modal">
+                  <div className="confirmation-header">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="warning-icon" />
+                    <h3>Confirmar eliminación</h3>
+                  </div>
+                  <p>¿Estás seguro de que deseas eliminar esta invitación?</p>
+                  <div className="confirmation-actions">
                     <button 
-                      className="invite-first-participants-btn"
-                      onClick={() => setShowInviteModal(true)}
+                      className="cancel-btn"
+                      onClick={() => setShowRemoveConfirm(null)}
                     >
-                      <FontAwesomeIcon icon={faUserPlus} /> Invitar Primeros Participantes
+                      Cancelar
+                    </button>
+                    <button 
+                      className="confirm-btn"
+                      onClick={() => handleRemoveParticipantInvitation(showRemoveConfirm)}
+                    >
+                      Eliminar
                     </button>
                   </div>
-                ) : (
-                  <p className="participant-hint">Contacta al administrador para unirte a esta vaca.</p>
-                )}
+                </div>
               </div>
             )}
           </div>
@@ -704,163 +1089,16 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             </div>
           </div>
         )}
-
+        
         {/* Rules/Options Modal */}
         {showRulesModal && (
-          <div className="modal-overlay">
-            <div className="modal-content rules-modal">
-              <div className="modal-header">
-                <h3>Reglas y Opciones</h3>
-                <button 
-                  className="close-modal-btn"
-                  onClick={() => setShowRulesModal(false)}
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="rules-sections">
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faUserPlus} /> Permisos de Invitación</h4>
-                    <select
-                      value={rulesData.invitationPermissions}
-                      onChange={(e) => setRulesData(prev => ({
-                        ...prev,
-                        invitationPermissions: e.target.value
-                      }))}
-                    >
-                      <option value="admin_only">Solo administrador</option>
-                      <option value="all_members">Todos los miembros</option>
-                      <option value="founding_members">Miembros fundadores</option>
-                    </select>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faMoneyBillWave} /> Contribuciones</h4>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Monto mínimo ($):</label>
-                        <input
-                          type="number"
-                          value={rulesData.contributionAmount}
-                          onChange={(e) => setRulesData(prev => ({
-                            ...prev,
-                            contributionAmount: e.target.value
-                          }))}
-                          placeholder="Monto mínimo"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Frecuencia:</label>
-                        <select
-                          value={rulesData.contributionFrequency}
-                          onChange={(e) => setRulesData(prev => ({
-                            ...prev,
-                            contributionFrequency: e.target.value
-                          }))}
-                        >
-                          <option value="flexible">Flexible</option>
-                          <option value="weekly">Semanal</option>
-                          <option value="monthly">Mensual</option>
-                          <option value="quarterly">Trimestral</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faChartLine} /> Configuración de Meta</h4>
-                    <select
-                      value={rulesData.goalSettings}
-                      onChange={(e) => setRulesData(prev => ({
-                        ...prev,
-                        goalSettings: e.target.value
-                      }))}
-                    >
-                      <option value="fixed">Meta fija</option>
-                      <option value="adjustable">Ajustable por votación</option>
-                      <option value="progressive">Progresiva</option>
-                    </select>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faExclamationTriangle} /> Penalizaciones</h4>
-                    <select
-                      value={rulesData.penaltySettings}
-                      onChange={(e) => setRulesData(prev => ({
-                        ...prev,
-                        penaltySettings: e.target.value
-                      }))}
-                    >
-                      <option value="none">Sin penalizaciones</option>
-                      <option value="late_fee">Multa por retraso</option>
-                      <option value="progressive_penalty">Penalización progresiva</option>
-                    </select>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faUserMinus} /> Expulsión de Miembros</h4>
-                    <select
-                      value={rulesData.memberExpulsion}
-                      onChange={(e) => setRulesData(prev => ({
-                        ...prev,
-                        memberExpulsion: e.target.value
-                      }))}
-                    >
-                      <option value="admin_only">Solo administrador</option>
-                      <option value="majority_vote">Votación mayoritaria</option>
-                      <option value="unanimous_vote">Votación unánime</option>
-                    </select>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faSignOutAlt} /> Política de Salida</h4>
-                    <select
-                      value={rulesData.exitPolicy}
-                      onChange={(e) => setRulesData(prev => ({
-                        ...prev,
-                        exitPolicy: e.target.value
-                      }))}
-                    >
-                      <option value="anytime">En cualquier momento</option>
-                      <option value="notice_required">Aviso previo requerido</option>
-                      <option value="penalty_applies">Con penalización</option>
-                      <option value="no_exit">No permitido</option>
-                    </select>
-                  </div>
-
-                  <div className="rules-section">
-                    <h4><FontAwesomeIcon icon={faCheck} /> Porcentaje de Aprobación</h4>
-                    <div className="form-group">
-                      <label>Porcentaje requerido para decisiones importantes:</label>
-                      <input
-                        type="range"
-                        min="50"
-                        max="100"
-                        value={rulesData.approvalPercentage}
-                        onChange={(e) => setRulesData(prev => ({
-                          ...prev,
-                          approvalPercentage: parseInt(e.target.value)
-                        }))}
-                      />
-                      <span className="percentage-display">{rulesData.approvalPercentage}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  className="cancel-btn"
-                  onClick={() => setShowRulesModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button className="save-btn">
-                  Guardar Reglas
-                </button>
-              </div>
-            </div>
-          </div>
+          <VacaConfigModal
+            config={vacaConfig}
+            setConfig={setVacaConfig}
+            onSave={handleSaveConfig}
+            onExit={handleExitVacaFromConfig}
+            onClose={handleCloseConfig}
+          />
         )}
 
         {/* Exit Vaca Modal */}
@@ -892,8 +1130,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                   onClick={() => setShowExitVacaModal(false)}
                 >
                   Cancelar
-                </button>
-                <button 
+                </button>                <button 
                   className="exit-btn"
                   onClick={handleExitVaca}
                 >
@@ -902,21 +1139,6 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               </div>
             </div>
           </div>
-        )}        {/* Invite Participants Modal */}
-        {showInviteModal && (
-          <InviteParticipantsModal 
-            isOpen={showInviteModal}
-            onClose={() => setShowInviteModal(false)}
-            vacaId={vaca.id}
-            onInviteSuccess={async () => {
-              // Recargar participantes después de invitar
-              await loadParticipants();
-              // Recargar stats si es necesario
-              if (vaca.id) {
-                await loadVacaStats();
-              }
-            }}
-          />
         )}
       </div>
     </div>

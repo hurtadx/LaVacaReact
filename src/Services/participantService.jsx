@@ -10,10 +10,40 @@ import apiService, { handleApiCall } from './apiService';
  * @param {string} vacaId - ID de la vaca
  * @returns {Promise<{data: Array, error: string|null}>}
  */
-export const getParticipantsByVaca = async (vacaId) => {
+export const getVacaParticipants = async (vacaId) => {
+  console.log("🚀 participantService.getVacaParticipants - vacaId:", vacaId);
   return handleApiCall(async () => {
-    const response = await apiService.get(`/api/participants/vaca/${vacaId}/details`);
-    return response.participants || response.data || response;
+    const endpoint = `/api/participants/vaca/${vacaId}/details`;
+    console.log("🌐 Calling endpoint:", endpoint);
+    
+    const response = await apiService.get(endpoint);
+    console.log("📡 API Response from participantService:", response);
+    console.log("📊 Response participants:", response.participants);
+    console.log("📊 Response data:", response.data);
+    console.log("📊 Response type:", typeof response);
+    console.log("📊 Is response array:", Array.isArray(response));
+    
+    // Manejo diferentes estructuras de respuesta:
+    // 1. Backend returns { participants: [...] }
+    // 2. Backend returns { data: [...] }
+    // 3. Backend returns direct array [...]
+    
+    let participantsArray = [];
+    
+    if (response.participants && Array.isArray(response.participants)) {
+      participantsArray = response.participants;
+    } else if (response.data && Array.isArray(response.data)) {
+      participantsArray = response.data;
+    } else if (Array.isArray(response)) {
+      // El backend está devolviendo un array directo - comportamiento actual
+      participantsArray = response;
+    } else {
+      console.warn("🚨 Unexpected response format:", response);
+      participantsArray = [];
+    }
+    
+    console.log("✅ Final participants array:", participantsArray);
+    return participantsArray;
   });
 };
 
@@ -181,7 +211,7 @@ export const bulkInviteParticipants = async (inviteData) => {
 };
 
 // Legacy functions for backward compatibility
-export const getParticipants = getParticipantsByVaca;
+export const getParticipants = getVacaParticipants;
 export const addParticipant = createParticipant;
 
 /**

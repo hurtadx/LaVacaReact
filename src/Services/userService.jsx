@@ -322,7 +322,7 @@ export const getUserTransactions = async (userId = null, options = {}) => {
       return { data: [], error: 'ID de usuario inválido (UUID requerido)' };
     }
 
-    const endpoint = userId ? `/api/users/${userId}/transactions` : '/api/users/me/transactions';
+    const endpoint = userId ? `/api/transactions/user/${userId}` : '/api/users/me/transactions';
     
     // Construir parámetros de query
     const queryParams = new URLSearchParams();
@@ -364,10 +364,10 @@ export const getUserVacas = async (userId = null) => {
       return { data: [], error: 'ID de usuario inválido (UUID requerido)' };
     }
 
-    const endpoint = userId ? `/api/users/${userId}/vacas` : '/api/users/me/vacas';
+    const endpoint = userId ? `/api/vacas/user/${userId}/participation` : '/api/users/me/vacas';
     const response = await apiService.get(endpoint);
     
-    return { data: response.vacas || [], error: null };
+    return { data: response || [], error: null };
   } catch (error) {
     console.error("Error al obtener vacas del usuario:", error);
     
@@ -394,7 +394,7 @@ export const getUserInvitations = async (userId = null) => {
       return { data: [], error: 'ID de usuario inválido (UUID requerido)' };
     }
 
-    const endpoint = userId ? `/api/users/${userId}/invitations` : '/api/users/me/invitations';
+    const endpoint = userId ? `/api/invitations/user/${userId}/received` : '/api/users/me/invitations';
     const response = await apiService.get(endpoint);
     
     return { data: response.invitations || [], error: null };

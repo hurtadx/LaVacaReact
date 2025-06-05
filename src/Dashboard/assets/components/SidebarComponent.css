@@ -160,7 +160,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
   transition: background-color 0.2s ease;
 }
 
@@ -176,8 +176,8 @@
   list-style-type: none;
   max-height: 200px;
   overflow-y: auto;
-  overflow-x: hidden;   background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 0 0 4px 4px;
+  overflow-x: hidden;  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 0 0 var(--border-radius-xs, 8px) var(--border-radius-xs, 8px);
 }
 
 .dropdown-item {
@@ -226,7 +226,7 @@
 
 .dropdown-menu::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb:hover {

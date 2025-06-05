@@ -95,7 +95,7 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
       
       console.log("✅ LOAD VACAS - Loading vacas for user:", currentUser.id);
       
-      // Load user's vacas
+      // Cargo las vacas del usuario
       const { data, error } = await getUserVacas(currentUser.id);
       
       if (error) {
