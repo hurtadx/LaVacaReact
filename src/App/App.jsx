@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
-import AuthForm from '../Components/AuthForm/AuthForm';
+import AuthForm from '../components/AuthForm/AuthForm';
 import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
 import Dashboard from '../Dashboard/Dashboard';
