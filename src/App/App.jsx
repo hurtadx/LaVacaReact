@@ -6,10 +6,10 @@ import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
 import Dashboard from '../Dashboard/Dashboard';
 import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
-import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
+import { NotificationProvider, useNotification } from '../components/Notification/NotificationContext';
 import { checkTablesExist } from "../Services";
 import { onAuthStateChange } from "../Services";
-import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
+import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
 
 const ErrorHandler = () => {
   const { captureError } = useNotification();

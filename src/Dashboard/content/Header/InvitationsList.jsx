@@ -3,7 +3,7 @@ import { respondToInvitation } from '../../../Services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import './InvitationsList.css';
-import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import { NotificationContext } from '../../../components/Notification/NotificationContext';
 
 const InvitationsList = ({ invitations = [], onInvitationResponse }) => {
   const { showNotification, captureError } = useContext(NotificationContext);

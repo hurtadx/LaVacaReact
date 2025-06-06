@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserVacas, getInvitations, getCurrentUser, logoutUser } from '../Services';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
-import { NotificationContext } from '../Components/Notification/NotificationContext';
+import { NotificationContext } from '../components/Notification/NotificationContext';
 import VacaDetails from './content/Vacas/VacaDetails';
 import './Dashboard.css';
 import './Resposive/dashboard-responsive.css'; 

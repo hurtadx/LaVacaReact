@@ -13,8 +13,8 @@ import {
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons';
 import { createVaca, searchUsers, getCurrentUser } from "../../../Services";
-import { useNotification } from "../../../Components/Notification/NotificationContext";
-import { NotificationContext } from "../../../Components/Notification/NotificationContext";
+import { useNotification } from "../../../components/Notification/NotificationContext";
+import { NotificationContext } from "../../../components/Notification/NotificationContext";
 import './CreateVacaForm.css';
 
 const CreateVacaForm = ({ onSave, onCancel }) => {

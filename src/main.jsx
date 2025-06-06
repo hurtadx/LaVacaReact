@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { NotificationProvider } from './Components/Notification/NotificationContext';
+import { NotificationProvider } from './components/Notification/NotificationContext';
 import App from './App/App';
 import './index.css';
 

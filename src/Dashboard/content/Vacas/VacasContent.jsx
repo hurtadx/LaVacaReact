@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { getUserVacas, checkTablesExist } from "../../../Services";
 import { getCurrentUser } from "../../../Services";
-import { useNotification, NotificationContext } from "../../../Components/Notification/NotificationContext";
+import { useNotification, NotificationContext } from "../../../components/Notification/NotificationContext";
 import CreateVacaForm from './CreateVacaForm';
 import VacaDetails from './VacaDetails';
 import './VacasContent.css';
