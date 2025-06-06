@@ -12,7 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import UserSearch from './UserSearch';
 import './InviteUsers.css';
-import { NotificationContext } from '../../../../Components/Notification/NotificationContext';
+import { NotificationContext } from '../../../../components/Notification/NotificationContext';
 
 const InviteUsers = ({ vacaId, userId, onInvitationComplete, onClose }) => {
   const [loading, setLoading] = useState(false);

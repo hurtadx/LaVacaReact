@@ -9,7 +9,7 @@ import {
   faSpinner,  
   faUserPlus
 } from '@fortawesome/free-solid-svg-icons';
-import { NotificationContext } from '../../../../Components/Notification/NotificationContext';
+import { NotificationContext } from '../../../../components/Notification/NotificationContext';
 import './UserSearch.css';
 
 const UserSearch = ({ onUserSelect, excludeUsers = [] }) => {

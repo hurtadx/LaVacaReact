@@ -15,7 +15,7 @@ import {
   faUserPlus
 } from '@fortawesome/free-solid-svg-icons';
 import InviteUsers from './Invitations/InviteUsers';
-import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import { NotificationContext } from '../../../components/Notification/NotificationContext';
 import { 
   getVacaDetails, 
   addVacaTransaction,
