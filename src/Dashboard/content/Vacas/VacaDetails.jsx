@@ -31,7 +31,7 @@ import {
   faClock
 } from '@fortawesome/free-solid-svg-icons';
 import UserSearch from './Invitations/UserSearch.jsx';
-import { NotificationContext } from '../../../components/Notification/NotificationContext';
+import { NotificationContext } from '../../../components/Notification/NotificationContext.jsx';
 import VacaConfigModal from '../../../components/VacaConfigModal/VacaConfigModal.jsx';
 import { 
   getVacaDetails, 
