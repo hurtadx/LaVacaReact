@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import './VacaDetails.css';
 import '../../../Dashboard/Resposive/vacadetails-responsive.css';
-import '../../../components/VacaConfigModal/VacaConfigModal.jsx';
+import '../../../components/VacaConfigModal/VacaConfigModal.css';
+import VacaConfigModal from '../../../components/VacaConfigModal/VacaConfigModal.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
@@ -32,7 +33,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import UserSearch from './Invitations/UserSearch.jsx';
 import { NotificationContext } from '../../../components/Notification/NotificationContext.jsx';
-import VacaConfigModal from '../../../components/VacaConfigModal/VacaConfigModal.jsx';
 import { 
   getVacaDetails, 
   addVacaTransaction,
