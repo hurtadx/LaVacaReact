@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import './VacaDetails.css';
 import '../../../Dashboard/Resposive/vacadetails-responsive.css';
-import '../../../components/VacaConfigModal/VacaConfigModal.css';
+import '../../../../components/VacaConfigModal/VacaConfigModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
