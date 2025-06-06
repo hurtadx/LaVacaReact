@@ -10,7 +10,7 @@ import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
-import DashboardSkeleton from '../Components/SkeletonLoading/DashboardSkeleton';
+import DashboardSkeleton from '../components/SkeletonLoading/DashboardSkeleton';
 
 
 const Dashboard = () => {

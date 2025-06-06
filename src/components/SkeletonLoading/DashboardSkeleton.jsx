@@ -1,6 +1,6 @@
 import React from "react";
 import "./SkeletonLoading.css";
-import logo from '../../Components/Img/LogoLaVaca.png';
+import logo from '../../components/Img/LogoLaVaca.png';
 
 const DashboardSkeleton = ({ message = "Cargando tu dashboard..." }) => {
   return (

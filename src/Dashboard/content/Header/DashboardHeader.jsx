@@ -6,7 +6,7 @@ import { faBell } from '@fortawesome/free-solid-svg-icons';
 import InvitationsList from './InvitationsList'; 
 import './DashboardHeader.css';
 import '../../Resposive/header-responsive.css'; 
-import logo from '../../../Components/Img/LogoLaVaca.png';
+import logo from '../../../components/Img/LogoLaVaca.png';
 
 const DashboardHeader = ({ 
   user, 
