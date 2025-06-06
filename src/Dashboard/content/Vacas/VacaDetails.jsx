@@ -45,9 +45,9 @@ import {
   bulkInviteParticipants,
   getVacaStats
 } from '../../../Services';
-import TransactionForm from '../../../Components/Transactions/TransactionForm.jsx';
-import TransactionsList from '../../../Components/Transactions/TransactionsList.jsx';
-import ParticipantCard from '../../../Components/Participants/ParticipantCard.jsx';
+import TransactionForm from '../../../components/Transactions/TransactionForm.jsx';
+import TransactionsList from '../../../components/Transactions/TransactionsList.jsx';
+import ParticipantCard from '../../../components/Participants/ParticipantCard.jsx';
 
 const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }) => {
   const [vaca, setVaca] = useState(initialVaca || {});
@@ -307,7 +307,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");
     
-    // Si es una contribución, actualizo el monto actual
+    // Si es una contribución, actualizo el monto current
     if (transactionData.type === 'contribution') {
       setVaca(prev => ({
         ...prev,
