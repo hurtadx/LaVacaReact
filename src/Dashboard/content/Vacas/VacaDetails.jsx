@@ -32,6 +32,7 @@ import {
   faClock
 } from '@fortawesome/free-solid-svg-icons';
 import UserSearch from './Invitations/UserSearch.jsx';
+import InviteUsers from './Invitations/InviteUsers.jsx';
 import { NotificationContext } from '../../../components/Notification/NotificationContext.jsx';
 import { 
   getVacaDetails, 
@@ -99,6 +100,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     exitPolicy: 'refund'
   });
   const optionsMenuRef = useRef(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     if (!passedUser) {
@@ -842,15 +844,13 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 >
                   <FontAwesomeIcon icon={faSync} />
                 </button>
-                {isAdmin && (
-                  <button 
-                    className="invite-toggle-btn"
-                    onClick={() => setShowInviteSection(!showInviteSection)}
-                  >
-                    <FontAwesomeIcon icon={faUserPlus} />
-                    {showInviteSection ? 'Cancelar' : 'Invitar'}
-                  </button>
-                )}
+                <button 
+                  className="invite-toggle-btn"
+                  onClick={() => setShowInviteSection(!showInviteSection)}
+                >
+                  <FontAwesomeIcon icon={faUserPlus} />
+                  {showInviteSection ? 'Cancelar' : 'Invitar'}
+                </button>
               </div>
             </div>
 
@@ -1148,6 +1148,16 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               </div>
             </div>
           </div>
+        )}
+
+        {/* Invite Users Modal */}
+        {showInviteModal && (
+          <InviteUsers
+            vacaId={vaca.id}
+            userId={user?.id}
+            onInvitationComplete={handleInviteUsersComplete}
+            onClose={() => setShowInviteModal(false)}
+          />
         )}
       </div>
     </div>
