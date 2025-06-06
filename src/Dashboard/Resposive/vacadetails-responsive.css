@@ -55,9 +55,19 @@
   /* Show only the active tab content */
   .transactions-main-section.active-tab,
   .participants-main-section.active-tab {
-    display: block;
+    display: flex !important;
+    flex-direction: column;
     opacity: 1;
     animation: fadeIn 0.3s ease-in-out;
+  }
+  .transactions-main-section.hidden-tab,
+  .participants-main-section.hidden-tab {
+    display: none !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    z-index: -1 !important;
   }
   
   @keyframes fadeIn {
@@ -349,35 +359,195 @@
 }
 
 @media (max-width: 480px) {
+  .vaca-details-container {
+    flex-direction: column !important;
+    gap: 18px !important;
+    padding: 10px 4px 20px 4px !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    background: #f7f9fb !important;
+  }
+  .vaca-details-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 10px 0 0 0 !important;
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.06);
+    margin-bottom: 0 !important;
+  }
   .vaca-details-header h1 {
-    font-size: 20px;
+    font-size: 18px !important;
+    margin-bottom: 2px !important;
+    word-break: break-word !important;
+    color: #3f60e5 !important;
+    font-weight: 700;
   }
-  
+  .vaca-title-icon {
+    font-size: 22px !important;
+    color: #3f60e5 !important;
+  }
+  .vaca-tabs {
+    display: flex !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    margin: 10px 0 18px 0 !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.08);
+    background: #fff !important;
+  }
   .vaca-tab {
-    font-size: 12px;
-    padding: 10px 5px;
+    flex: 1;
+    padding: 14px 0 !important;
+    font-size: 15px !important;
+    font-weight: 600;
+    color: #3f60e5 !important;
+    background: #f7f9fb !important;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0 !important;
+    transition: background 0.2s, color 0.2s;
+    box-shadow: none;
   }
-  
-  .stat {
-    flex-basis: 100%;
+  .vaca-tab.active {
+    background: #eaf0ff !important;
+    color: #1a2a6c !important;
+    border-bottom: 3px solid #3f60e5 !important;
   }
-  
-    .transaction-description,
-  .transaction-details,
-  .participant-info p {
-    font-size: 12px;
+  .vaca-tab:focus {
+    outline: 2px solid #3f60e5;
+    z-index: 2;
   }
-  
-  .vaca-amount-info h3 {
-    font-size: 18px;
+  .vaca-main-content {
+    display: block !important;
+    gap: 0 !important;
   }
-  
-  .progress-text strong {
-    font-size: 16px;
+  .transactions-main-section,
+  .participants-main-section {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.08);
+    margin-bottom: 18px !important;
+    padding: 14px 8px 18px 8px !important;
   }
-
-  .participants-section {
-    padding: 10px;
+  .transactions-main-section.active-tab,
+  .participants-main-section.active-tab {
+    display: flex !important;
+    flex-direction: column;
+    opacity: 1;
+    animation: fadeIn 0.3s;
+  }
+  .vaca-details-summary {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 12px 8px !important;
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.08);
+    margin-bottom: 10px !important;
+  }
+  .vaca-section, .participants-section {
+    padding: 10px 4px 10px 4px !important;
+    background: #fff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.06);
+    margin-bottom: 10px !important;
+  }
+  .vaca-section h2, .participants-section h2 {
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 4px !important;
+    color: #3f60e5 !important;
+    font-weight: 700;
+  }
+  .transactions-list, .participants-list {
+    max-height: 220px !important;
+    overflow-y: auto !important;
+    padding: 0 2px !important;
+    margin-bottom: 0 !important;
+    gap: 10px !important;
+  }
+  .transaction-item, .participant-item, .participant-card {
+    background: #f7f9fb !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 4px rgba(63,96,229,0.04);
+    margin-bottom: 8px !important;
+    padding: 10px 8px !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .transaction-item:last-child, .participant-item:last-child, .participant-card:last-child {
+    margin-bottom: 0 !important;
+  }
+  .transaction-icon, .participant-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 15px !important;
+    background: #eaf0ff !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3f60e5 !important;
+  }
+  .participant-info h4, .participant-info p, .transaction-description {
+    font-size: 13px !important;
+    color: #222 !important;
+  }
+  .add-transaction-btn, .invite-first-btn {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    background: #3f60e5 !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(63,96,229,0.10);
+    margin-top: 10px !important;
+    margin-bottom: 0 !important;
+  }
+  .add-transaction-btn:active, .invite-first-btn:active {
+    background: #1a2a6c !important;
+  }
+  .no-participants {
+    padding: 18px 6px !important;
+    background: #fff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.06);
+    text-align: center;
+    margin-bottom: 10px !important;
+  }
+  .no-participants-icon {
+    font-size: 28px !important;
+    margin-bottom: 8px !important;
+    color: #3f60e5 !important;
+  }
+  .confirmation-modal {
+    margin: 8px !important;
+    padding: 12px !important;
+    width: calc(100% - 16px) !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 8px rgba(63,96,229,0.10);
+  }
+  .confirmation-header h3 {
+    font-size: 15px !important;
+    color: #e67e22 !important;
+  }
+  .confirmation-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cancel-btn, .confirm-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
   }
 }
 

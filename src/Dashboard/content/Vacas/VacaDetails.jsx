@@ -31,7 +31,7 @@ import {
   faClock
 } from '@fortawesome/free-solid-svg-icons';
 import UserSearch from './Invitations/UserSearch.jsx';
-import { NotificationContext } from '../../../Components/Notification/NotificationContext';
+import { NotificationContext } from '../../../components/Notification/NotificationContext';
 import VacaConfigModal from '../../../components/VacaConfigModal/VacaConfigModal.jsx';
 import { 
   getVacaDetails, 
@@ -642,7 +642,6 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     setShowRulesModal(false);
   };
 
-  // Verifico si el usuario es administrador
   const isAdmin = vaca.user_id === user?.id;
   const isParticipant = participants.some(p => p.user_id === user?.id);
 
@@ -654,6 +653,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     return <div className="error-message">No se pudieron cargar los detalles</div>;
   }
 
+  
+  const handleTabClick = (tab) => {
+    setActiveTab(prev => (prev === tab ? null : tab));
+  };
+
+  
   return (
     <div className="vaca-details-container">
       {/* Enhanced Header with Options Menu */}
@@ -780,13 +785,13 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         <div className="vaca-tabs">
           <button 
             className={`vaca-tab ${activeTab === 'transactions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('transactions')}
+            onClick={() => handleTabClick('transactions')}
           >
             <FontAwesomeIcon icon={faMoneyBillWave} /> Transacciones
           </button>
           <button 
             className={`vaca-tab ${activeTab === 'participants' ? 'active' : ''}`}
-            onClick={() => setActiveTab('participants')}
+            onClick={() => handleTabClick('participants')}
           >
             <FontAwesomeIcon icon={faUsers} /> Participantes
           </button>
@@ -794,7 +799,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
           {/* Enhanced Layout: 2/3 Transactions, 1/3 Participants */}
         <div className="vaca-main-content">
           {/* Transactions Section (2/3 width) */}
-          <div className={`transactions-main-section ${activeTab === 'transactions' ? 'active-tab' : ''}`}>
+          <div className={`transactions-main-section${activeTab === 'transactions' ? ' active-tab' : ''}${activeTab !== 'transactions' ? ' hidden-tab' : ''}`}>
             <div className="section-header">
               <h2>
                 <FontAwesomeIcon icon={faMoneyBillWave} /> Historial de Transacciones
@@ -825,7 +830,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               </div>
             )}
           </div>          {/* Comprehensive Participants Management Section (1/3 width) */}
-          <div className={`participants-main-section ${activeTab === 'participants' ? 'active-tab' : ''}`}>
+          <div className={`participants-main-section${activeTab === 'participants' ? ' active-tab' : ''}${activeTab !== 'participants' ? ' hidden-tab' : ''}`}>
             <div className="section-header">
               <h2>
                 <FontAwesomeIcon icon={faUsers} /> Gestión de Participantes
