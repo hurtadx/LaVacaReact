@@ -5,7 +5,7 @@ import AuthForm from '../components/AuthForm/AuthForm';
 import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
 import Dashboard from '../Dashboard/Dashboard';
-import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
+import { PrivateRoute, PublicRoute } from '../components/AuthForm/ProtectedRoutes';
 import { NotificationProvider, useNotification } from '../components/Notification/NotificationContext';
 import { checkTablesExist } from "../Services";
 import { onAuthStateChange } from "../Services";
