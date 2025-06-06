@@ -195,10 +195,12 @@ export const registerUser = async (email, password, username) => {
     const response = await apiService.post('/api/auth/register', {
       email,
       password,
+
       username
     });
 
     const needsEmailConfirmation = !response.user?.email_confirmed;
+
     
     return { 
       user: response.user || null, 
@@ -344,15 +346,18 @@ export const onAuthStateChange = (callback) => {
  */
 export const syncUserProfile = async (userData) => {
   try {
+
     if (useSupabaseAuth && supabase) {
       // Para Supabase, simplemente devolver los datos enriquecidos
       return { success: true, data: await enrichUserData(userData) };
     }
+
     
     // Para API personalizada, sincronizar con el backend
     const response = await apiService.post('/api/auth/sync-profile', userData);
     return { success: true, data: response.user };
   } catch (error) {
+
     console.error('Error sincronizando perfil:', error);
     return { success: false, error: error.message, data: userData };
   }
