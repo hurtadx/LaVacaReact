@@ -64,55 +64,55 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
       setter(value);
     }
   };
-
   useEffect(() => {
     if (selectedVacaId && vacas && vacas.length > 0 && mounted.current) {
       const selectedVaca = vacas.find(vaca => vaca.id === selectedVacaId);
       if (selectedVaca) {
-        console.log("Vaca seleccionada desde sidebar:", selectedVaca);
+        if (import.meta.env.DEV) console.log("Vaca seleccionada:", selectedVaca.name);
         safeSetState(setSelectedVaca, selectedVaca);
         if (setSelectedVacaId && mounted.current) {
           setSelectedVacaId(null); 
         }
       }
     }
-  }, [selectedVacaId, vacas]);  const loadUserVacas = async () => {    setLoading(true);
+  }, [selectedVacaId, vacas]);  const loadUserVacas = async () => {
+    setLoading(true);
     
     try {
       // Get current user from auth service
       const { user: currentUser, error: authError } = await getCurrentUser();
       
-      console.log("🔍 LOAD VACAS - getCurrentUser result:", { user: currentUser, error: authError });
-      console.log("🔍 LOAD VACAS - currentUser.id:", currentUser?.id);
-      console.log("🔍 LOAD VACAS - Token in localStorage:", localStorage.getItem('lavaca_access_token') ? 'Present' : 'Missing');
+      if (import.meta.env.DEV) {
+        console.group('🔍 Loading User Vacas');
+        console.log('User:', currentUser?.id || 'No ID');
+        console.log('Token:', localStorage.getItem('lavaca_access_token') ? 'Present' : 'Missing');
+        if (authError) console.log('Auth Error:', authError);
+        console.groupEnd();
+      }
       
       if (!currentUser?.id || authError) {
-        console.error("❌ LOAD VACAS - No user or auth error:", authError);
+        console.error("No user or auth error:", authError);
         showNotification("Debes iniciar sesión para ver tus vacas", "error");
         setLoading(false);
         return;
       }
       
-      console.log("✅ LOAD VACAS - Loading vacas for user:", currentUser.id);
-      
       // Cargo las vacas del usuario
       const { data, error } = await getUserVacas(currentUser.id);
       
       if (error) {
-        console.error("Error al cargar vacas:", error);
+                console.error("Error al cargar vacas:", error);
         showNotification(`Error al cargar vacas: ${error}`, "error");
         setLoading(false);
         return;
       }
       
-      
-      console.log("Vacas recibidas:", data);
-      
+      if (import.meta.env.DEV) console.log("Vacas cargadas:", data?.length || 0);
       
       if (Array.isArray(data)) {
         safeSetState(setVacas, data);
       } else {
-        console.error("Datos de vacas no es un array:", data);
+        console.error("Datos de vacas no es un array:", typeof data);
         safeSetState(setVacas, []);
       }
     } catch (error) {
@@ -123,9 +123,8 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
     }
   };
 
-  
-  const handleCreateVaca = (newVaca) => {
-    console.log("Nueva vaca creada:", newVaca);
+    const handleCreateVaca = (newVaca) => {
+    if (import.meta.env.DEV) console.log("Nueva vaca creada:", newVaca.name);
     setVacas(currentVacas => [...(Array.isArray(currentVacas) ? currentVacas : []), newVaca]);
     setShowCreateForm(false);
     showNotification("¡Vaca creada con éxito!", "success");

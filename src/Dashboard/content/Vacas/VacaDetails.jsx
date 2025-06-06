@@ -102,14 +102,17 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
 
   useEffect(() => {
     if (!passedUser) {
-      const loadUser = async () => {
-        try {
+      const loadUser = async () => {        try {
           const { user: currentUser, error } = await getCurrentUser();
           if (currentUser && !error) {
             setUser(currentUser);
+          } else if (error) {
+            console.warn("⚠️ Error loading user:", error);
+            showNotification("Error al cargar usuario", "warning");
           }
         } catch (error) {
-          console.error("Error al cargar usuario:", error);
+          console.error("❌ Failed to load user:", error.message);
+          showNotification("Error al cargar datos del usuario", "error");
         }
       };
       
@@ -119,8 +122,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
 
   
   useEffect(() => {
-    if (!initialVaca && match?.params?.id) {
-      const loadVacaDetails = async () => {
+    if (!initialVaca && match?.params?.id) {      const loadVacaDetails = async () => {
         setLoading(true);
         try {
           const { data, error } = await getVacaDetails(match.params.id);
@@ -135,9 +137,11 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
               goal: data.goal || '',
               deadline: data.deadline || ''
             });
+          } else {
+            showNotification("No se encontraron detalles de la vaca", "warning");
           }
         } catch (error) {
-          console.error("Error al cargar detalles:", error);
+          console.error("❌ Failed to load vaca details:", error.message);
           showNotification("Error al cargar los detalles de la vaca", "error");
         } finally {
           setLoading(false);
@@ -194,23 +198,23 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }  }, [vaca, user]);  // Cargo datos adicionales
   useEffect(() => {
     if (vaca?.id) {
-      console.log("🔄 Loading additional data for vaca:", vaca.id);
+      if (import.meta.env.DEV) console.log("Loading additional data for vaca:", vaca.id);
       loadTransactions();
       loadVacaStats();
       loadParticipants(); // Lo agrego aquí también para asegurarme que se llame
     }
   }, [vaca?.id]);
-
   // Este useEffect me ayuda a hacer debug del estado de la vaca
   useEffect(() => {
-    console.log("🐮 Vaca state changed:", {
-      hasVaca: !!vaca,
-      vacaId: vaca?.id,
-      vacaName: vaca?.name,
-      hasParticipants: !!vaca?.participants,
-      participantsLength: vaca?.participants?.length,
-      fullVaca: vaca
-    });
+    if (import.meta.env.DEV) {
+      console.log("Vaca state changed:", {
+        hasVaca: !!vaca,
+        vacaId: vaca?.id,
+        vacaName: vaca?.name,
+        hasParticipants: !!vaca?.participants,
+        participantsLength: vaca?.participants?.length
+      });
+    }
   }, [vaca]);
 
   // Cierro el menú de opciones al hacer clic afuera
@@ -337,20 +341,22 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     
     // Actualizo la lista de participantes después de enviar invitaciones
     await loadParticipants();
-  };
-  // Cargar participantes desde la API
+  };  // Cargar participantes desde la API
   const loadParticipants = async () => {
-    console.log("🚀 loadParticipants ejecutándose - vaca:", vaca);
+    if (import.meta.env.DEV) console.log("loadParticipants ejecutándose para vaca:", vaca?.id);
     if (vaca?.id) {
       try {
-        console.log("🔄 Cargando participantes para vaca:", vaca.id);        
-        console.log("🌐 Endpoint que se va a llamar:", `/api/participants/vaca/${vaca.id}/details`);
+        if (import.meta.env.DEV) console.log("Cargando participantes para vaca:", vaca.id);        
         
         const result = await getVacaParticipants(vaca.id);
         
-        console.log("🔍 Resultado completo getVacaParticipants:", result);
-        console.log("🔍 result.data:", result.data);
-        console.log("🔍 result.error:", result.error);
+        if (import.meta.env.DEV) {
+          console.log("Resultado getVacaParticipants:", {
+            hasData: !!result.data,
+            dataLength: result.data?.length || 0,
+            hasError: !!result.error
+          });
+        }
         
         // Aquí manejo las respuestas que pueden venir en diferentes formatos
         let participantsData = [];
@@ -359,10 +365,8 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         } else if (!result.error && vaca.participants) {
           // Si no hay datos de la API, uso los que ya tengo en vaca
           participantsData = Array.isArray(vaca.participants) ? vaca.participants : [];
-        }
-        
-        console.log("📊 participantsData procesados:", participantsData);
-        console.log("📊 Número de participantes:", participantsData.length);
+        }        
+        if (import.meta.env.DEV) console.log("participantsData procesados:", participantsData.length);
         
         // Siempre actualizo la lista de participantes y los separo por estado
         setParticipants(participantsData);        // Proceso los datos y normalizo los campos que pueden faltar
@@ -386,35 +390,34 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             avatarLetter: (p.name || 'U').charAt(0).toUpperCase()
           };
         });
-        
-        // Registro en consola los participantes procesados
-        processedParticipants.forEach((p, index) => {
-          console.log(`👤 Participante ${index}:`, {
-            id: p.id,
-            name: p.name,
-            email: p.email,
-            status: p.status,
-            user_id: p.user_id,
-            displayName: p.displayName
+          // Registro en consola los participantes procesados (solo en desarrollo)
+        if (import.meta.env.DEV) {
+          processedParticipants.forEach((p, index) => {
+            console.log(`Participante ${index}:`, {
+              name: p.name,
+              status: p.status,
+              displayName: p.displayName
+            });
           });
-        });
+        }
         
         // Actualizo el estado con los datos procesados
         setParticipants(processedParticipants);
-        
-        const active = processedParticipants.filter(p => {
+          const active = processedParticipants.filter(p => {
           const isActive = p.status === 'active';
-          console.log(`👤 ${p.displayName} - Status: ${p.status}, isActive: ${isActive}`);
+          if (import.meta.env.DEV) console.log(`${p.displayName} - Status: ${p.status}, isActive: ${isActive}`);
           return isActive;
         });        
         const pending = processedParticipants.filter(p => {
           const isPending = p.status === 'pending';
-          console.log(`👤 ${p.displayName} - Status: ${p.status}, isPending: ${isPending}`);
+          if (import.meta.env.DEV) console.log(`${p.displayName} - Status: ${p.status}, isPending: ${isPending}`);
           return isPending;
         });
         
-        console.log("✅ Participantes activos:", active);
-        console.log("✅ Participantes pendientes:", pending);
+        if (import.meta.env.DEV) {
+          console.log("Participantes activos:", active.length);
+          console.log("Participantes pendientes:", pending.length);
+        }
         
         setActiveParticipants(active);
         setPendingParticipants(pending);
@@ -424,11 +427,10 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         }
         
       } catch (error) {
-        console.error("❌ Exception loading participants:", error);
-        
+        console.error("❌ Exception loading participants:", error);        
         // Aquí uso los participantes que ya tengo como fallback
         const fallbackParticipants = vaca.participants || [];
-        console.log("🔄 Usando participantes de fallback:", fallbackParticipants);
+        if (import.meta.env.DEV) console.log("Usando participantes de fallback:", fallbackParticipants.length);
         
         setParticipants(fallbackParticipants);
         
@@ -522,17 +524,20 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       console.error("Error al eliminar participante:", error);
       showNotification("Error al eliminar invitación", "error");
     }
-  };
-  useEffect(() => {
-    console.log("🔍 useEffect loadParticipants - vaca?.id:", vaca?.id);
-    console.log("🔍 useEffect loadParticipants - vaca object:", vaca);
-    console.log("🔍 useEffect loadParticipants - dependencies:", { vacaId: vaca?.id, hasParticipants: !!vaca.participants });
+  };  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log("useEffect loadParticipants - vaca?.id:", vaca?.id);
+      console.log("useEffect loadParticipants - dependencies:", { 
+        vacaId: vaca?.id, 
+        hasParticipants: !!vaca.participants 
+      });
+    }
     
     if (vaca?.id) {
-      console.log("✅ Calling loadParticipants because vaca.id exists:", vaca.id);
+      if (import.meta.env.DEV) console.log("Calling loadParticipants because vaca.id exists:", vaca.id);
       loadParticipants();
     } else {
-      console.log("❌ NOT calling loadParticipants - no vaca.id");
+      if (import.meta.env.DEV) console.log("NOT calling loadParticipants - no vaca.id");
     }
   }, [vaca?.id, vaca.participants]);
 
@@ -600,22 +605,21 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
 
     try {
       // Pruebo el endpoint directamente
-      const directResponse = await fetch(`http://localhost:8080/api/participants/vaca/${vaca.id}/details`);
+      const directResponse = await fetch(`${API_BASE_URL}/api/participants/vaca/${vaca.id}/details`);
       console.log("📡 Direct fetch response status:", directResponse.status);
       console.log("📡 Direct fetch response ok:", directResponse.ok);
-      
-      if (directResponse.ok) {
+        if (directResponse.ok) {
         const directData = await directResponse.json();
-        console.log("📦 Direct fetch data:", directData);
+        if (import.meta.env.DEV) console.log("Direct fetch data:", directData);
       } else {
         const errorText = await directResponse.text();
-        console.error("❌ Direct fetch error:", errorText);
+        console.error("Direct fetch error:", errorText);
       }
 
       // Ahora pruebo usando el participantService
-      console.log("🔧 Testing via participantService...");
+      if (import.meta.env.DEV) console.log("Testing via participantService...");
       const serviceResult = await getVacaParticipants(vaca.id);
-      console.log("🔧 Service result:", serviceResult);    } catch (error) {
+      if (import.meta.env.DEV) console.log("Service result:", serviceResult);} catch (error) {
       console.error("💥 Test error:", error);
     }
     console.log("🧪 === FIN DEL TEST ===");

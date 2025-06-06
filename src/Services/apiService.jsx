@@ -3,7 +3,7 @@
  * Replaces direct Supabase calls with clean API endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://lavacaapi.onrender.com';
 
 class ApiService {
   constructor() {
@@ -109,7 +109,6 @@ class ApiService {
     
     return response;
   }
-
   /**
    * Refresh access token using refresh token
    */
@@ -132,12 +131,18 @@ class ApiService {
       if (response.ok) {
         const data = await response.json();
         this.setTokens(data.access_token, data.refresh_token || this.refreshToken);
+          if (import.meta.env.DEV) {
+          console.log('Token refreshed successfully');
+        }
         return true;
       }
 
+      if (import.meta.env.DEV) {
+        console.warn('⚠️ Token refresh failed:', response.status);
+      }
       return false;
     } catch (error) {
-      console.error('Error refreshing token:', error);
+      console.error('❌ Token refresh error:', error.message);
       return false;
     }
   }
@@ -155,24 +160,21 @@ class ApiService {
     };
 
     // Log detallado de la petición
-    this.logRequestDetails(options.method || 'GET', endpoint, options.body, config.headers);
-
-    try {
+    this.logRequestDetails(options.method || 'GET', endpoint, options.body, config.headers);    try {
       const response = await fetch(url, config);
-      
-      // Log de la respuesta
-      console.log("📥 ===== HTTP RESPONSE DEBUG =====");
-      console.log("📍 URL:", url);
-      console.log("📊 Status:", response.status, response.statusText);
-      console.log("📋 Response Headers:", Object.fromEntries(response.headers.entries()));
-      console.log("================================");
+        // Log response only in debug mode
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_API === 'true') {
+        console.group(`API Response: ${response.status}`);
+        console.log("URL:", url);
+        console.log("Status:", response.status, response.statusText);
+        console.log("Response Headers:", Object.fromEntries(response.headers.entries()));
+        console.groupEnd();
+      }
       
       return await this.handleResponse(response);
     } catch (error) {
-      console.error("❌ ===== HTTP ERROR DEBUG =====");
-      console.error("📍 URL:", url);
-      console.error("❌ Error:", error);
-      console.error("==============================");
+      // Always log errors but make them more concise
+      console.error(`❌ API Error [${options.method || 'GET'} ${endpoint}]:`, error.message);
       
       if (error.message === 'Token expired, retry needed' && !options._isRetry) {
         // Retry the request once after token refresh
@@ -233,20 +235,21 @@ class ApiService {
       isFormData: true
     });
   }
-
   /**
    * Debug logging para peticiones HTTP
-   */
-  logRequestDetails(method, endpoint, data, headers) {
-    console.log("🔍 ===== HTTP REQUEST DEBUG =====");
-    console.log("📍 URL:", `${this.baseURL}${endpoint}`);
-    console.log("🔧 Method:", method);
-    console.log("📋 Headers:", headers);
-    console.log("📦 Body (raw):", data);
-    console.log("📦 Body (stringified):", typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
-    console.log("📏 Body size:", typeof data === 'object' ? JSON.stringify(data).length : (data?.length || 0), "bytes");
-    console.log("🕐 Timestamp:", new Date().toISOString());
-    console.log("===============================");
+   */  logRequestDetails(method, endpoint, data, headers) {
+    // Only log in development mode to reduce production noise
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_API === 'true') {
+      console.group(`API Request: ${method} ${endpoint}`);
+      console.log("URL:", `${this.baseURL}${endpoint}`);
+      console.log("Method:", method);
+      console.log("Headers:", headers);
+      if (data) {
+        console.log("Body:", typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
+      }
+      console.log("Timestamp:", new Date().toISOString());
+      console.groupEnd();
+    }
   }
 }
 
@@ -268,7 +271,10 @@ export async function handleApiCall(apiCall) {
     const result = await apiCall();
     return { data: result, error: null };
   } catch (error) {
-    console.error('API Error:', error);
+    // Only log in development mode, and make it concise
+    if (import.meta.env.DEV) {
+      console.error('🔥 API Call Failed:', error.message);
+    }
     return { data: null, error: error.message };
   }
 }

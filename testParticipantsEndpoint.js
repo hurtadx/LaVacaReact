@@ -6,7 +6,7 @@ const testParticipantsEndpoint = async () => {
   console.log("🧪 Testing participants endpoint...");
   
   const vacaId = 1; // Test with vaca ID 1
-  const url = `http://localhost:8080/api/participants/vaca/${vacaId}/details`;
+  const url = `${API_BASE_URL}/api/participants/vaca/${vacaId}/details`;
   
   try {
     console.log(`📡 Fetching: ${url}`);

@@ -59,13 +59,15 @@ export const searchUsers = async (searchTerm) => {
         data: [], 
         error: 'El término de búsqueda debe tener al menos 3 caracteres' 
       };
-    }    const cleanSearchTerm = searchTerm.trim();
+    }
     
-    console.log(`🔍 Buscando usuarios con término: "${cleanSearchTerm}"`);
+    const cleanSearchTerm = searchTerm.trim();
+    
+    if (import.meta.env.DEV) console.log("Buscando usuarios:", cleanSearchTerm);
     
 
     const response = await apiService.get(`/api/search/users?q=${encodeURIComponent(cleanSearchTerm)}&limit=10`);
-      console.log(`📊 Respuesta de búsqueda:`, response);
+    if (import.meta.env.DEV) console.log("Respuesta de búsqueda:", response?.users?.length || 0, "usuarios");
     
 
     const usersArray = Array.isArray(response) ? response : (response.users || []);
@@ -78,7 +80,7 @@ export const searchUsers = async (searchTerm) => {
       avatarUrl: user.avatarUrl || user.avatar_url || null 
     }));
     
-    console.log(`✅ Usuarios procesados (${safeUserData.length}):`, safeUserData);
+    if (import.meta.env.DEV) console.log("Usuarios procesados:", safeUserData.length);
     
     return { data: safeUserData, error: null };
   } catch (error) {

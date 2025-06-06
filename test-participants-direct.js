@@ -5,7 +5,7 @@ const testEndpoint = async () => {
   try {
     // Test with a sample vaca ID
     const vacaId = 1; // Change this to an actual vaca ID from your database
-    const url = `http://localhost:8080/api/participants/vaca/${vacaId}/details`;
+    const url = `${API_BASE_URL}/api/participants/vaca/${vacaId}/details`;
     
     console.log('📡 Testing URL:', url);
     

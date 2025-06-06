@@ -4,8 +4,8 @@ const http = require('http');
 function testEndpoint(vacaId) {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'localhost',
-      port: 8080,
+      hostname: 'lavacaapi.onrender.com',
+      port: 443,
       path: `/api/participants/vaca/${vacaId}/details`,
       method: 'GET',
       headers: {
