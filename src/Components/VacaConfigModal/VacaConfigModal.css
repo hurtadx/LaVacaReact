@@ -1,0 +1,519 @@
+/* VacaConfigModal - Professional styled modal with proper centering */
+
+:root {
+  --primary-color: #3F60E5;
+  --accent-color: #2a4ad0;
+  --dark-color: #001524;
+  --danger-color: #ff7675;
+  --success-color: #00b894;
+  --gray-100: #f8fafd;
+  --gray-200: #e6e9f0;
+  --gray-300: #c8d0e0;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --border-radius: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+  --border-radius-sm: 12px;
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --box-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.vaca-config-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.vaca-config-modal {
+  width: 100%;
+  max-width: 580px;
+  max-height: calc(90vh - 40px);
+  min-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-lg);
+  padding: 0;
+  position: relative;
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: auto;
+  border: 1px solid var(--gray-200);
+}
+
+/* Modal Header */
+.vaca-config-modal h2 {
+  color: var(--dark-color);
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 28px 20px 28px;
+  border-bottom: 1px solid var(--gray-200);
+  background: linear-gradient(135deg, var(--gray-100) 0%, white 100%);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.vaca-config-modal h2 .fa-cog {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+/* Modal Body */
+.vaca-config-form {
+  padding: 20px 28px 28px 28px;
+}
+
+.vaca-config-form .form-section {
+  margin-bottom: 24px;
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 20px;
+  border: 1px solid var(--gray-200);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vaca-config-form .form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+}
+
+.vaca-config-form .form-section:hover::before {
+  transform: scaleX(1);
+}
+
+.vaca-config-form .form-section:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 25px -8px rgba(63, 96, 229, 0.3);
+  transform: translateY(-2px);
+}
+
+.vaca-config-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 14px;
+  letter-spacing: 0.025em;
+}
+
+/* Professional Form Elements */
+.vaca-config-form input,
+.vaca-config-form select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  color: var(--gray-700);
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.5;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+}
+
+/* Custom Select Styling */
+.vaca-config-form select {
+  background-image: 
+    linear-gradient(45deg, transparent 50%, var(--gray-400) 50%),
+    linear-gradient(135deg, var(--gray-400) 50%, transparent 50%);
+  background-position: 
+    calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px);
+  background-size: 
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding-right: 45px;
+}
+
+.vaca-config-form input:focus,
+.vaca-config-form select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 
+    0 0 0 3px rgba(63, 96, 229, 0.1),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.vaca-config-form input:hover,
+.vaca-config-form select:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Input placeholder styling */
+.vaca-config-form input::placeholder {
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* Number input styling */
+.vaca-config-form input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.vaca-config-form input[type="number"]::-webkit-outer-spin-button,
+.vaca-config-form input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Date input styling */
+.vaca-config-form input[type="date"] {
+  position: relative;
+}
+
+.vaca-config-form input[type="date"]::-webkit-calendar-picker-indicator {
+  color: var(--primary-color);
+  opacity: 1;
+  display: block;
+  background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3e%3cpath fill-rule='evenodd' d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z' clip-rule='evenodd'/%3e%3c/svg%3e") no-repeat;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* Modal Actions - Professional Button Layout */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 24px 28px 28px 28px;
+  border-top: 1px solid var(--gray-200);
+  background: linear-gradient(180deg, white 0%, var(--gray-100) 100%);
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  position: sticky;
+  bottom: 0;
+}
+
+/* Enhanced Button Styles */
+.save-config-btn,
+.exit-vaca-btn {
+  padding: 14px 28px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 180px;
+  white-space: nowrap;
+  border: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+
+.save-config-btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(63, 96, 229, 0.3);
+}
+
+.save-config-btn:hover {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(63, 96, 229, 0.4);
+}
+
+.save-config-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(63, 96, 229, 0.3);
+}
+
+.exit-vaca-btn {
+  background: white;
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+  box-shadow: 0 2px 8px rgba(255, 118, 117, 0.2);
+}
+
+.exit-vaca-btn:hover {
+  background: var(--danger-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 118, 117, 0.4);
+}
+
+.exit-vaca-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 118, 117, 0.3);
+}
+
+/* Enhanced Close Button */
+.close-modal-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border: 2px solid var(--gray-200);
+  font-size: 16px;
+  color: var(--gray-500);
+  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.close-modal-btn:hover {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: white;
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 118, 117, 0.3);
+}
+
+.close-modal-btn:active {
+  transform: scale(0.95) rotate(90deg);
+}
+
+/* Enhanced Animation keyframes */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1; 
+    backdrop-filter: blur(4px);
+  }
+}
+
+@keyframes modalSlideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading state for buttons */
+.save-config-btn:disabled,
+.exit-vaca-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Focus visible for accessibility */
+.save-config-btn:focus-visible,
+.exit-vaca-btn:focus-visible,
+.close-modal-btn:focus-visible {
+  outline: 3px solid rgba(63, 96, 229, 0.5);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling for modal content */
+.vaca-config-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vaca-config-modal::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: var(--border-radius-sm);
+}
+
+.vaca-config-modal::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: var(--border-radius-sm);
+}
+
+.vaca-config-modal::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 768px) {
+  .vaca-config-modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+  
+  .vaca-config-modal {
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 40px);
+    min-height: auto;
+    width: 100%;
+    margin: 0;
+    border-radius: var(--border-radius);
+  }
+  
+  .vaca-config-modal h2 {
+    font-size: 1.3rem;
+    padding: 20px 20px 16px 20px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+  }
+  
+  .vaca-config-form {
+    padding: 16px 20px 20px 20px;
+  }
+  
+  .vaca-config-form .form-section {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+  }
+  
+  .save-config-btn,
+  .exit-vaca-btn {
+    width: 100%;
+    min-width: auto;
+    justify-content: center;
+    padding: 16px 20px;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .close-modal-btn {
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vaca-config-modal-overlay {
+    padding: 5px;
+    padding-top: 10px;
+  }
+  
+  .vaca-config-modal {
+    max-width: calc(100vw - 10px);
+    border-radius: var(--border-radius);
+  }
+  
+  .vaca-config-modal h2 {
+    font-size: 1.2rem;
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .vaca-config-form {
+    padding: 12px 16px 16px 16px;
+  }
+  
+  .vaca-config-form .form-section {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .modal-actions {
+    padding: 16px;
+  }
+  
+  .close-modal-btn {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+/* Prevent horizontal scroll */
+@media (max-width: 320px) {
+  .vaca-config-modal {
+    max-width: 100vw;
+    border-radius: 0;
+    margin: 0;
+  }
+  
+  .vaca-config-modal-overlay {
+    padding: 0;
+  }
+}
+
+/* High-resolution displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .vaca-config-modal {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .vaca-config-modal {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #374151;
+  }
+  
+  .vaca-config-form .form-section {
+    background: #111827;
+    border-color: #374151;
+  }
+  
+  .vaca-config-form input,
+  .vaca-config-form select {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .modal-actions {
+    background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+    border-color: #374151;
+  }
+}

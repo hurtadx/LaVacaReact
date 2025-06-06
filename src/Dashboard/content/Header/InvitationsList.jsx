@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { respondToInvitation } from '../../../Services/vacaService.jsx';
+import { respondToInvitation } from '../../../Services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import './InvitationsList.css';
@@ -13,10 +13,10 @@ const InvitationsList = ({ invitations = [], onInvitationResponse }) => {
       const { success, error, data } = await respondToInvitation(invitationId, userId, response);
       
       if (success && onInvitationResponse) {
-        // Informar al componente padre sobre la respuesta exitosa
+      
         onInvitationResponse(invitationId, response, data?.vaca_id);
         
-        // Mostrar notificación
+   
         if (response === 'accept') {
           showNotification('Has aceptado la invitación', 'success');
         } else {

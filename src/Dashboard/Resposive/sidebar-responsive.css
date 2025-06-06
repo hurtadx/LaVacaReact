@@ -33,8 +33,7 @@
     margin: 0 !important;
     position: relative !important;
     transition: all 0.25s ease !important;
-    overflow: hidden !important;
-    border-radius: 8px !important;
+    overflow: hidden !important;    border-radius: var(--border-radius, 16px) !important;
     margin: 2px !important;
   }
   
@@ -48,8 +47,7 @@
     background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
     transition: all 0.25s ease;
     transform: translateX(-50%);
-    opacity: 0;
-    border-radius: 3px;
+    opacity: 0;    border-radius: var(--border-radius-xs, 8px);
   }
   
     .sidebar-icon {

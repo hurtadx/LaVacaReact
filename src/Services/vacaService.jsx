@@ -1,569 +1,226 @@
-import { supabase } from '../Supabase/supabaseConfig';
+// filepath: c:\Users\pracsistemas\LaVacaReact\src\Services\vacaService.jsx
+import apiService from './apiService.jsx';
+import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const inviteParticipants = async (vacaId, userIds, senderId) => {
+// Configuración para determinar qué backend usar
+const useSupabase = import.meta.env.VITE_USE_SUPABASE === 'true';
+
+/**
+ * Create a new vaca (vacation pool)
+ * @param {Object} vacaData - The vaca data
+ * @param {string} userId - The user ID creating the vaca
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const createVaca = async (vacaData, userId) => {
   try {
-    
-    if (!vacaId || !userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return { 
-        data: null, 
-        error: 'Se requiere un ID de vaca y al menos un usuario para invitar' 
-      };
-    }
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('vacas')
+        .insert([{
+          ...vacaData,
+          created_by: userId,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
 
-    
-    const { data: vaca, error: vacaError } = await supabase
-      .from('vacas')
-      .select('id, name')
-      .eq('id', vacaId)
-      .single();
-    
-    if (vacaError) {
-      console.error("Error al verificar la vaca:", vacaError);
-      return { data: null, error: 'La vaca especificada no existe o no tienes acceso' };
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.post('/vacas', {
+        ...vacaData,
+        created_by: userId
+      });
+      return { data: response.data, error: null };
     }
-    
-    
-    const { data: existingParticipants, error: participantsError } = await supabase
-      .from('participants')
-      .select('user_id')
-      .eq('vaca_id', vacaId)
-      .in('user_id', userIds);
-      
-    if (participantsError) {
-      console.error("Error al verificar participantes:", participantsError);
-      return { data: null, error: 'Error al verificar participantes existentes' };
-    }
-    
-    // MODIFIED: Check for ANY existing invitations, not just pending ones
-    const { data: existingInvitations, error: invitationsError } = await supabase
-      .from('invitations')
-      .select('user_id, status')
-      .eq('vaca_id', vacaId)
-      .in('user_id', userIds);
-      
-    if (invitationsError) {
-      console.error("Error al verificar invitaciones existentes:", invitationsError);
-      return { data: null, error: 'Error al verificar invitaciones existentes' };
-    }
-    
-    // Combine both exclusions
-    const existingParticipantIds = existingParticipants?.map(p => p.user_id) || [];
-    const existingInvitationIds = existingInvitations?.map(i => i.user_id) || [];
-    
-    // Filter out users who are already participants or have pending invitations
-    const filteredUserIds = userIds.filter(id => 
-      !existingParticipantIds.includes(id) && !existingInvitationIds.includes(id)
-    );
-    
-    if (filteredUserIds.length === 0) {
-      return { 
-        data: null, 
-        error: 'Todos los usuarios seleccionados ya son participantes o tienen invitaciones pendientes' 
-      };
-    }
-    
-    
-    const invitations = filteredUserIds.map(userId => ({
-      vaca_id: vacaId,
-      user_id: userId,
-      sender_id: senderId,
-      status: 'pending'
-    }));
-    
-    const { data, error } = await supabase
-      .from('invitations')
-      .insert(invitations)
-      .select();
-      
-    if (error) {
-      console.error("Error al crear invitaciones:", error);
-      return { data: null, error: `Error al crear invitaciones: ${error.message}` };
-    }
-    
-    return { 
-      data: {
-        sent: data.length,
-        invitations: data
-      }, 
-      error: null 
-    };
   } catch (error) {
-    console.error("Error al invitar participantes:", error);
-    return { data: null, error: error.message };
-  }
-};
-
-export const getInvitations = async (userId) => {
-  try {
-    if (!userId) {
-      return { data: [], error: 'Se requiere un ID de usuario' };
-    }
-    
-    
-    const { data: invitations, error } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error("Error al obtener invitaciones:", error);
-      return { data: [], error: error.message };
-    }
-    
-    
-    if (!invitations || invitations.length === 0) {
-      return { data: [], error: null };
-    }
-    
-    
-    const vacaIds = [...new Set(invitations.map(inv => inv.vaca_id))];
-    const senderIds = [...new Set(invitations.map(inv => inv.sender_id))];
-    
-    
-    const { data: vacas, error: vacasError } = await supabase
-      .from('vacas')
-      .select('id, name, description, color')
-      .in('id', vacaIds);
-      
-    if (vacasError) {
-      console.error("Error al obtener datos de vacas:", vacasError);
-    }
-    
-    
-    const { data: senders, error: sendersError } = await supabase
-      .from('profiles')  
-      .select('id, username, email, avatar_url')
-      .in('id', senderIds);
-      
-    if (sendersError) {
-      console.error("Error al obtener datos de remitentes:", sendersError);
-    }
-    
-    
-    const vacasMap = (vacas || []).reduce((map, vaca) => {
-      map[vaca.id] = vaca;
-      return map;
-    }, {});
-    
-    const sendersMap = (senders || []).reduce((map, sender) => {
-      map[sender.id] = sender;
-      return map;
-    }, {});
-    
-    
-    const formattedData = invitations.map(inv => ({
-      id: inv.id,
-      status: inv.status,
-      createdAt: inv.created_at,
-      user_id: inv.user_id,
-      vaca_id: inv.vaca_id,
-      sender_id: inv.sender_id,
-      vaca: vacasMap[inv.vaca_id] || { name: 'Vaca desconocida' },
-      sender: sendersMap[inv.sender_id] || { username: 'Usuario desconocido' }
-    }));
-    
-    return { data: formattedData, error: null };
-  } catch (err) {
-    console.error("Error inesperado al obtener invitaciones:", err);
-    return { data: [], error: err.message };
+    console.error('Error creating vaca:', error);
+    return { data: null, error: error.message || 'Failed to create vaca' };
   }
 };
 
 /**
- * Responde a una invitación (aceptar o rechazar)
- * @param {string} invitationId - ID de la invitación
- * @param {string} userId - ID del usuario que responde
- * @param {string} response - Respuesta: 'accept' o 'reject'
- * @returns {Promise<{success: boolean, error: string|null}>}
+ * Get details of a specific vaca
+ * @param {string} vacaId - The vaca ID
+ * @returns {Promise<{data: Object|null, error: string|null}>}
  */
-export const respondToInvitation = async (invitationId, userId, response) => {
-  try {
-    if (!invitationId || !userId || !['accept', 'reject'].includes(response)) {
-      return { 
-        success: false, 
-        error: 'Parámetros inválidos. La respuesta debe ser "accept" o "reject"' 
-      };
-    }
-    
-    
-    const { data: invitation, error: fetchError } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('id', invitationId)
-      .eq('user_id', userId)
-      .single();
-      
-    if (fetchError || !invitation) {
-      console.error("Error al obtener la invitación:", fetchError);
-      return { success: false, error: 'La invitación no existe o no te pertenece' };
-    }
-    
-    
-    const { error: updateError } = await supabase
-      .from('invitations')
-      .update({ status: response === 'accept' ? 'accepted' : 'rejected' })
-      .eq('id', invitationId);
-      
-    if (updateError) {
-      console.error("Error al actualizar la invitación:", updateError);
-      return { success: false, error: `Error al procesar la respuesta: ${updateError.message}` };
-    }
-    
-    
-    if (response === 'accept') {
-      
-      const { data: existingParticipant, error: checkError } = await supabase
-        .from('participants')
-        .select('id')
-        .eq('vaca_id', invitation.vaca_id)
-        .eq('user_id', userId)
-        .maybeSingle();
-        
-      if (checkError) {
-        console.error("Error al verificar participante:", checkError);
-        return { success: false, error: `Error al verificar participación: ${checkError.message}` };
-      }
-      
-      
-      if (!existingParticipant) {
-        
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('username, email')
-          .eq('id', userId)
-          .single();
-          
-        if (userError) {
-          console.error("Error al obtener datos del usuario:", userError);
-          return { success: false, error: `Error al obtener datos de usuario: ${userError.message}` };
-        }
-        
-        
-        const { error: participantError } = await supabase
-          .from('participants')
-          .insert({
-            vaca_id: invitation.vaca_id,
-            user_id: userId,
-            name: userData.username || 'Usuario',
-            email: userData.email
-          });
-          
-        if (participantError) {
-          console.error("Error al añadir participante:", participantError);
-          return { success: false, error: `Error al añadir participante: ${participantError.message}` };
-        }
-      }
-    }
-    
-    return { 
-      success: true, 
-      error: null,
-      data: {
-        status: response === 'accept' ? 'accepted' : 'rejected',
-        vaca_id: invitation.vaca_id
-      }
-    };
-  } catch (error) {
-    console.error("Error al responder invitación:", error);
-    return { success: false, error: error.message };
-  }
-};
-
-
-let lastCheck = null;
-let lastCheckResult = null;
-
-export const checkTablesExist = async () => {
-  // Add caching to prevent excessive checks
-  const now = Date.now();
-  if (lastCheck && now - lastCheck < 300000 && lastCheckResult) {
-    console.log("Using cached table check results");
-    return lastCheckResult;
-  }
-  
-  console.log("Verificando existencia de tablas con mejor manejo de errores...");
-  
-  const result = {
-    vacas: false,
-    participants: true, // Just assume participants exists to avoid the 500 error
-    transactions: false
-  };
-  
-  try {
-    // Only check vacas and transactions
-    const [vacasCheck, transactionsCheck] = await Promise.allSettled([
-      supabase.from('vacas').select('id').limit(1),
-      supabase.from('transactions').select('id').limit(1)
-    ]);
-    
-    result.vacas = vacasCheck.status === 'fulfilled' && !vacasCheck.value.error;
-    result.transactions = transactionsCheck.status === 'fulfilled' && !transactionsCheck.value.error;
-    
-    console.log("Tablas verificadas:", 
-      result.vacas ? "✅ vacas" : "❌ vacas",
-      "✅ participants (assumed)", // Always show as OK
-      result.transactions ? "✅ transactions" : "❌ transactions"
-    );
-  } catch (err) {
-    console.error("Error general al verificar tablas:", err);
-  }
-  
-  // Store results in cache
-  lastCheck = now;
-  lastCheckResult = result;
-  
-  return result;
-};
-
-export const createVaca = async (vacaData, userId) => {
-  try {
-    if (!vacaData.name || !vacaData.goal) {
-      return { 
-        data: null, 
-        error: 'El nombre y la meta son campos obligatorios' 
-      };
-    }
-
-    const newVaca = {
-      name: vacaData.name,
-      description: vacaData.description || '',
-      goal: parseFloat(vacaData.goal),
-      current: 0,
-      deadline: vacaData.deadline || null,
-      color: vacaData.color || '#3F60E5',
-      user_id: userId,
-      is_active: true
-    };
-
-    const { data: createdVaca, error: vacaError } = await supabase
-      .from('vacas')
-      .insert(newVaca)
-      .select()
-      .single();
-
-    if (vacaError) {
-      console.error("Error al crear vaca:", vacaError);
-      throw vacaError;
-    }
-
-    
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username, email')
-      .eq('id', userId)
-      .single();
-      
-    const creatorParticipant = {
-      vaca_id: createdVaca.id,
-      name: profile?.username || 'Creador',
-      email: profile?.email || null,
-      user_id: userId
-    };
-    
-    await supabase
-      .from('participants')
-      .insert(creatorParticipant);
-
-    
-    const participantsToAdd = vacaData.participants || [];
-    
-    if (participantsToAdd.length > 0) {
-      const formattedParticipants = participantsToAdd.map(p => ({
-        vaca_id: createdVaca.id,
-        name: p.name,
-        email: p.email || null,
-        user_id: null 
-      }));
-      
-      const { error: participantsError } = await supabase
-        .from('participants')
-        .insert(formattedParticipants);
-        
-      if (participantsError) {
-        console.error("Error al agregar participantes:", participantsError);
-      }
-    }
-
-    
-    const { data: vacaWithParticipants, error: fetchError } = await supabase
-      .from('vacas')
-      .select(`
-        *,
-        participants (*)
-      `)
-      .eq('id', createdVaca.id)
-      .single();
-      
-    if (fetchError) {
-      console.error("Error al obtener la vaca creada:", fetchError);
-      return { data: createdVaca, error: null };
-    }
-
-    return { data: vacaWithParticipants, error: null };
-  } catch (error) {
-    console.error("Error al crear vaca:", error);
-    return { data: null, error: error.message };
-  }
-};
-
-export const getUserVacas = async (userId) => {
-  console.log("getUserVacas called with userId:", userId);
-  
-  try {
-    
-    const { data: ownedVacas, error: ownedError } = await supabase
-      .from('vacas')
-      .select(`
-        *,
-        participants (*)
-      `)
-      .eq('user_id', userId)
-      .eq('is_active', true);
-
-    console.log("Owned vacas query result:", { data: ownedVacas, error: ownedError });
-
-    if (ownedError) {
-      console.error("Error obteniendo vacas propias:", ownedError);
-      throw ownedError;
-    }
-
-    
-    const { data: participations, error: participationsError } = await supabase
-      .from('participants')
-      .select('vaca_id')
-      .eq('user_id', userId);
-
-    if (participationsError) {
-      console.error("Error obteniendo participaciones:", participationsError);
-      throw participationsError;
-    }
-
-    
-    let participatedVacas = [];
-    if (participations && participations.length > 0) {
-      const participatedIds = participations.map(p => p.vaca_id);
-      const ownedIds = ownedVacas?.map(v => v.id) || [];
-      
-      
-      const uniqueIds = participatedIds.filter(id => !ownedIds.includes(id));
-      
-      if (uniqueIds.length > 0) {
-        const { data: otherVacas, error: otherError } = await supabase
-          .from('vacas')
-          .select(`
-            *,
-            participants (*)
-          `)
-          .in('id', uniqueIds)
-          .eq('is_active', true);
-
-        if (otherError) {
-          console.error("Error obteniendo vacas participadas:", otherError);
-          throw otherError;
-        }
-        
-        participatedVacas = otherVacas || [];
-      }
-    }
-
-    const allVacas = [...(ownedVacas || []), ...participatedVacas];
-    
-    
-    console.log("Final result from getUserVacas:", { data: allVacas, error: null });
-    return { data: allVacas, error: null };
-  } catch (error) {
-    console.error("Error al obtener vacas:", error);
-    return { data: [], error: error.message || "Error desconocido" };
-  }
-};
-
 export const getVacaDetails = async (vacaId) => {
   try {
-    const { data, error } = await supabase
-      .from('vacas')
-      .select(`
-        *,
-        participants (*),
-        transactions (*)
-      `)
-      .eq('id', vacaId)
-      .single();
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('vacas')
+        .select(`
+          *,
+          participants (*),
+          transactions (*),
+          expenses (*)
+        `)
+        .eq('id', vacaId)
+        .single();
 
-    if (error) throw error;
-
-    return { data, error: null };
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.get(`/vacas/${vacaId}`);
+      return { data: response.data, error: null };
+    }
   } catch (error) {
-    console.error("Error al obtener detalles de vaca:", error);
-    return { data: null, error: error.message };
+    console.error('Error fetching vaca details:', error);
+    return { data: null, error: error.message || 'Failed to fetch vaca details' };
   }
 };
 
-export const addVacaTransaction = async (transactionData) => {
+/**
+ * Add a transaction to a vaca
+ * @param {string} vacaId - The vaca ID
+ * @param {Object} transactionData - The transaction data
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const addVacaTransaction = async (vacaId, transactionData) => {
   try {
-    const { vacaId, amount, description, userId } = transactionData;
-    
-    if (!vacaId || !amount || !userId) {
-      return {
-        data: null,
-        error: 'Faltan datos para la transacción'
-      };
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([{
+          ...transactionData,
+          vaca_id: vacaId,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.post(`/vacas/${vacaId}/transactions`, transactionData);
+      return { data: response.data, error: null };
     }
-    
-    const newTransaction = {
-      vaca_id: vacaId,
-      amount: parseFloat(amount),
-      description: description || 'Pago',
-      date: new Date().toISOString(),
-      user_id: userId
-    };
-    
-    
-    const { data: participant } = await supabase
-      .from('participants')
-      .select('id')
-      .eq('vaca_id', vacaId)
-      .eq('user_id', userId)
-      .single();
-      
-    if (participant) {
-      newTransaction.participant_id = participant.id;
-    }
-    
-    
-    const { data: transaction, error: transactionError } = await supabase
-      .from('transactions')
-      .insert(newTransaction)
-      .select()
-      .single();
-      
-    if (transactionError) throw transactionError;
-    
-    
-    const { data: vaca } = await supabase
-      .from('vacas')
-      .select('current')
-      .eq('id', vacaId)
-      .single();
-      
-    const newCurrent = (parseFloat(vaca.current) || 0) + parseFloat(amount);
-    
-    const { error: updateError } = await supabase
-      .from('vacas')
-      .update({ current: newCurrent })
-      .eq('id', vacaId);
-      
-    if (updateError) throw updateError;
-    
-    return {
-      data: transaction,
-      error: null,
-      newTotal: newCurrent
-    };
   } catch (error) {
-    console.error("Error al añadir pago:", error);
-    return { data: null, error: error.message };
+    console.error('Error adding vaca transaction:', error);
+    return { data: null, error: error.message || 'Failed to add transaction' };
+  }
+};
+
+/**
+ * Update a vaca
+ * @param {string} vacaId - The vaca ID
+ * @param {Object} updateData - The data to update
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const updateVaca = async (vacaId, updateData) => {
+  try {
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('vacas')
+        .update({
+          ...updateData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', vacaId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.put(`/vacas/${vacaId}`, updateData);
+      return { data: response.data, error: null };
+    }
+  } catch (error) {
+    console.error('Error updating vaca:', error);
+    return { data: null, error: error.message || 'Failed to update vaca' };
+  }
+};
+
+/**
+ * Delete a vaca
+ * @param {string} vacaId - The vaca ID
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const deleteVaca = async (vacaId) => {
+  try {
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('vacas')
+        .delete()
+        .eq('id', vacaId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.delete(`/vacas/${vacaId}`);
+      return { data: response.data, error: null };
+    }
+  } catch (error) {
+    console.error('Error deleting vaca:', error);
+    return { data: null, error: error.message || 'Failed to delete vaca' };
+  }
+};
+
+/**
+ * Check if database tables exist (for testing/debugging)
+ * @returns {Promise<{data: boolean, error: string|null}>}
+ */
+export const checkTablesExist = async () => {
+  try {
+    if (useSupabase) {
+      // Intento consultar la tabla vacas para ver si existe
+      const { data, error } = await supabase
+        .from('vacas')
+        .select('id')
+        .limit(1);
+
+      if (error && error.code === 'PGRST116') {
+        // La tabla no existe
+        return { data: false, error: null };
+      }
+      return { data: true, error: null };
+    } else {
+      // Uso el endpoint de salud correcto
+      const response = await apiService.get('/api/health');
+      // Si el estado es UP, asumo que las tablas existen (o backend está sano)
+      return { data: response.status === 'UP', error: null };
+    }
+  } catch (error) {
+    console.error('Error checking tables:', error);
+    return { data: false, error: error.message || 'Failed to check tables' };
+  }
+};
+
+/**
+ * Get vaca statistics
+ * @param {string} vacaId - The vaca ID
+ * @returns {Promise<{data: Object|null, error: string|null}>}
+ */
+export const getVacaStats = async (vacaId) => {
+  try {
+    if (useSupabase) {
+      // Get basic vaca info with aggregated data
+      const { data, error } = await supabase
+        .from('vacas')
+        .select(`
+          *,
+          participants:participants(count),
+          transactions:transactions(count, amount),
+          expenses:expenses(count, amount)
+        `)
+        .eq('id', vacaId)
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      const response = await apiService.get(`/vacas/${vacaId}/stats`);
+      return { data: response.data, error: null };
+    }
+  } catch (error) {
+    console.error('Error fetching vaca stats:', error);
+    return { data: null, error: error.message || 'Failed to fetch vaca stats' };
   }
 };

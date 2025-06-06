@@ -3,6 +3,8 @@ import './HomeContent.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCow, faCalendarAlt, faHistory } from '@fortawesome/free-solid-svg-icons';
 import '../../Resposive/dashboard-responsive.css';
+import { getUserTransactions } from '../../../Services/transactionService';
+import { getCurrentUser } from '../../../Services/authService';
 
 const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSelect, user }) => {
   const vacasToShow = Math.min(totalVacas, 5);
@@ -10,6 +12,8 @@ const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSel
   
   
   const [lastVisitedVaca, setLastVisitedVaca] = useState(null);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
   
   
   useEffect(() => {
@@ -99,6 +103,28 @@ const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSel
       onVacaSelect(nextPaymentData.vaca);
     }
   };
+    useEffect(() => {
+    const loadTransactions = async () => {
+      setTransactionsLoading(true);
+      try {
+        const { user, error: userError } = await getCurrentUser();
+        if (userError) throw new Error(userError);
+        
+        if (user) {
+          const { data, error } = await getUserTransactions(user.id);
+          if (error) throw error;
+          
+          setRecentTransactions(data || []);
+        }
+      } catch (error) {
+        console.error("Error cargando transacciones:", error);
+      } finally {
+        setTransactionsLoading(false);
+      }
+    };
+
+    loadTransactions();
+  }, []);
   
   return (
     <>
@@ -164,14 +190,42 @@ const HomeContent = ({ onVacasButtonClick, totalVacas = 0, vacas = [], onVacaSel
       
       <section className="transactions">
         <h2>Últimas Transacciones</h2>
-        <ul>
-          <li>Retiro Vaca Playa -$20,000</li>
-          <li>Retiro Vaca Playa -$20,000</li>
-          <li>Retiro Vaca Farra -$90,000</li>
-        </ul>
+        {transactionsLoading ? (
+          <div className="loading-indicator">Cargando transacciones...</div>
+        ) : recentTransactions.length > 0 ? (
+          <ul className="home-transactions-list">
+            {recentTransactions.slice(0, 5).map(transaction => (
+              <li 
+                key={transaction.id} 
+                className={`home-transaction-item ${parseFloat(transaction.amount) >= 0 ? 'positive' : 'negative'}`}
+                onClick={() => handleVacaSelect(transaction.vaca)}
+              >
+                <div className="transaction-content">
+                  <span className="transaction-title">{transaction.title}</span>
+                  <span className="transaction-vaca">{transaction.vaca?.name}</span>
+                </div>
+                <span className="transaction-amount">
+                  {parseFloat(transaction.amount) >= 0 ? '+' : ''}
+                  ${transaction.amount.toLocaleString()}
+                </span>
+              </li>
+            ))}
+            {recentTransactions.length > 5 && (
+              <li className="view-all-transactions">
+                <button onClick={() => setActiveItem('Transacciones')}>
+                  Ver todas las transacciones
+                </button>
+              </li>
+            )}
+          </ul>
+        ) : (
+          <p className="no-transactions">No hay transacciones recientes</p>
+        )}
       </section>
     </>
   );
 };
 
 export default HomeContent;
+
+

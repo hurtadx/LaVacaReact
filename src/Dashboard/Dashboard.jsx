@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserVacas, getInvitations } from '../Services/vacaService.jsx';
-import { getCurrentUser } from '../Services/userService'; 
-import { logoutUser } from '../Services/authService';
+import { getUserVacas, getInvitations, getCurrentUser, logoutUser } from '../Services';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../Components/Notification/NotificationContext';
-import { supabase, checkSupabaseConnection } from '../Supabase/supabaseConfig';
 import VacaDetails from './content/Vacas/VacaDetails';
 import './Dashboard.css';
 import './Resposive/dashboard-responsive.css'; 
@@ -13,7 +10,7 @@ import Sidebar from "./assets/components/SidebarComponent";
 import HomeContent from "./content/Home/HomeContent";
 import VacasContent from "./content/Vacas/VacasContent";
 import SettingsContent from "./content/Settings/SettingsContent";
-import DashboardSkeleton from '../Components/SkeletonLoading/DashboardSkeleton'; 
+import DashboardSkeleton from '../Components/SkeletonLoading/DashboardSkeleton';
 
 
 const Dashboard = () => {
@@ -22,35 +19,17 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [vacas, setVacas] = useState([]);
   const [pendingInvitations, setPendingInvitations] = useState([]);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
-  const [activeItem, setActiveItem] = useState('Inicio');
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);  const [activeItem, setActiveItem] = useState('Inicio');
   const [selectedVacaId, setSelectedVacaId] = useState(null);
   const { showNotification } = useContext(NotificationContext);
-  const [connectionStatus, setConnectionStatus] = useState({ checking: true });
-
-  useEffect(() => {
-    const verifyConnection = async () => {
-      const status = await checkSupabaseConnection();
-      setConnectionStatus({ ...status, checking: false });
-      
-      if (!status.connected) {
-        showNotification('Error de conexión con el servidor. Intenta recargar la página.', 'error');
-      } else if (!status.session) {
-        navigate('/login');
-      }
-    };
-    
-    verifyConnection();
-  }, [navigate, showNotification]);
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const { data: currentUser, error } = await getCurrentUser();
+        const { user: currentUser, error } = await getCurrentUser();
         
-        if (error || !currentUser) {
-          console.error('Error al obtener el usuario:', error);
-          navigate('/login');
+        if (!currentUser || error) {
+          console.error('Usuario no autenticado:', error);
+          navigate('/');
           return;
         }
         
@@ -74,32 +53,24 @@ const Dashboard = () => {
     fetchUserData();
   }, [navigate]); 
 
-  
-  useEffect(() => {
+    useEffect(() => {
     if (!user?.id) return; 
     
-    console.log("Setting up subscription for user:", user.id);
+    console.log("Setting up invitations polling for user:", user.id);
     
-    const invitationsSubscription = supabase
-      .channel(`invitations-channel-${user.id}`)
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'invitations',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          loadPendingInvitations(user.id);
-        }
-      )
-      .subscribe();
+    // Initial load
+    loadPendingInvitations(user.id);
+    
+    // Configuro el polling para las invitaciones
+    const pollInterval = setInterval(() => {
+      loadPendingInvitations(user.id);
+    }, 30000); // Polling cada 30 segundos
     
     return () => {
-      console.log("Cleaning up subscription for user:", user.id);
-      invitationsSubscription.unsubscribe();
+      console.log("Cleaning up invitations polling for user:", user.id);
+      clearInterval(pollInterval);
     };
-  }, [user?.id]); 
+  }, [user?.id]);
 
   const loadPendingInvitations = async (userId) => {
     try {
@@ -210,29 +181,11 @@ const Dashboard = () => {
                 totalVacas={vacas.length}
                 loading={loading}
                 vacas={vacas}
-                onVacaSelect={handleVacaSelect}
-               />;
+                onVacaSelect={handleVacaSelect}               />;
     }
   };
 
-  if (connectionStatus.checking) {
-    return <DashboardSkeleton message="Verificando conexión..." />;
-  }
-  
-  if (!connectionStatus.connected) {
-    return (
-      <div className="error-state">
-        <h2>Error de conexión</h2>
-        <p>No se pudo conectar con el servidor. Verifica tu conexión a internet.</p>
-        <button onClick={() => window.location.reload()}>Reintentar</button>
-      </div>
-    );
-  }
-
   if (loading) {
-    
-    
-    
     return <DashboardSkeleton />;
   }
 

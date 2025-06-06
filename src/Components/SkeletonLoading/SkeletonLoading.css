@@ -17,22 +17,20 @@
 .skeleton-title,
 .skeleton-notification,
 .skeleton-user,
-.skeleton-section-title {
-  background: linear-gradient(to right, rgba(63, 96, 229, 0.08) 8%, rgba(63, 96, 229, 0.15) 18%, rgba(63, 96, 229, 0.08) 33%);
+.skeleton-section-title {  background: linear-gradient(to right, rgba(63, 96, 229, 0.08) 8%, rgba(63, 96, 229, 0.15) 18%, rgba(63, 96, 229, 0.08) 33%);
   background-size: 800px 104px;
   animation: shimmer 1.5s linear infinite forwards;
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
 }
 
 .skeleton-sidebar, 
 .skeleton-card, 
 .skeleton-line, 
 .skeleton-menu-item,
-.skeleton-table-row {
-  background: linear-gradient(to right, rgba(63, 96, 229, 0.05) 8%, rgba(63, 96, 229, 0.1) 18%, rgba(63, 96, 229, 0.05) 33%);
+.skeleton-table-row {  background: linear-gradient(to right, rgba(63, 96, 229, 0.05) 8%, rgba(63, 96, 229, 0.1) 18%, rgba(63, 96, 229, 0.05) 33%);
   background-size: 800px 104px;
   animation: shimmer 1.5s linear infinite forwards;
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
 }
 
 .skeleton-header {
@@ -91,7 +89,7 @@
 
 .skeleton-menu-item {
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 16px);
 }
 
 .skeleton-main-content {
@@ -142,7 +140,7 @@
 
 .skeleton-line {
   height: 16px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
 }
 
 .skeleton-line:nth-child(2) {
@@ -157,7 +155,7 @@
 
 .skeleton-table-row {
   height: 60px;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   border: 1px solid rgba(63, 96, 229, 0.05);
 }
 

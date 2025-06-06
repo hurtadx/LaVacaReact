@@ -1,0 +1,443 @@
+
+.members-manager {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.members-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.members-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.members-header h3 svg {
+  color: #3F60E5;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.invite-btn, .exit-btn {
+  display: flex;
+  align-items: center;  justify-content: center;
+  gap: 8px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm, 12px);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.invite-btn {
+  background-color: #3F60E5;
+  color: white;
+}
+
+.invite-btn:hover {
+  background-color: #2D4BC4;
+}
+
+.exit-btn {
+  background-color: #f8f9fa;
+  color: #e53e3e;
+  border: 1px solid #e2e8f0;
+}
+
+.exit-btn:hover {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+}
+
+/* Formulario de invitación */
+.invite-form {
+  background-color: #f8fafc;
+  border-radius: var(--border-radius, 16px);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+  animation: slideDown 0.3s ease-out;
+}
+
+.invite-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.invite-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.invite-form label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.invite-form input,
+.invite-form textarea {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--border-radius-sm, 12px);
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.invite-form input:focus,
+.invite-form textarea:focus {
+  border-color: #3F60E5;
+  box-shadow: 0 0 0 3px rgba(63, 96, 229, 0.1);
+  outline: none;
+}
+
+.send-invite-btn {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.65rem 1.25rem;  background-color: #3F60E5;
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm, 12px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-invite-btn:hover:not(:disabled) {
+  background-color: #2D4BC4;
+}
+
+.send-invite-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Confirmación de salida */
+.exit-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirmation-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.confirmation-content h4 {
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.exit-amount {
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2d3748;
+  text-align: center;
+}
+
+.calculation-note {
+  font-size: 0.875rem;
+  color: #718096;
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cancel-btn, .confirm-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background-color: #f8f9fa;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+}
+
+.cancel-btn:hover {
+  background-color: #edf2f7;
+}
+
+.confirm-btn {
+  background-color: #3F60E5;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #2D4BC4;
+}
+
+/* Lista de miembros */
+.members-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.member-card.pending {
+  border-left: 4px solid #ed8936;
+}
+
+.member-card.inactive {
+  border-left: 4px solid #a0aec0;
+  opacity: 0.7;
+}
+
+.member-avatar {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.member-avatar img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #3F60E5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-indicator.active {
+  background-color: #48bb78; /* verde para activo */
+}
+
+.status-indicator.pending {
+  background-color: #ed8936; /* naranja para pendiente */
+}
+
+.status-indicator.inactive {
+  background-color: #a0aec0; /* gris para inactivo */
+}
+
+.member-info {
+  flex: 1;
+}
+
+.username {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  display: flex;
+  align-items: center;
+}
+
+.current-user-tag {
+  margin-left: 8px;
+  font-size: 0.75rem;
+  font-weight: normal;
+  padding: 2px 6px;
+  background-color: #ebf4ff;
+  color: #3F60E5;
+  border-radius: 4px;
+}
+
+.contribution {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.contribution .label {
+  color: #718096;
+  margin-right: 5px;
+}
+
+.contribution .value {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.pending-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: #ed8936;
+}
+
+.member-since {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.member-actions {
+  margin-left: 0.5rem;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background-color: #fee2e2;
+}
+
+.loading, .error-message {
+  padding: 1rem;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.loading {
+  background-color: #f7fafc;
+  color: #4a5568;
+}
+
+.error-message {
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border: 1px solid #fed7d7;
+}
+
+/* Animaciones */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .members-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .members-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .invite-btn, .exit-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .confirmation-content {
+    width: calc(100% - 2rem);
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .member-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .member-avatar {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    align-self: center;
+  }
+  
+  .member-actions {
+    margin-left: 0;
+    margin-top: 1rem;
+    align-self: flex-end;
+  }
+}

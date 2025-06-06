@@ -297,7 +297,7 @@
   width: 100%;
   padding: 12px 15px;
   border: 2px solid #dee2e6;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   outline: none;
   font-size: 15px;
   height: 40px;
@@ -307,14 +307,13 @@
   border-color: var(--primary-color);
 }
 
-.add-participant-btn {
-  width: 40px !important;
+.add-participant-btn {  width: 40px !important;
   height: 40px !important;
   min-width: 40px !important;
   background-color: var(--primary-color) !important;
   color: white !important;
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--border-radius-sm, 12px) !important;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -369,7 +368,7 @@
   flex: 0 0 calc(33.333% - 12px);
   min-width: 200px;
   background-color: #f8f9fa;
-  border-radius: 10px;
+  border-radius: var(--border-radius, 16px);
   padding: 16px;
   transition: all 0.2s ease;
   display: flex;
@@ -462,7 +461,7 @@
   color: #3F60E5;
   font-size: 11px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs, 8px);
   font-weight: 600;
   margin-top: 8px;
   gap: 4px;
@@ -478,7 +477,7 @@
   border: none;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-xs, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -522,7 +521,7 @@
   align-items: center;
   width: 100%;
   border: 2px solid #dee2e6;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   overflow: hidden;
 }
 
@@ -568,7 +567,7 @@
 
 .search-results-container {
   border: 1px solid #eee;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm, 12px);
   overflow: hidden;
   margin-bottom: 20px;
 }
@@ -648,7 +647,7 @@
   color: #e74c3c;
   background-color: #fef2f0;
   padding: 10px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-xs, 8px);
   margin-top: 8px;
   font-size: 13px;
 }
@@ -848,12 +847,11 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 10px !important;
-  padding: 14px 32px !important;
+  gap: 10px !important;  padding: 14px 32px !important;
   background-color: var(--primary-color, #3F60E5) !important;
   color: white !important;
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--border-radius-sm, 12px) !important;
   font-size: 16px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
