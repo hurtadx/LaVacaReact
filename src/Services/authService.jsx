@@ -1,86 +1,139 @@
-import { supabase } from '../Supabase/supabaseConfig';
+/**
+ * Mi servicio de autenticación personal - aquí manejo todo lo relacionado con login/logout
+ * Lo hice híbrido para usar Supabase cuando esté disponible, sino mi API custom
+ */
+
+import { createClient } from '@supabase/supabase-js';
+import apiService from './apiService';
+
+// Configuración híbrida: Supabase para auth opcional, API personalizada como fallback
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const useSupabaseAuth = import.meta.env.VITE_USE_SUPABASE_AUTH === 'true';
+
+let supabase = null;
+if (useSupabaseAuth && supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 /**
- * Maneja errores de autenticación y devuelve un código y mensaje estandarizado
- * @param {Error} error - Error original
- * @returns {Object} - Objeto con código y mensaje de error
+ * Esta función me la hice para manejar todos los errores de auth de forma consistente
+ * Le paso cualquier error y me devuelve algo que pueda mostrar al usuario sin asustarle
+ * @param {Error} error - El error que me llegó
+ * @returns {Object} - Mi objeto con código y mensaje amigable
  */
 const handleAuthError = (error) => {
   const errorMessage = error?.message || 'Error desconocido';
   
-  
-  if (errorMessage.includes('Email not confirmed')) {
+  if (errorMessage.includes('Email not confirmed') || errorMessage.includes('email_not_confirmed')) {
     return { code: 'email_not_confirmed', message: 'Por favor verifica tu correo electrónico antes de iniciar sesión.' };
-  } else if (errorMessage.includes('Invalid login credentials')) {
-    return { code: 'invalid_credentials', message: 'Email o contraseña incorrectos.' };
-  } else if (errorMessage.includes('already registered') || errorMessage.includes('already in use') || errorMessage.includes('User already registered')) {
-    return { code: 'email_in_use', message: 'Este email ya está registrado. Por favor inicia sesión.' };
-  } else if (errorMessage.includes('email')) {
-    return { code: 'invalid_email', message: 'Por favor ingresa un email válido.' };
-  } else if (errorMessage.includes('password')) {
-    return { code: 'invalid_password', message: 'La contraseña debe tener al menos 6 caracteres.' };
+  } else if (errorMessage.includes('Invalid credentials') || errorMessage.includes('invalid_credentials')) {
+    return { code: 'invalid_credentials', message: 'Credenciales inválidas. Verifica tu email y contraseña.' };
+  } else if (errorMessage.includes('Email already registered') || errorMessage.includes('email_in_use')) {
+    return { code: 'email_in_use', message: 'El correo electrónico ya está registrado.' };
+  } else if (errorMessage.includes('Weak password')) {
+    return { code: 'weak_password', message: 'La contraseña debe tener al menos 6 caracteres.' };
+  } else if (errorMessage.includes('Invalid email')) {
+    return { code: 'invalid_email', message: 'El formato del correo electrónico es inválido.' };
   }
   
   return { code: 'unknown_error', message: errorMessage };
 };
 
 /**
- * Enriquece los datos básicos del usuario con información adicional del perfil
- * @param {Object} user - Datos básicos del usuario de autenticación
- * @returns {Object} - Usuario con datos enriquecidos
+ * Aquí tomo los datos básicos del usuario y les añado toda la info extra que necesito
+ * Es como "vestir" al usuario con todos sus datos para que esté completo en mi app
+ * @param {Object} user - Los datos básicos que me llegan
+ * @returns {Promise<Object>} - El usuario ya "vestido" con toda su info
  */
 export const enrichUserData = async (user) => {
-  if (!user || !user.id) return null;
-  
   try {
-    // Obtener el perfil actualizado
-    const profile = await syncUserProfile(user);
-    console.log("Profile recibido en enrichUserData:", profile);
+    if (!user) return null;
     
     return {
-      ...user,
-      profile, // Guardar el perfil completo
-      displayName: profile?.username || user.user_metadata?.username || user.email.split('@')[0]
+      id: user.id,
+      email: user.email,
+      username: user.user_metadata?.username || user.username || user.email?.split('@')[0] || 'Usuario',
+      avatar_url: user.user_metadata?.avatar_url || user.avatar_url || null,
+      email_confirmed: user.email_confirmed_at ? true : (user.email_confirmed || false),
+      created_at: user.created_at,
+      last_sign_in: user.last_sign_in_at || user.last_sign_in,
+      displayName: user.user_metadata?.username || user.username || user.email?.split('@')[0] || 'Usuario',
+      ...user
     };
   } catch (error) {
-    console.error("Error al enriquecer datos de usuario:", error);
-    return {
-      ...user,
-      displayName: user.user_metadata?.username || user.email.split('@')[0]
-    };
+    console.error('Error enriqueciendo datos del usuario:', error);
+    return user;
   }
 };
 
+/**
+ * Mi función favorita para saber quién está logueado ahora mismo
+ * Primero revisa Supabase, si no está disponible pregunta a mi API
+ * @returns {Promise<{user: Object|null, error: string|null}>}
+ */
+export const getCurrentUser = async () => {
+  try {
+    if (useSupabaseAuth && supabase) {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        return { user: null, error: error.message };
+      }
+      return { user: await enrichUserData(user), error: null };
+    }
+    
+    // Fallback a API personalizada
+    const response = await apiService.get('/api/auth/me');
+    if (response.user) {
+      const enrichedUser = await enrichUserData(response.user);
+      return { user: enrichedUser, error: null };
+    }
+    return { user: null, error: null };
+  } catch (error) {
+    return { user: null, error: error.message };
+  }
+};
+
+/**
+ * La función clásica de login - email y password, como toda la vida
+ * Aquí es donde la gente entra a mi app por primera vez
+ * @param {string} email - El email del usuario
+ * @param {string} password - Su contraseña (que nunca guardo en claro, obvio)
+ * @returns {Promise<{user: Object|null, error: boolean, code?: string, message?: string}>}
+ */
 export const loginUser = async (email, password) => {
   try {
     if (!email || !password) {
-      return { 
-        user: null, 
-        error: true, 
-        message: "Email y contraseña son requeridos" 
-      };
+      return { user: null, error: true, code: 'missing_credentials', message: 'Email y contraseña son requeridos' };
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    if (useSupabaseAuth && supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        const { code, message } = handleAuthError(error);
+        return { user: null, error: true, code, message };
+      }
+      
+      const enrichedUser = await enrichUserData(data.user);
+      return { user: enrichedUser, error: null };
+    }
+    
+    // API personalizada
+    const response = await apiService.post('/api/auth/login', {
       email,
       password
     });
 
-    if (error) {
-      const { code, message } = handleAuthError(error);
-      return { user: null, error: true, code, message };
+    // Guardar tokens de autenticación
+    if (response.access_token) {
+      apiService.setTokens(response.access_token, response.refresh_token);
     }
 
-    if (!data || !data.user) {
-      return { 
-        user: null, 
-        error: true, 
-        message: "No se pudo obtener la información del usuario" 
-      };
-    }
-
-    
-    const enrichedUser = await enrichUserData(data.user);
+    const enrichedUser = await enrichUserData(response.user);
     
     return { user: enrichedUser, error: null };
   } catch (error) {
@@ -89,98 +142,68 @@ export const loginUser = async (email, password) => {
   }
 };
 
+/**
+ * Aquí registro usuarios nuevos - siempre me emociona cuando alguien se une
+ * Valido que tengan todos los datos y después los creo en Supabase o mi API
+ * @param {string} email - Su email
+ * @param {string} password - Su contraseña
+ * @param {string} username - Como quieren que les llame
+ * @returns {Promise<{user: Object|null, error: boolean, needsEmailConfirmation?: boolean, message?: string, emailAlreadyExists?: boolean, code?: string}>}
+ */
 export const registerUser = async (email, password, username) => {
   try {
     if (!email || !password || !username) {
-      return {
-        user: null,
-        error: true,
-        message: "Todos los campos son obligatorios"
+      return { 
+        user: null, 
+        error: true, 
+        code: 'missing_fields', 
+        message: 'Email, contraseña y nombre de usuario son requeridos' 
       };
     }
-    
-    
-    try {
-      const { data: otpData, error: otpError } = await supabase.auth.signInWithOtp({
+
+    if (useSupabaseAuth && supabase) {
+      const { data, error } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-          shouldCreateUser: false 
+          data: {
+            username: username
+          }
         }
       });
       
-      if (!otpError) {
-        return {
-          user: null,
-          error: true,
-          message: "Este email ya está registrado. Por favor inicia sesión.",
-          emailAlreadyExists: true
+      if (error) {
+        const { code, message } = handleAuthError(error);
+        return { 
+          user: null, 
+          error: true, 
+          code,
+          message,
+          emailAlreadyExists: code === 'email_in_use'
         };
       }
-    } catch (e) {
       
-      console.log("Error en verificación OTP:", e);
+      return { 
+        user: data.user, 
+        error: null,
+        needsEmailConfirmation: !data.user?.email_confirmed_at,
+        message: "Registro exitoso"
+      };
     }
     
-    
-    const { data, error } = await supabase.auth.signUp({
+    // API personalizada
+    const response = await apiService.post('/api/auth/register', {
       email,
       password,
-      options: {
-        data: {
-          username: username, // Asegurarse de que sea explícito
-        },
-        emailRedirectTo: `${window.location.origin}/auth/callback`
-      }
+
+      username
     });
-    
-    // Verificar si se creó el usuario y guardar inmediatamente el perfil
-    if (data?.user?.id) {
-      console.log("Usuario creado, ID:", data.user.id);
-      console.log("Creando perfil con username:", username);
-      
-      // Insertar el perfil directamente
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: email,
-          username: username, // Usar el username proporcionado
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-      
-      if (profileError) {
-        console.error("Error al crear perfil en registro:", profileError);
-      } else {
-        console.log("Perfil creado exitosamente");
-      }
-    }
-    
-    if (error) {
-      const { code, message } = handleAuthError(error);
-      return { 
-        user: null, 
-        error: true, 
-        code, 
-        message,
-        emailAlreadyExists: code === 'email_in_use'
-      };
-    }
-    
-    
-    if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
-      return { 
-        user: null, 
-        error: true, 
-        message: "Este email ya está registrado. Por favor inicia sesión.",
-        emailAlreadyExists: true
-      };
-    }
-    
-    const needsEmailConfirmation = data && !data.session;
+
+    const needsEmailConfirmation = !response.user?.email_confirmed;
+
     
     return { 
-      user: data?.user || null, 
+      user: response.user || null, 
       error: null,
       needsEmailConfirmation,
       message: needsEmailConfirmation 
@@ -199,44 +222,42 @@ export const registerUser = async (email, password, username) => {
   }
 };
 
+/**
+ * El logout - cuando alguien se va de mi app (siempre me pone triste)
+ * Limpio todo: tokens, localStorage, y le digo adiós a Supabase
+ * @returns {Promise<{success: boolean, error: string|null}>}
+ */
 export const logoutUser = async () => {
   try {
-    
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('lastVisitedVaca')) {
-        localStorage.removeItem(key);
+    if (useSupabaseAuth && supabase) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        return { success: false, error: error.message };
       }
-    });
-    
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      return { success: false, error: error.message };
+    } else {
+      // Limpiar localStorage de datos específicos de la app
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('lavaca_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      try {
+        await apiService.post('/api/auth/logout', {});
+      } catch (error) {
+        console.warn('Error en logout del servidor:', error);
+      }
+      
+      // Limpiar tokens locales
+      apiService.clearAuth();
     }
+    
+    // Emitir evento de cambio de estado
+    emitAuthStateChange(null);
+    
     return { success: true, error: null };
   } catch (error) {
     return { success: false, error: error.message };
-  }
-};
-
-/**
- * Obtiene el usuario actualmente autenticado
- * @returns {Promise<{user: Object|null, error: string|null}>}
- */
-export const getCurrentUser = async () => {
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error) throw error;
-    
-    if (user) {
-      const enrichedUser = await enrichUserData(user);
-      return { user: enrichedUser, error: null };
-    }
-    
-    return { user: null, error: null };
-  } catch (error) {
-    const { code, message } = handleAuthError(error);
-    return { user: null, error: message, code };
   }
 };
 
@@ -247,122 +268,98 @@ export const getCurrentUser = async () => {
  */
 export const updateUserProfile = async (userData) => {
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      data: userData
-    });
-    
-    if (error) throw error;
-    
-    
-    if (data?.user?.id) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          username: userData.username,
-          updated_at: new Date()
-        });
-        
-      if (profileError) {
-        console.error("Error al actualizar perfil:", profileError);
+    if (useSupabaseAuth && supabase) {
+      const { data, error } = await supabase.auth.updateUser({
+        data: userData
+      });
+      
+      if (error) {
+        return { user: null, error: error.message };
       }
+      
+      const enrichedUser = await enrichUserData(data.user);
+      return { user: enrichedUser, error: null };
     }
     
-    const enrichedUser = await enrichUserData(data.user);
+    // API personalizada
+    const response = await apiService.patch('/api/auth/profile', userData);
+    const enrichedUser = await enrichUserData(response.user);
+    
     return { user: enrichedUser, error: null };
   } catch (error) {
-    const { code, message } = handleAuthError(error);
-    return { user: null, error: message, code };
+    return { user: null, error: error.message };
   }
 };
 
 /**
  * Configurar un listener para cambios en el estado de autenticación
- * @param {Function} callback - Función a llamar cuando cambia el estado (recibe el usuario)
+ * @param {Function} callback - Función a llamar cuando cambia el estado
  * @returns {Function} - Función para desuscribirse
  */
 export const onAuthStateChange = (callback) => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log("Auth state changed:", event);
+  if (useSupabaseAuth && supabase) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user ? await enrichUserData(session.user) : null;
+      callback(user);
+    });
     
-    if (session?.user) {
-      const enrichedUser = await enrichUserData(session.user);
-      callback(enrichedUser);
-    } else {
-      callback(null);
+    return () => subscription.unsubscribe();
+  }
+  
+  // Para API personalizada - usar eventos personalizados
+  let isActive = true;
+  
+  // Verificar estado inicial
+  getCurrentUser().then(({ user }) => {
+    if (isActive) {
+      callback(user);
     }
   });
   
+  // Escuchar eventos personalizados de cambio de autenticación
+  const handleAuthChange = (event) => {
+    if (isActive) {
+      callback(event.detail.user);
+    }
+  };
+  
+  const handleTokenExpired = () => {
+    if (isActive) {
+      callback(null);
+    }
+  };
+  
+  window.addEventListener('auth:state-change', handleAuthChange);
+  window.addEventListener('auth:token-expired', handleTokenExpired);
+  
   return () => {
-    subscription.unsubscribe();
+    isActive = false;
+    window.removeEventListener('auth:state-change', handleAuthChange);
+    window.removeEventListener('auth:token-expired', handleTokenExpired);
   };
 };
 
 /**
- * Sincroniza un perfil de usuario con la tabla profiles
- * Se debe ejecutar cuando un usuario se autentica
- * @param {Object} user - Usuario de Supabase auth
+ * Sincroniza un perfil de usuario
+ * @param {Object} userData - Datos del usuario
  * @returns {Promise<Object>} - Perfil sincronizado
  */
 export const syncUserProfile = async (userData) => {
   try {
-    
-    console.log("syncUserProfile recibió:", JSON.stringify(userData?.user_metadata, null, 2));
-    
-  
-    let username = null;
-    
-    if (userData.user_metadata?.username) {
-      username = userData.user_metadata.username;
-      console.log("Username encontrado en user_metadata:", username);
-    } else if (userData.username) {
-      username = userData.username;
-      console.log("Username encontrado en root:", username);
-    } else if (userData.email) {
-      
-      username = userData.email.split('@')[0];
-      console.log("Usando email como username:", username);
-    }
-    
-    console.log("Username final para guardar:", username);
-    
-    
-    const { data, error } = await supabase
-      .from('profiles')
-      .upsert(
-        { 
-          id: userData.id,  
-          email: userData.email,
-          username: username, 
-          avatar_url: userData.avatar_url,
-          updated_at: new Date().toISOString() 
-        },
-        { 
-          onConflict: 'id',  
-          returning: 'representation' 
-        }
-      );
-      
-    if (error) {
-      console.error("Error al sincronizar perfil:", error);
-      throw error;
+
+    if (useSupabaseAuth && supabase) {
+      // Para Supabase, simplemente devolver los datos enriquecidos
+      return { success: true, data: await enrichUserData(userData) };
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userData.id)
-      .single();
-      
-    console.log("Perfil sincronizado:", profile);
     
-
-    return profile;
-    
+    // Para API personalizada, sincronizar con el backend
+    const response = await apiService.post('/api/auth/sync-profile', userData);
+    return { success: true, data: response.user };
   } catch (error) {
-    console.error('Error en syncUserProfile:', error);
-    
-    return null;
+
+    console.error('Error sincronizando perfil:', error);
+    return { success: false, error: error.message, data: userData };
   }
 };
 
@@ -374,31 +371,159 @@ export const syncUserProfile = async (userData) => {
 export const resendVerificationEmail = async (email) => {
   try {
     if (!email) {
-      return { 
-        success: false, 
-        error: "email_required", 
-        message: "Se requiere un correo electrónico" 
-      };
+      return { success: false, error: 'Email requerido', message: 'Debe proporcionar un email' };
+    }
+
+    if (useSupabaseAuth && supabase) {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email
+      });
+      
+      if (error) {
+        return { success: false, error: error.message, message: 'Error al reenviar email' };
+      }
+      
+      return { success: true, error: null, message: 'Email de verificación reenviado correctamente' };
     }
     
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`
-    });
-    
-    if (error) throw error;
-    
-    return { 
-      success: true, 
-      error: null, 
-      message: "Si tienes una cuenta con este correo, recibirás un correo de verificación."
-    };
+    // API personalizada
+    await apiService.post('/api/auth/resend-verification', { email });
+    return { success: true, error: null, message: 'Email de verificación reenviado correctamente' };
   } catch (error) {
-    const { code, message } = handleAuthError(error);
-    return { 
-      success: false, 
-      error: code, 
-      message 
-    };
+    return { success: false, error: error.message, message: 'Error al reenviar email de verificación' };
   }
+};
+
+/**
+ * Confirma el email del usuario con un token
+ * @param {string} token - Token de confirmación
+ * @returns {Promise<{success: boolean, error: string|null, message: string}>}
+ */
+export const confirmEmail = async (token) => {
+  try {
+    if (!token) {
+      return { success: false, error: 'Token requerido', message: 'Token de confirmación requerido' };
+    }
+
+    if (useSupabaseAuth && supabase) {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'email'
+      });
+      
+      if (error) {
+        return { success: false, error: error.message, message: 'Error al confirmar email' };
+      }
+      
+      return { success: true, error: null, message: 'Email confirmado correctamente' };
+    }
+    
+    // API personalizada
+    await apiService.post('/api/auth/confirm-email', { token });
+    return { success: true, error: null, message: 'Email confirmado correctamente' };
+  } catch (error) {
+    return { success: false, error: error.message, message: 'Error al confirmar email' };
+  }
+};
+
+/**
+ * Inicia el proceso de recuperación de contraseña
+ * @param {string} email - Email del usuario
+ * @returns {Promise<{success: boolean, error: string|null, message: string}>}
+ */
+export const resetPassword = async (email) => {
+  try {
+    if (!email) {
+      return { success: false, error: 'Email requerido', message: 'Debe proporcionar un email' };
+    }
+
+    if (useSupabaseAuth && supabase) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      
+      if (error) {
+        return { success: false, error: error.message, message: 'Error al enviar email de recuperación' };
+      }
+      
+      return { success: true, error: null, message: 'Email de recuperación enviado correctamente' };
+    }
+    
+    // API personalizada
+    await apiService.post('/api/auth/reset-password', { email });
+    return { success: true, error: null, message: 'Email de recuperación enviado correctamente' };
+  } catch (error) {
+    return { success: false, error: error.message, message: 'Error al enviar email de recuperación' };
+  }
+};
+
+/**
+ * Actualiza la contraseña del usuario
+ * @param {string} token - Token de restablecimiento o contraseña actual
+ * @param {string} newPassword - Nueva contraseña
+ * @returns {Promise<{success: boolean, error: string|null, message: string}>}
+ */
+export const updatePassword = async (token, newPassword) => {
+  try {
+    if (!newPassword) {
+      return { success: false, error: 'Contraseña requerida', message: 'Debe proporcionar una nueva contraseña' };
+    }
+
+    if (useSupabaseAuth && supabase) {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) {
+        return { success: false, error: error.message, message: 'Error al actualizar contraseña' };
+      }
+      
+      return { success: true, error: null, message: 'Contraseña actualizada correctamente' };
+    }
+    
+    // API personalizada
+    await apiService.post('/api/auth/update-password', { token, newPassword });
+    return { success: true, error: null, message: 'Contraseña actualizada correctamente' };
+  } catch (error) {
+    return { success: false, error: error.message, message: 'Error al actualizar contraseña' };
+  }
+};
+
+/**
+ * Helper para emitir eventos de cambio de estado de autenticación
+ * @param {Object|null} user - Usuario actual o null si no hay sesión
+ */
+export const emitAuthStateChange = (user) => {
+  window.dispatchEvent(new CustomEvent('auth:state-change', { 
+    detail: { user } 
+  }));
+};
+
+/**
+ * Helper para emitir eventos de token expirado
+ */
+export const emitTokenExpired = () => {
+  window.dispatchEvent(new CustomEvent('auth:token-expired'));
+};
+
+// Inicializar tokens al cargar el servicio
+if (!useSupabaseAuth) {
+  apiService.getStoredTokens();
+}
+
+export default {
+  getCurrentUser,
+  loginUser,
+  registerUser,
+  logoutUser,
+  updateUserProfile,
+  onAuthStateChange,
+  syncUserProfile,
+  resendVerificationEmail,
+  confirmEmail,
+  resetPassword,
+  updatePassword,
+  enrichUserData,
+  emitAuthStateChange,
+  emitTokenExpired,
+  handleAuthError
 };

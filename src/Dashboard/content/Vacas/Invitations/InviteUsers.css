@@ -45,7 +45,7 @@
 .alert {
   padding: 16px;
   margin-bottom: 25px;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 16px);
   display: flex;
   align-items: center;
   gap: 12px;

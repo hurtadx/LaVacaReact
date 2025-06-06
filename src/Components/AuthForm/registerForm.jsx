@@ -62,20 +62,20 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     if (!validateForm()) return;
     
     setLoading(true);
-    
-    try {
-      console.log("📝 Enviando datos de registro:", {
-        email: formData.email,
-        username: formData.Username
-      });
+      try {
+      if (import.meta.env.DEV) {
+        console.log("Enviando datos de registro:", {
+          email: formData.email,
+          username: formData.Username
+        });
+      }
       
       const result = await registerUser(
         formData.email, 
         formData.password, 
-        formData.Username
-      );
+        formData.Username      );
       
-      console.log("📊 Resultado completo del registro:", result);
+      if (import.meta.env.DEV) console.log("Resultado del registro:", result);
       
       if (!result) {
         showNotification("Error en el servidor de autenticación", "error");

@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 import AuthForm from '../Components/AuthForm/AuthForm';
 import Header from '../Layout/header/Header';
 import Footer from '../Layout/Footer/Footer';
-import AnimatedCarrousel from '../Components/AnimatedCarrousel/AnimatedCarrousel';
 import Dashboard from '../Dashboard/Dashboard';
+import { PrivateRoute, PublicRoute } from '../Components/AuthForm/ProtectedRoutes';
 import { NotificationProvider, useNotification } from '../Components/Notification/NotificationContext';
-import { checkTablesExist } from "../Services/vacaService.jsx";
+import { checkTablesExist } from "../Services";
+import { onAuthStateChange } from "../Services";
 import ErrorBoundary from '../Components/ErrorBoundary/ErrorBoundary';
 
 const ErrorHandler = () => {
@@ -55,19 +56,17 @@ const AppContent = () => {
       if (isChecking.current || dbChecked) return;
       isChecking.current = true;
       
-      try {
-        console.log("Verificando estructura de base de datos una sola vez...");
-        const tables = await checkTablesExist();
+      try {        console.log("Verificando estructura de base de datos una sola vez...");
+        const result = await checkTablesExist();
         
-        const missingTables = [];
-        if (!tables.vacas) missingTables.push('vacas');
-        
-        
-        if (!tables.transactions) missingTables.push('transactions');
-        
-        if (missingTables.length > 0) {
-          console.log("Tablas faltantes:", missingTables);
+        if (result.error) {
+          console.error("Error al verificar tablas:", result.error);
+          showNotification("Error al verificar la configuración de la base de datos.", "error");
+        } else if (!result.data) {
+          console.log("Las tablas de la base de datos no están disponibles");
           showNotification("La base de datos no está correctamente configurada. Contacta al administrador.", "error");
+        } else {
+          console.log("Base de datos configurada correctamente");
         }
         
         setDbChecked(true);
@@ -85,10 +84,22 @@ const AppContent = () => {
   return (
     <div className="App">
       {location.pathname !== '/dashboard' && <Header />}
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+      <main className="main-content">        <Routes>
+          {/* Rutas públicas - solo accesibles si NO está autenticado */}
+          <Route element={<PublicRoute />}>
+            <Route path="/" element={<AuthForm type={authType} onTypeChange={handleTypeChange} />} />
+            <Route path="/auth/callback" element={<div>Procesando autenticación...</div>} />
+          </Route>
+          
+          
+          
+          <Route element={<PrivateRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/:section" element={<Dashboard />} />
+          </Route>
+          
+         
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       {location.pathname !== '/dashboard' && <Footer />}
@@ -96,16 +107,37 @@ const AppContent = () => {
   );
 };
 
+// Componente para escuchar cambios en la autenticación
+const AuthChangeListener = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange((user) => {
+      console.log("Cambio en autenticación:", user ? "SIGNED_IN" : "SIGNED_OUT");
+      
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    });
+    
+    return unsubscribe;
+  }, [navigate]);
+  
+  return null;
+};
+
 const App = () => {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
       <NotificationProvider>
-        <ErrorHandler />
-        <ErrorBoundary>
+        <BrowserRouter>
+          <AuthChangeListener />
           <AppContent />
-        </ErrorBoundary>
+        </BrowserRouter>
       </NotificationProvider>
-    </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

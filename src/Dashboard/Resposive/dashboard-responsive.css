@@ -107,14 +107,13 @@
   .account-summary .card.interactive:hover {
     transform: scale(0.94) translateY(-1px) !important;
   }
-  
-  .transactions {
+    .transactions {
     width: 98% !important;
     margin: 10px auto !important;
     padding: 10px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
-    border-radius: 10px;
+    border-radius: var(--border-radius, 16px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   }
   
@@ -204,14 +203,13 @@
   .sidebar-dropdown.active .dropdown-menu {
     display: none !important;
   }
-
   .transactions {
     width: 98% !important;
     margin: 120px auto 10px !important; 
     padding: 10px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
-    border-radius: 10px;
+    border-radius: var(--border-radius, 16px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   }
 }

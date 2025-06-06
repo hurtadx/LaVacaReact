@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { NotificationContext } from '../Notification/NotificationContext';
 
 class ErrorBoundary extends Component {
- g
   static contextType = NotificationContext;
   
   constructor(props) {

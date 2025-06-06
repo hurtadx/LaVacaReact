@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { inviteParticipants } from '../../../../Services/vacaService.jsx';
+import { inviteParticipants } from '../../../../Services';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUserPlus, 
