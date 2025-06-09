@@ -44,7 +44,11 @@ import {
   getVacaTransactions,
   removeParticipant,
   bulkInviteParticipants,
-  getVacaStats
+  getVacaStats,
+  getUserNotifications,
+  markNotificationAsRead,
+  acceptInvitation,
+  rejectInvitation
 } from '../../../Services';
 import TransactionForm from '../../../components/Transactions/TransactionForm.jsx';
 import TransactionsList from '../../../components/Transactions/TransactionsList.jsx';
@@ -481,21 +485,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   // Manejo la selección de usuarios desde la búsqueda
   const handleUserSelect = async (users) => {
     if (!users || users.length === 0) return;
-    
     setInvitingUsers(true);
-    
     try {
-      const inviteData = {
-        vacaId: vaca.id,
-        users: users.map(user => ({
-          email: user.email,
-          name: user.username || user.name
-        }))
-      };
-      
-      const result = await bulkInviteParticipants(inviteData);
-      
-      if (result.data) {
+      // Usar inviteParticipants (POST /api/invitations) con el payload correcto
+      const userIds = users.map(user => user.id);
+      const { data, error } = await inviteParticipants(vaca.id, userIds, user?.id);
+      if (!error && data) {
         showNotification(
           `${users.length} ${users.length === 1 ? 'invitación enviada' : 'invitaciones enviadas'} con éxito`,
           'success'
@@ -503,6 +498,8 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         setSelectedUsers([]);
         setShowInviteSection(false);
         await loadParticipants();
+      } else {
+        showNotification(error || 'Error al enviar invitaciones', 'error');
       }
     } catch (error) {
       console.error("Error al enviar invitaciones:", error);
@@ -526,7 +523,41 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       console.error("Error al eliminar participante:", error);
       showNotification("Error al eliminar invitación", "error");
     }
-  };  useEffect(() => {
+  };
+
+  // Handler para aceptar invitación
+  const handleAcceptInvitation = async (participant) => {
+    if (!participant.invitation_id) return;
+    try {
+      const { data, error } = await acceptInvitation(participant.invitation_id);
+      if (!error) {
+        showNotification('Has aceptado la invitación', 'success');
+        await loadParticipants();
+      } else {
+        showNotification('Error al aceptar invitación', 'error');
+      }
+    } catch (err) {
+      showNotification('Error al aceptar invitación', 'error');
+    }
+  };
+
+  // Handler para rechazar invitación
+  const handleRejectInvitation = async (participant) => {
+    if (!participant.invitation_id) return;
+    try {
+      const { data, error } = await rejectInvitation(participant.invitation_id);
+      if (!error) {
+        showNotification('Has rechazado la invitación', 'info');
+        await loadParticipants();
+      } else {
+        showNotification('Error al rechazar invitación', 'error');
+      }
+    } catch (err) {
+      showNotification('Error al rechazar invitación', 'error');
+    }
+  };
+
+  useEffect(() => {
     if (import.meta.env.DEV) {
       console.log("useEffect loadParticipants - vaca?.id:", vaca?.id);
       console.log("useEffect loadParticipants - dependencies:", { 
@@ -646,6 +677,28 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
 
   const isAdmin = vaca.user_id === user?.id;
   const isParticipant = participants.some(p => p.user_id === user?.id);
+
+  // Mostrar notificaciones tipo toast solo una vez (al cargar usuario y vaca)
+  useEffect(() => {
+    const showUnreadNotifications = async () => {
+      if (!user?.id) return;
+      try {
+        const { data: notifications, error } = await getUserNotifications(user.id);
+        if (error) return;
+        if (Array.isArray(notifications)) {
+          for (const notification of notifications) {
+            if (notification.is_read === false) {
+              showNotification(notification.message || 'Tienes una notificación', 'info');
+              await markNotificationAsRead(notification.id);
+            }
+          }
+        }
+      } catch (err) {
+        // Silenciar errores de notificaciones
+      }
+    };
+    showUnreadNotifications();
+  }, [user?.id]);
 
   if (loading) {
     return <div className="loading-spinner">Cargando detalles...</div>;
@@ -924,6 +977,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                 </h3>
                 <div className="participants-grid">
                   {pendingParticipants.map(participant => {
+                    const isCurrentUser = participant.user_id === user?.id;
                     return (
                       <div key={participant.id} className="participant-card pending">
                         <div className="participant-header">                          <div 
@@ -962,6 +1016,16 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
                             >
                               <FontAwesomeIcon icon={faTrash} />
                               Eliminar invitación
+                            </button>
+                          </div>
+                        )}
+                        {isCurrentUser && (
+                          <div className="participant-actions">
+                            <button className="accept-invitation-btn" onClick={() => handleAcceptInvitation(participant)}>
+                              <FontAwesomeIcon icon={faCheck} /> Aceptar
+                            </button>
+                            <button className="reject-invitation-btn" onClick={() => handleRejectInvitation(participant)}>
+                              <FontAwesomeIcon icon={faTimes} /> Rechazar
                             </button>
                           </div>
                         )}

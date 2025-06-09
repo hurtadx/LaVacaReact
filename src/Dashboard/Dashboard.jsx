@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserVacas, getInvitations, getCurrentUser, logoutUser } from '../Services';
+import { getUserVacas, getInvitations, getCurrentUser, logoutUser, getUserNotifications, getNotificationById, markNotificationAsRead } from '../Services';
 import DashboardHeader from '../Dashboard/content/Header/DashboardHeader';
 import { NotificationContext } from '../components/Notification/NotificationContext';
 import VacaDetails from './content/Vacas/VacaDetails';
@@ -184,6 +184,29 @@ const Dashboard = () => {
                 onVacaSelect={handleVacaSelect}               />;
     }
   };
+
+  useEffect(() => {
+    // Mostrar toast para notificaciones no leídas (ej: invitación a una vaca)
+    const showUnreadNotifications = async () => {
+      if (!user?.id) return;
+      try {
+        const { data: notifications } = await getUserNotifications(user.id);
+        if (Array.isArray(notifications)) {
+          for (const notification of notifications) {
+            if (!notification.is_read) {
+              // Obtén el detalle actualizado por si el mensaje cambió
+              const { data: fullNotification } = await getNotificationById(notification.id);
+              showNotification(fullNotification?.message || 'Tienes una notificación', 'info');
+              await markNotificationAsRead(notification.id);
+            }
+          }
+        }
+      } catch (err) {
+        // Silenciar errores
+      }
+    };
+    showUnreadNotifications();
+  }, [user?.id]);
 
   if (loading) {
     return <DashboardSkeleton />;

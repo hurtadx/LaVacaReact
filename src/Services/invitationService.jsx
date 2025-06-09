@@ -14,11 +14,15 @@ import apiService, { handleApiCall } from './apiService';
  */
 export const createInvitations = async (vacaId, userIds, senderId) => {
   return handleApiCall(async () => {
-    const response = await apiService.post('/api/invitations', {
+    const payload = {
       vaca_id: vacaId,
       user_ids: userIds,
       sender_id: senderId
-    });
+    };
+    if (import.meta.env.DEV) {
+      console.log('POST /api/invitations payload:', payload);
+    }
+    const response = await apiService.post('/api/invitations', payload);
     return response.result;
   });
 };

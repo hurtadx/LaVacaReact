@@ -137,6 +137,6 @@ export {
   updateVoteRules
 } from '../Services/voteService.jsx';
 
-
 export { default as apiService } from '../Services/apiService.jsx';
+export * from './notificationService.jsx';
 
