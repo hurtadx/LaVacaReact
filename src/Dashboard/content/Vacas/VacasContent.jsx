@@ -189,7 +189,7 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
                       }}
                     ></div>
                   </div>
-                  <p className="vaca-members">{vaca.participants?.length || 0} participantes</p>
+                  <p className="vaca-members">{Array.isArray(vaca.participants) ? vaca.participants.filter(p => p.status === 'active' || p.status === 'accepted' || p.status === 'activo').length : (vaca.participantCount || 0)} participantes</p>
                 </div>
               </div>
             ))}
