@@ -73,14 +73,17 @@ export const getVacaInvitations = async (vacaId) => {
  * @param {string} userId - ID del usuario que responde
  * @returns {Promise<{data: Object|null, error: string|null}>}
  */
-export const respondToInvitation = async (invitationId, response, userId) => {
+export const respondToInvitation = async (invitationId, userId, response) => {
   return handleApiCall(async () => {
-    if (response === 'accept') {
+    const normalizedResponse = response?.toLowerCase();
+    if (normalizedResponse === 'accept') {
       const apiResponse = await apiService.put(`/api/invitations/${invitationId}/accept`);
       return apiResponse.result;
-    } else {
+    } else if (normalizedResponse === 'reject') {
       const apiResponse = await apiService.put(`/api/invitations/${invitationId}/reject`);
       return apiResponse.result;
+    } else {
+      throw new Error('Respuesta de invitación no válida');
     }
   });
 };
@@ -92,6 +95,7 @@ export const respondToInvitation = async (invitationId, response, userId) => {
  */
 export const acceptInvitation = async (invitationId) => {
   return handleApiCall(async () => {
+  
     const response = await apiService.put(`/api/invitations/${invitationId}/accept`);
     return response.result;
   });
@@ -104,6 +108,7 @@ export const acceptInvitation = async (invitationId) => {
  */
 export const rejectInvitation = async (invitationId) => {
   return handleApiCall(async () => {
+ 
     const response = await apiService.put(`/api/invitations/${invitationId}/reject`);
     return response.result;
   });
