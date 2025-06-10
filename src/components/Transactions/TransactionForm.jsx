@@ -83,14 +83,20 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+    // Validación de IDs requeridos
+    if (!vacaId || !userId || !participantId) {
+      setError('No se puede registrar el aporte: faltan datos obligatorios de la vaca o participante.');
+      setLoading(false);
+      return;
+    }
     try {
       let receiptId = null;
-        // Si es un gasto y tiene recibo adjunto, subirlo
       if (transactionType === 'expense' && formData.receiptFile) {
         receiptId = await uploadReceiptFile(formData.receiptFile);
       }
-      
+      // Ajustar el tipo para el backend
+      let backendType = transactionType;
+      if (transactionType === 'contribution') backendType = 'aporte';
       // Preparar los datos de la transacción
       const transactionData = {
         vacaId,
@@ -98,28 +104,43 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
         participantId,
         amount: parseFloat(formData.amount),
         description: formData.description,
-        type: transactionType,
+        type: backendType,
         category: formData.category,
         receiptId,
         withdrawalType: formData.withdrawalType
       };
-      
-      // Ajustar el signo del monto según el tipo de transacción
-      if (transactionType === 'expense' || transactionType === 'withdrawal') {
+      if (transactionType === 'expense') {
         transactionData.amount = -Math.abs(transactionData.amount);
       }
-      
-      const { data, error, newTotal } = await createTransaction(transactionData);
-      
-      if (error) throw new Error(error);
-      
-      onSuccess({
-        data,
-        type: transactionType,
-        newTotal
-      });
+      // Llamar al endpoint correcto para aporte
+      if (backendType === 'aporte') {
+        // Usar apiService para que respete la baseURL y los headers
+        const { default: apiService } = await import('../../Services/apiService');
+        // Usar snake_case en el payload para el backend
+        const aportePayload = {
+          vaca_id: vacaId,
+          user_id: userId,
+          participant_id: participantId,
+          amount: parseFloat(formData.amount),
+          description: formData.description,
+          type: backendType,
+          category: formData.category,
+          receipt_id: receiptId,
+          withdrawal_type: formData.withdrawalType
+        };
+        // Log para depuración: muestra el payload exacto
+        console.log('[APORTE] Payload enviado al backend:', JSON.stringify(aportePayload, null, 2));
+        const result = await apiService.post('/api/transactions/aporte', aportePayload);
+        if (result.error) throw new Error(result.error || 'Error en el aporte');
+        onSuccess({ data: result, type: backendType });
+      } else {
+        // Para otros tipos, usar el servicio normal
+        const { data, error, newTotal } = await createTransaction(transactionData);
+        if (error) throw new Error(error);
+        onSuccess({ data, type: backendType, newTotal });
+      }
     } catch (err) {
-      setError(err.message || "Error al procesar la transacción");
+      setError(err.message || 'Error al procesar la transacción');
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -152,13 +173,7 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
         >
           <FontAwesomeIcon icon={faReceipt} /> Gasto
         </button>
-        <button 
-          type="button"
-          className={`type-btn ${transactionType === 'withdrawal' ? 'active' : ''}`}
-          onClick={() => setTransactionType('withdrawal')}
-        >
-          <FontAwesomeIcon icon={faArrowDown} /> Retiro
-        </button>
+        {/* Botón de retiro eliminado */}
       </div>
       
       <form onSubmit={handleSubmit}>

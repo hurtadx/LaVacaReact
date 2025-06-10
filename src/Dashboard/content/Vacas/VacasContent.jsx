@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCow, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faCow, faPlus, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { getUserVacas, checkTablesExist } from "../../../Services";
 import { getCurrentUser } from "../../../Services";
 import { useNotification, NotificationContext } from "../../../components/Notification/NotificationContext";
@@ -167,32 +167,41 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
           </div>
         ) : vacas && vacas.length > 0 ? (
           <div className="vacas-grid">
-            {vacas.map(vaca => (
-              <div 
-                key={vaca.id} 
-                className="vaca-card"
-                onClick={() => handleVacaClick(vaca)}
-              >
-                <div className="vaca-card-header" style={{ backgroundColor: vaca.color || '#3F60E5' }}>
-                  <FontAwesomeIcon icon={faCow} className="vaca-card-icon" />
-                  <h3>{vaca.name}</h3>
-                </div>
-                <div className="vaca-card-content">
-                  <p className="vaca-goal">Meta: ${vaca.goal.toLocaleString()}</p>
-                  <p className="vaca-current">Actual: ${vaca.current ? vaca.current.toLocaleString() : '0'}</p>
-                  <div className="vaca-progress">
-                    <div 
-                      className="vaca-progress-bar" 
-                      style={{ 
-                        width: `${vaca.current ? Math.min((vaca.current / vaca.goal) * 100, 100) : 0}%`,
-                        backgroundColor: vaca.color || '#3F60E5'
-                      }}
-                    ></div>
+            {vacas.map(vaca => {
+              // DEBUG: Log para ver los datos de participantes en cada vaca
+              console.log('Vaca:', vaca.name, 'participants:', vaca.participants, 'participantCount:', vaca.participantCount);
+              return (
+                <div 
+                  key={vaca.id} 
+                  className="vaca-card"
+                  onClick={() => handleVacaClick(vaca)}
+                >
+                  <div className="vaca-card-header" style={{ backgroundColor: vaca.color || '#3F60E5' }}>
+                    <FontAwesomeIcon icon={faCow} className="vaca-card-icon" />
+                    <h3>{vaca.name}</h3>
                   </div>
-                  <p className="vaca-members">{Array.isArray(vaca.participants) ? vaca.participants.filter(p => p.status === 'active' || p.status === 'accepted' || p.status === 'activo').length : (vaca.participantCount || 0)} participantes</p>
+                  <div className="vaca-card-content">
+                    <p className="vaca-goal">Meta: ${vaca.goal.toLocaleString()}</p>
+                    <p className="vaca-current">Actual: ${vaca.current ? vaca.current.toLocaleString() : '0'}</p>
+                    <div className="vaca-progress">
+                      <div 
+                        className="vaca-progress-bar" 
+                        style={{ 
+                          width: `${vaca.current ? Math.min((vaca.current / vaca.goal) * 100, 100) : 0}%`,
+                          backgroundColor: vaca.color || '#3F60E5'
+                        }}
+                      ></div>
+                    </div>
+                    <div className="vaca-card-stats">
+                      <span className="vaca-card-stat">
+                        <FontAwesomeIcon icon={faUsers} className="vaca-card-stat-icon" />
+                        {Array.isArray(vaca.participants) ? vaca.participants.length : 0} participantes
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="empty-state">

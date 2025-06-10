@@ -309,6 +309,17 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     }
   };
 
+  // Función para mostrar el tipo de transacción como texto amigable y unificado
+  const getTransactionTypeLabel = (transaction) => {
+    if (transaction.type === 'expense' || transaction.type === 'withdrawal') {
+      return 'Gasto';
+    } else if (transaction.type === 'contribution') {
+      return 'Aporte';
+    } else {
+      return transaction.type;
+    }
+  };
+
   // Manejo cuando se completa una transacción
   const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");

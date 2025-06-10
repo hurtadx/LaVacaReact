@@ -32,12 +32,24 @@ const TransactionsList = ({ transactions, participants, vacaColor }) => {
     }
   };
 
+  // Función para mostrar el tipo de transacción como texto amigable
+  const getTransactionTypeLabel = (transaction) => {
+    if (transaction.type === 'expense' || transaction.type === 'withdrawal') {
+      return 'Gasto';
+    } else if (transaction.type === 'contribution') {
+      return 'Aporte';
+    } else {
+      return transaction.type;
+    }
+  };
+
   return (
     <ul className="transactions-list">
       {transactions.map(transaction => {
         const participant = participants.find(p => p.id === transaction.participant_id);
         const transactionIcon = getTransactionIcon(transaction);
         const transactionClass = getTransactionClass(transaction);
+        const typeLabel = getTransactionTypeLabel(transaction);
         
         return (
           <li key={transaction.id} className={`transaction-item ${transactionClass}`}>
@@ -48,6 +60,8 @@ const TransactionsList = ({ transactions, participants, vacaColor }) => {
               <p className={`transaction-amount ${transactionClass}`}>
                 {transactionClass === 'positive' ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
               </p>
+              {/* Mostramos el tipo de transacción unificado */}
+              <p className="transaction-type-label">{typeLabel}</p>
               <p className="transaction-description">{transaction.description}</p>
               <div className="transaction-details">
                 <p className="transaction-date">
