@@ -490,7 +490,7 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
       // Usar inviteParticipants (POST /api/invitations) con el payload correcto
       const userIds = users.map(user => user.id);
       const { data, error } = await inviteParticipants(vaca.id, userIds, user?.id);
-      if (!error && data) {
+      if (!error) {
         showNotification(
           `${users.length} ${users.length === 1 ? 'invitación enviada' : 'invitaciones enviadas'} con éxito`,
           'success'
