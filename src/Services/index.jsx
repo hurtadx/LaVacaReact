@@ -106,7 +106,6 @@ export {
   createInvitations,
   createInvitations as inviteParticipants, // Alias for compatibility
   getUserInvitations,
-  getUserInvitations as getInvitations, // Alias for compatibility
   getSentInvitations,
   getVacaInvitations,
   respondToInvitation,
@@ -118,6 +117,8 @@ export {
   markInvitationAsRead,
   getInvitationStats
 } from './invitationService.jsx';
+
+export { getUserInvitations as getInvitations } from './userService.jsx';
 
 export {
   createVote,
