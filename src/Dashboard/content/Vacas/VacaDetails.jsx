@@ -482,12 +482,12 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     };
   };
 
-  // Manejo la selección de usuarios desde la búsqueda
+ 
   const handleUserSelect = async (users) => {
     if (!users || users.length === 0) return;
     setInvitingUsers(true);
     try {
-      // Usar inviteParticipants (POST /api/invitations) con el payload correcto
+    
       const userIds = users.map(user => user.id);
       const { data, error } = await inviteParticipants(vaca.id, userIds, user?.id);
       if (!error) {

@@ -94,7 +94,7 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
         return;
       }
       
-      // Filtrar usuarios ya seleccionados
+    
       const filteredResults = data.filter(
         user => !formData.participants.some(p => p.id === user.id)
       );
@@ -127,7 +127,7 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
       participants: [...prev.participants, participant]
     }));
 
-    // Limpiar búsqueda después de seleccionar
+   
     setSearchResults([]);
     setSearchTerm('');
   };
@@ -182,14 +182,19 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
         description: formData.description,
         goal: parseFloat(formData.goal),
         deadline: formData.deadline || null,
-        color: formData.color,
-        participants: formData.participants
+        color: formData.color
+      
       };
       
       console.log("Creando vaca con datos:", vacaToSave);
       console.log("Enviando user_id:", currentUser.id);
       
-      const { data, error } = await createVaca(vacaToSave, currentUser.id);
+      const { data, error } = await createVaca(
+        vacaToSave,
+        currentUser.id,
+        currentUser.displayName || currentUser.username,
+        currentUser.email
+      );
       
       if (error) {
         showNotification(`Error al crear la vaca: ${error}`, "error");
@@ -209,8 +214,7 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
 
   return (
     <div className="create-vaca-container">
-      {/* Header y otros campos del formulario permanecen igual */}
-      {/* ... */}
+
       
       <form className="create-vaca-form" onSubmit={handleSubmit}>
         <div className="form-section centered">
