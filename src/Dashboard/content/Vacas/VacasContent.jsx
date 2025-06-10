@@ -124,11 +124,15 @@ const VacasContent = ({ vacas, setVacas, onVacaSelect, loading: externalLoading,
   };
 
     const handleCreateVaca = (newVaca) => {
-    if (import.meta.env.DEV) console.log("Nueva vaca creada:", newVaca.name);
-    setVacas(currentVacas => [...(Array.isArray(currentVacas) ? currentVacas : []), newVaca]);
-    setShowCreateForm(false);
-    showNotification("¡Vaca creada con éxito!", "success");
-  };
+      if (!newVaca || !newVaca.name) {
+        showNotification("Error: La vaca creada no tiene datos válidos.", "error");
+        return;
+      }
+      if (import.meta.env.DEV) console.log("Nueva vaca creada:", newVaca.name);
+      setVacas(currentVacas => [...(Array.isArray(currentVacas) ? currentVacas : []), newVaca]);
+      setShowCreateForm(false);
+      showNotification("¡Vaca creada con éxito!", "success");
+    };
 
   const handleVacaClick = (vaca) => {
     if (onVacaSelect) {

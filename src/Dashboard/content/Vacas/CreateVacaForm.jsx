@@ -12,7 +12,7 @@ import {
   faSpinner,
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons';
-import { createVaca, searchUsers, getCurrentUser } from "../../../Services";
+import { createVaca, searchUsers, getCurrentUser, inviteParticipants } from "../../../Services";
 import { useNotification } from "../../../components/Notification/NotificationContext";
 import { NotificationContext } from "../../../components/Notification/NotificationContext";
 import './CreateVacaForm.css';
@@ -195,7 +195,21 @@ const CreateVacaForm = ({ onSave, onCancel }) => {
         currentUser.displayName || currentUser.username,
         currentUser.email
       );
-      
+      // Invitar participantes si hay
+      const participantsToInvite = formData.participants.filter(p => p.id && p.id !== currentUser.id);
+      if (data && participantsToInvite.length > 0) {
+        const userIds = participantsToInvite.map(p => p.id);
+        try {
+          const { error: inviteError } = await inviteParticipants(data.id, userIds, currentUser.id);
+          if (!inviteError) {
+            showNotification(`${userIds.length} invitaciones enviadas con éxito`, 'success');
+          } else {
+            showNotification(inviteError || 'Error al enviar invitaciones', 'error');
+          }
+        } catch (err) {
+          showNotification('Error al invitar participantes', 'error');
+        }
+      }
       if (error) {
         showNotification(`Error al crear la vaca: ${error}`, "error");
         setLoading(false);

@@ -178,23 +178,21 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Mostrar toast para notificaciones no leídas (ej: invitación a una vaca)
+   
     const showUnreadNotifications = async () => {
       if (!user?.id) return;
       try {
         const { data: notifications } = await getUserNotifications(user.id);
         if (Array.isArray(notifications)) {
-          for (const notification of notifications) {
-            if (!notification.is_read) {
-              // Obtén el detalle actualizado por si el mensaje cambió
-              const { data: fullNotification } = await getNotificationById(notification.id);
-              showNotification(fullNotification?.message || 'Tienes una notificación', 'info');
-              await markNotificationAsRead(notification.id);
-            }
+          const unread = notifications.filter(n => n.is_read === false);
+          for (const notification of unread) {
+            const { data: fullNotification } = await getNotificationById(notification.id);
+            showNotification(fullNotification?.message || 'Tienes una notificación', 'info');
+            await markNotificationAsRead(notification.id);
           }
         }
       } catch (err) {
-        // Silenciar errores
+      
       }
     };
     showUnreadNotifications();

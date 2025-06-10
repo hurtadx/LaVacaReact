@@ -485,10 +485,14 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
  
   const handleUserSelect = async (users) => {
     if (!users || users.length === 0) return;
+    if (!vaca || !vaca.id) {
+      showNotification('Error: No se encontró el ID de la vaca para invitar.', 'error');
+      return;
+    }
     setInvitingUsers(true);
     try {
-    
       const userIds = users.map(user => user.id);
+      console.log('Invitando usuarios a vaca:', vaca.id, userIds, user?.id);
       const { data, error } = await inviteParticipants(vaca.id, userIds, user?.id);
       if (!error) {
         showNotification(

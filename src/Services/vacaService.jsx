@@ -42,14 +42,14 @@ export const createVaca = async (vacaData, userId, userName, userEmail) => {
       console.log("Payload enviado a backend:", {
         ...vacaDataClean,
         userId,
-        name: userName,
-        email: userEmail
+        userName,
+        userEmail
       });
       const vacaPayload = {
         ...vacaDataClean,
         userId,
-        name: userName,
-        email: userEmail
+        userName,
+        userEmail
       };
       const response = await apiService.post('/api/vacas', vacaPayload);
       return { data: response.data, error: null };
