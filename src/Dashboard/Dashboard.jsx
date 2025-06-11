@@ -75,12 +75,13 @@ const Dashboard = () => {
   const loadPendingInvitations = async (userId) => {
     try {
       const { data: invitations, error } = await getInvitations(userId);
-      
+      if (import.meta.env.DEV) {
+        console.log('[Invitaciones] Datos traídos del endpoint:', invitations);
+      }
       if (error) {
         console.error('Error al cargar invitaciones:', error);
         return;
       }
-      
       setPendingInvitations(invitations || []);
       setHasUnreadNotifications(invitations?.length > 0);
     } catch (error) {
@@ -94,25 +95,16 @@ const Dashboard = () => {
 
   const handleInvitationResponse = async (invitationId, response, vacaId) => {
     try {
-      
-      setPendingInvitations(current => 
-        current.filter(inv => inv.id !== invitationId)
-      );
-      
-      if (pendingInvitations.length <= 1) {
-        setHasUnreadNotifications(false);
+      // Refrescar la lista de invitaciones tras aceptar/rechazar
+      if (user?.id) {
+        await loadPendingInvitations(user.id);
       }
-      
-      
       if (response === 'accept' && user) {
-        
         setTimeout(async () => {
           const { data: userVacas } = await getUserVacas(user.id);
           if (userVacas) {
             setVacas(userVacas);
           }
-          
-          
           showNotification('Te has unido a una nueva vaca', 'success');
         }, 1000);
       } else if (response === 'reject') {
@@ -186,23 +178,21 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Mostrar toast para notificaciones no leídas (ej: invitación a una vaca)
+   
     const showUnreadNotifications = async () => {
       if (!user?.id) return;
       try {
         const { data: notifications } = await getUserNotifications(user.id);
         if (Array.isArray(notifications)) {
-          for (const notification of notifications) {
-            if (!notification.is_read) {
-              // Obtén el detalle actualizado por si el mensaje cambió
-              const { data: fullNotification } = await getNotificationById(notification.id);
-              showNotification(fullNotification?.message || 'Tienes una notificación', 'info');
-              await markNotificationAsRead(notification.id);
-            }
+          const unread = notifications.filter(n => n.is_read === false);
+          for (const notification of unread) {
+            const { data: fullNotification } = await getNotificationById(notification.id);
+            showNotification(fullNotification?.message || 'Tienes una notificación', 'info');
+            await markNotificationAsRead(notification.id);
           }
         }
       } catch (err) {
-        // Silenciar errores
+      
       }
     };
     showUnreadNotifications();

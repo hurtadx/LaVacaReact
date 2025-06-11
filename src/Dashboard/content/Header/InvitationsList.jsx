@@ -46,7 +46,11 @@ const InvitationsList = ({ invitations = [], onInvitationResponse }) => {
               </span>
             </div>
             <p className="invitation-message">
-              Te ha invitado a unirte a <strong>{invitation.vaca?.name || 'una vaca'}</strong>
+              {invitation.sender?.username && invitation.vaca?.name
+                ? `${invitation.sender.username} te ha invitado a unirte a la vaca "${invitation.vaca.name}"`
+                : invitation.vaca?.name
+                  ? `Te ha invitado a unirte a la vaca "${invitation.vaca.name}"`
+                  : 'Te ha invitado a unirte a una vaca'}
             </p>
             <p className="invitation-description">
               {invitation.vaca?.description || 'Sin descripción'}

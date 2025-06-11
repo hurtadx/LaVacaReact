@@ -15,14 +15,14 @@ import apiService, { handleApiCall } from './apiService';
 export const createInvitations = async (vacaId, userIds, senderId) => {
   return handleApiCall(async () => {
     const payload = {
-      vaca_id: vacaId,
-      user_ids: userIds,
-      sender_id: senderId
+      vacaId: vacaId,
+      userIds: userIds,
+      senderId: senderId
     };
     if (import.meta.env.DEV) {
-      console.log('POST /api/invitations payload:', payload);
+      console.log('POST /api/invitations/bulk payload:', payload);
     }
-    const response = await apiService.post('/api/invitations', payload);
+    const response = await apiService.post('/api/invitations/bulk', payload);
     return response.result;
   });
 };
@@ -73,15 +73,19 @@ export const getVacaInvitations = async (vacaId) => {
  * @param {string} userId - ID del usuario que responde
  * @returns {Promise<{data: Object|null, error: string|null}>}
  */
-export const respondToInvitation = async (invitationId, response, userId) => {
+export const respondToInvitation = async (invitationId, userId, response) => {
   return handleApiCall(async () => {
-    if (response === 'accept') {
-      const apiResponse = await apiService.put(`/api/invitations/${invitationId}/accept`);
-      return apiResponse.result;
+    const normalizedResponse = response?.toLowerCase();
+    let apiResponse;
+    if (normalizedResponse === 'accept') {
+      apiResponse = await apiService.put(`/api/invitations/${invitationId}/accept`);
+    } else if (normalizedResponse === 'reject') {
+      apiResponse = await apiService.put(`/api/invitations/${invitationId}/reject`);
     } else {
-      const apiResponse = await apiService.put(`/api/invitations/${invitationId}/reject`);
-      return apiResponse.result;
+      throw new Error('Respuesta de invitación no válida');
     }
+    // Normaliza la respuesta para que siempre devuelva { data: ... }
+    return { data: apiResponse.result || apiResponse.data || apiResponse, error: null };
   });
 };
 
@@ -93,7 +97,7 @@ export const respondToInvitation = async (invitationId, response, userId) => {
 export const acceptInvitation = async (invitationId) => {
   return handleApiCall(async () => {
     const response = await apiService.put(`/api/invitations/${invitationId}/accept`);
-    return response.result;
+    return { data: response.result || response.data || response, error: null };
   });
 };
 
@@ -105,7 +109,7 @@ export const acceptInvitation = async (invitationId) => {
 export const rejectInvitation = async (invitationId) => {
   return handleApiCall(async () => {
     const response = await apiService.put(`/api/invitations/${invitationId}/reject`);
-    return response.result;
+    return { data: response.result || response.data || response, error: null };
   });
 };
 

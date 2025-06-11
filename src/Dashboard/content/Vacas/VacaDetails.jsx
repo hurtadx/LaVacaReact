@@ -44,7 +44,6 @@ import {
   getVacaTransactions,
   removeParticipant,
   bulkInviteParticipants,
-  getVacaStats,
   getUserNotifications,
   markNotificationAsRead,
   acceptInvitation,
@@ -70,7 +69,6 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showExitVacaModal, setShowExitVacaModal] = useState(false);
   const [transactions, setTransactions] = useState([]);
-  const [vacaStats, setVacaStats] = useState({});
   
   // Estado adicional para gestión de participantes
   const [showInviteSection, setShowInviteSection] = useState(false);
@@ -206,7 +204,6 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     if (vaca?.id) {
       if (import.meta.env.DEV) console.log("Loading additional data for vaca:", vaca.id);
       loadTransactions();
-      loadVacaStats();
       loadParticipants(); // Lo agrego aquí también para asegurarme que se llame
     }
   }, [vaca?.id]);
@@ -266,9 +263,13 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   // Cargo las transacciones de la vaca
   const loadTransactions = async () => {
     try {
-      const result = await getVacaTransactions(vaca.id);
-      if (result.data) {
-        setTransactions(result.data);
+      // Usar el endpoint correcto: /api/transactions/vaca/{vacaId}
+      const response = await apiService.get(`/api/transactions/vaca/${vaca.id}`);
+      console.log('[VACAS] Respuesta de /api/transactions/vaca/{vacaId}:', response); // <-- LOG para comprobar
+      if (response && response.transactions) {
+        setTransactions(response.transactions);
+      } else if (response && Array.isArray(response)) {
+        setTransactions(response);
       }
     } catch (error) {
       console.error("Error cargando transacciones:", error);
@@ -323,24 +324,20 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
   // Manejo cuando se completa una transacción
   const handleTransactionComplete = async (transactionData) => {
     showNotification("Transacción registrada exitosamente", "success");
-    
     // Si es una contribución, actualizo el monto current
-    if (transactionData.type === 'contribution') {
+    if (transactionData.type === 'aporte' || transactionData.type === 'contribution') {
       setVaca(prev => ({
         ...prev,
-        current: transactionData.newTotal || prev.current,
+        current: transactionData.newTotal !== undefined ? transactionData.newTotal : prev.current,
         transactions: [transactionData.data, ...(prev.transactions || [])]
       }));
     } else {
-
       setVaca(prev => ({
         ...prev,
         transactions: [transactionData.data, ...(prev.transactions || [])]
       }));
     }
-    
     setShowTransactionForm(false);
-    
     // Actualizo participantes y transacciones
     await loadParticipants();
     await loadTransactions();
@@ -444,7 +441,9 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
         }
         
       } catch (error) {
-        console.error("❌ Exception loading participants:", error);        
+        console.error("❌ Exception loading participants:", error);
+        showNotification("Error al cargar participantes", "error");
+        
         // Aquí uso los participantes que ya tengo como fallback
         const fallbackParticipants = vaca.participants || [];
         if (import.meta.env.DEV) console.log("Usando participantes de fallback:", fallbackParticipants.length);
@@ -493,15 +492,19 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
     };
   };
 
-  // Manejo la selección de usuarios desde la búsqueda
+ 
   const handleUserSelect = async (users) => {
     if (!users || users.length === 0) return;
+    if (!vaca || !vaca.id) {
+      showNotification('Error: No se encontró el ID de la vaca para invitar.', 'error');
+      return;
+    }
     setInvitingUsers(true);
     try {
-      // Usar inviteParticipants (POST /api/invitations) con el payload correcto
       const userIds = users.map(user => user.id);
+      console.log('Invitando usuarios a vaca:', vaca.id, userIds, user?.id);
       const { data, error } = await inviteParticipants(vaca.id, userIds, user?.id);
-      if (!error && data) {
+      if (!error) {
         showNotification(
           `${users.length} ${users.length === 1 ? 'invitación enviada' : 'invitaciones enviadas'} con éxito`,
           'success'
@@ -879,21 +882,32 @@ const VacaDetails = ({ match, user: passedUser, vaca: initialVaca, onBackClick }
             </div>
             
             {showTransactionForm ? (
-              <TransactionForm 
-                vacaId={vaca.id}
-                userId={user.id}
-                participantId={participants?.find(p => p.user_id === user.id)?.id}
-                onSuccess={handleTransactionComplete}
-                onCancel={() => setShowTransactionForm(false)}
-              />
-            ) : (
-              <div className="transactions-list-container">
-                <TransactionsList 
-                  transactions={transactions.length > 0 ? transactions : vaca.transactions || []} 
-                  participants={participants || []}
-                  vacaColor={vaca.color}
+              vaca.id && user.id && participants?.find(p => p.user_id === user.id)?.id ? (
+                <TransactionForm 
+                  vacaId={vaca.id}
+                  userId={user.id}
+                  participantId={participants?.find(p => user.id === p.user_id)?.id}
+                  onSuccess={handleTransactionComplete}
+                  onCancel={() => setShowTransactionForm(false)}
                 />
-              </div>
+              ) : (
+                <div className="transaction-form-loading">
+                  <p>No se puede registrar la transacción: faltan datos de usuario o participante.</p>
+                </div>
+              )
+            ) : (
+              (() => {
+                console.log('[VacaDetails] Renderizando TransactionsList con transactions:', transactions, 'participants:', participants);
+                return (
+                  <div className="transactions-list-container">
+                    <TransactionsList 
+                      transactions={transactions} 
+                      participants={participants || []}
+                      vacaColor={vaca.color}
+                    />
+                  </div>
+                );
+              })()
             )}
           </div>          {/* Comprehensive Participants Management Section (1/3 width) */}
           <div className={`participants-main-section${activeTab === 'participants' ? ' active-tab' : ''}${activeTab !== 'participants' ? ' hidden-tab' : ''}`}>

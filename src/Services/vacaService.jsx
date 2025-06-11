@@ -7,15 +7,17 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Configuración para determinar qué backend usar
-const useSupabase = import.meta.env.VITE_USE_SUPABASE === 'true';
+const useSupabase = false; 
 
 /**
  * Create a new vaca (vacation pool)
  * @param {Object} vacaData - The vaca data
  * @param {string} userId - The user ID creating the vaca
+ * @param {string} userName - The user name creating the vaca
+ * @param {string} userEmail - The user email creating the vaca
  * @returns {Promise<{data: Object|null, error: string|null}>}
  */
-export const createVaca = async (vacaData, userId) => {
+export const createVaca = async (vacaData, userId, userName, userEmail) => {
   try {
     if (useSupabase) {
       const { data, error } = await supabase
@@ -31,10 +33,25 @@ export const createVaca = async (vacaData, userId) => {
       if (error) throw error;
       return { data, error: null };
     } else {
-      const response = await apiService.post('/vacas', {
-        ...vacaData,
-        created_by: userId
+      // Limpiar campos vacíos o nulos
+      const vacaDataClean = Object.fromEntries(
+        Object.entries(vacaData)
+          .filter(([_, v]) => v !== undefined && v !== null && v !== "")
+      );
+      // Log para depuración
+      console.log("Payload enviado a backend:", {
+        ...vacaDataClean,
+        userId,
+        userName,
+        userEmail
       });
+      const vacaPayload = {
+        ...vacaDataClean,
+        userId,
+        userName,
+        userEmail
+      };
+      const response = await apiService.post('/api/vacas', vacaPayload);
       return { data: response.data, error: null };
     }
   } catch (error) {
@@ -170,7 +187,7 @@ export const deleteVaca = async (vacaId) => {
 export const checkTablesExist = async () => {
   try {
     if (useSupabase) {
-      // Intento consultar la tabla vacas para ver si existe
+     
       const { data, error } = await supabase
         .from('vacas')
         .select('id')

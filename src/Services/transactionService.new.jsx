@@ -23,29 +23,6 @@ const isValidUUID = (id) => {
 };
 
 /**
- * Obtiene los tipos de transacción disponibles
- * @returns {Promise<{data: Array|null, error: string|null}>}
- */
-export const getTransactionTypes = async () => {
-  try {
-    const response = await apiService.get('/api/transaction-types');
-    return { data: response.types || [], error: null };
-  } catch (error) {
-    console.error("Error al obtener tipos de transacción:", error);
-    
-    // Devolver tipos por defecto si no se pueden obtener del backend
-    return { 
-      data: [
-        { id: 'contribution', name: 'Contribución', description: 'Aporte a la vaca' },
-        { id: 'expense', name: 'Gasto', description: 'Gasto de la vaca' },
-        { id: 'withdrawal', name: 'Retiro', description: 'Retiro de fondos' }
-      ], 
-      error: null 
-    };
-  }
-};
-
-/**
  * Crea una nueva transacción
  * @param {Object} transactionData - Datos de la transacción
  * @returns {Promise<{data: Object|null, error: string|null, newTotal?: number}>}

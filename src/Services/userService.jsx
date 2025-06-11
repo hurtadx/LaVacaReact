@@ -392,22 +392,20 @@ export const getUserInvitations = async (userId = null) => {
     if (userId && !isValidUUID(userId)) {
       return { data: [], error: 'ID de usuario inválido (UUID requerido)' };
     }
-
     const endpoint = userId ? `/api/invitations/user/${userId}/received` : '/api/users/me/invitations';
     const response = await apiService.get(endpoint);
-    
-    return { data: response.invitations || [], error: null };
+ 
+    let invitations = Array.isArray(response) ? response : response?.invitations;
+    if (!Array.isArray(invitations)) invitations = [];
+    return { data: invitations, error: null };
   } catch (error) {
     console.error("Error al obtener invitaciones:", error);
-    
     if (error.status === 404) {
       return { data: [], error: null }; // No invitaciones encontradas, no es error
     }
-    
     if (error.status === 403) {
       return { data: [], error: 'No tienes permisos para ver estas invitaciones' };
     }
-    
     return { data: [], error: error.message || 'Error al obtener invitaciones' };
   }
 };

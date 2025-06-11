@@ -6,17 +6,6 @@ import apiService, { handleApiCall } from './apiService';
  */
 
 /**
- * Obtiene los tipos de transacción disponibles
- * @returns {Promise<{data: Array|null, error: string|null}>}
- */
-export const getTransactionTypes = async () => {
-  return handleApiCall(async () => {
-    const response = await apiService.get('/api/transaction-types');
-    return response.types;
-  });
-};
-
-/**
  * Crea una nueva transacción
  * @param {Object} transactionData - Datos de la transacción
  * @returns {Promise<{data: Object|null, error: string|null, newTotal?: number}>}

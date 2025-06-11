@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faReceipt, faPlus, faMoneyBillWave, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import { createTransaction, getTransactionTypes } from '../../Services/transactionService';
+import { createTransaction } from '../../Services/transactionService';
 import { getCurrentUser } from '../../Services/authService';
 import { uploadReceipt } from '../../Services/transactionService';
+import { getVacaParticipants } from '../../Services/participantService';
 import './TransactionForm.css';
 
-const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel }) => {
+const TransactionForm = (props) => {
+  const { vacaId, userId: propUserId, participantId: propParticipantId, onSuccess, onCancel } = props;
+
   const [transactionType, setTransactionType] = useState('contribution');
   const [formData, setFormData] = useState({
     description: '',
@@ -18,23 +21,32 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [transactionTypes, setTransactionTypes] = useState([]);
-  
-  useEffect(() => {
- 
-    const loadTransactionTypes = async () => {
-      try {
-        const { data } = await getTransactionTypes();
-        if (data) {
-          setTransactionTypes(data);
-        }
-      } catch (error) {
-        console.error("Error cargando tipos de transacción:", error);
+  const [userId, setUserId] = useState(propUserId || null);
+  const [participantId, setParticipantId] = useState(propParticipantId || null);
+  const [userInfo, setUserInfo] = useState(null);
+
+  // Autocompletar userId y participantId si no vienen como props
+  React.useEffect(() => {
+    const fetchIds = async () => {
+      if (!userId) {
+        const { user } = await getCurrentUser();
+        if (user?.id) setUserId(user.id);
+        if (user) setUserInfo({ name: user.displayName || user.username || user.email, avatar: user.avatar_url });
+      }
+      if (!participantId && vacaId && (userId || propUserId)) {
+        try {
+          const { data: participants } = await getVacaParticipants(vacaId);
+          if (Array.isArray(participants)) {
+            const found = participants.find(p => p.user_id === (userId || propUserId));
+            if (found) setParticipantId(found.id);
+          }
+        } catch (e) { /* ignore */ }
       }
     };
-    
-    loadTransactionTypes();
-  }, []);
+    fetchIds();
+    // Solo depende de vacaId, propUserId, userId, propParticipantId
+    // para evitar loops infinitos
+  }, [vacaId, propUserId, userId, propParticipantId]);
   
   const handleChange = (e) => {
     const { name, value, type, files, checked } = e.target;
@@ -85,7 +97,7 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
     setError(null);
     // Validación de IDs requeridos
     if (!vacaId || !userId || !participantId) {
-      setError('No se puede registrar el aporte: faltan datos obligatorios de la vaca o participante.');
+      console.warn('[APORTE] Faltan datos requeridos:', { vacaId, userId, participantId });
       setLoading(false);
       return;
     }
@@ -97,47 +109,50 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
       // Ajustar el tipo para el backend
       let backendType = transactionType;
       if (transactionType === 'contribution') backendType = 'aporte';
-      // Preparar los datos de la transacción
-      const transactionData = {
-        vacaId,
-        userId,
-        participantId,
-        amount: parseFloat(formData.amount),
+      // Preparar los datos de la transacción en snake_case y solo columnas válidas
+      const transactionPayload = {
+        vaca_id: vacaId,
+        user_id: userId,
+        participant_id: participantId,
+        amount: transactionType === 'expense' ? -Math.abs(parseFloat(formData.amount)) : parseFloat(formData.amount),
         description: formData.description,
-        type: backendType,
-        category: formData.category,
-        receiptId,
-        withdrawalType: formData.withdrawalType
+        type: backendType
       };
-      if (transactionType === 'expense') {
-        transactionData.amount = -Math.abs(transactionData.amount);
+      // Si hay recibo y es gasto, puedes agregar receipt_id si tu backend lo soporta
+      if (transactionType === 'expense' && receiptId) {
+        transactionPayload.receipt_id = receiptId;
       }
+      // Si tienes approved_by o date, puedes agregarlos aquí si aplica
+      // transactionPayload.date = new Date().toISOString(); // Descomenta si tu backend lo requiere
+      // transactionPayload.approved_by = ... // Si aplica
+      // Eliminar campos con valor null o undefined
+      Object.keys(transactionPayload).forEach(key => {
+        if (transactionPayload[key] === null || transactionPayload[key] === undefined) {
+          delete transactionPayload[key];
+        }
+      });
       // Llamar al endpoint correcto para aporte
       if (backendType === 'aporte') {
-        // Usar apiService para que respete la baseURL y los headers
         const { default: apiService } = await import('../../Services/apiService');
-        // Usar snake_case en el payload para el backend
-        const aportePayload = {
-          vaca_id: vacaId,
-          user_id: userId,
-          participant_id: participantId,
-          amount: parseFloat(formData.amount),
-          description: formData.description,
-          type: backendType,
-          category: formData.category,
-          receipt_id: receiptId,
-          withdrawal_type: formData.withdrawalType
-        };
-        // Log para depuración: muestra el payload exacto
-        console.log('[APORTE] Payload enviado al backend:', JSON.stringify(aportePayload, null, 2));
-        const result = await apiService.post('/api/transactions/aporte', aportePayload);
+        console.log('[APORTE] Payload enviado al backend:', JSON.stringify(transactionPayload, null, 2));
+        const result = await apiService.post('/api/transactions/aporte', transactionPayload);
+        console.log('[APORTE] Respuesta backend:', result); // <-- LOG de la respuesta
         if (result.error) throw new Error(result.error || 'Error en el aporte');
-        onSuccess({ data: result, type: backendType });
+        // El backend ahora devuelve transaction, newTotal, username y email
+        onSuccess({
+          data: result.transaction,
+          type: backendType,
+          newTotal: result.newTotal,
+          username: result.username,
+          email: result.email
+        });
       } else {
-        // Para otros tipos, usar el servicio normal
-        const { data, error, newTotal } = await createTransaction(transactionData);
-        if (error) throw new Error(error);
-        onSuccess({ data, type: backendType, newTotal });
+        // Para otros tipos, usar el servicio normal pero pasando solo columnas válidas
+        const { default: apiService } = await import('../../Services/apiService');
+        console.log('[TRANSACCIÓN] Payload enviado al backend:', JSON.stringify(transactionPayload, null, 2));
+        const result = await apiService.post('/api/transactions', transactionPayload);
+        if (result.error) throw new Error(result.error);
+        onSuccess({ data: result, type: backendType });
       }
     } catch (err) {
       setError(err.message || 'Error al procesar la transacción');
@@ -155,8 +170,6 @@ const TransactionForm = ({ vacaId, userId, participantId, onSuccess, onCancel })
          transactionType === 'expense' ? 'Registrar Gasto' : 
          'Solicitar Retiro'}
       </h3>
-      
-      {error && <div className="error-message">{error}</div>}
       
       <div className="transaction-type-selector">
         <button 
